@@ -246,12 +246,12 @@ system designed for human resource teams in small to mid-sized businesses.
 **Objective:**
 Create a Request submitted by an employee through the structured self-service intake process. 
 The request is associated with a request type, initialized at the appropriate workflow step, 
-and the intake source is identified as self_servce. 
+and the intake source is identified as self_service. 
 
 **Assumptions:**
-- The submitting employee already exists in the Employee table with employee_id = 924
-- The selected request type already exists in the Request_Type table with request_type_id = 20
-- The initial workflow step for this request type exists in Workflow_Step with workflow_step_id = 26 
+- The submitting employee already exists in the Employee table
+- The selected request type already exists in the Request_Type table
+- The initial workflow step for this request type exists in Workflow_Step
 - The data was validated by the front-end processor before being pushed to the database. 
 
 **Expected Output:** 

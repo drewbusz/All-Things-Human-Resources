@@ -11,8 +11,7 @@ CREATE TABLE request_type (
     description LONGTEXT NOT NULL,
     approval_request BOOLEAN NOT NULL DEFAULT FALSE,
 
-    CONSTRAINT pk_request_type_request
-        PRIMARY KEY (request_type_id)
+    PRIMARY KEY (request_type_id)
 );
 
 
@@ -36,8 +35,7 @@ CREATE TABLE authorization_type (
         'full access'
     ) NOT NULL,
 
-    CONSTRAINT pk_authorization_type
-        PRIMARY KEY (auth_type_id)
+    PRIMARY KEY (auth_type_id)
 );
 
 
@@ -51,8 +49,7 @@ CREATE TABLE department (
     dept_name VARCHAR(255) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
 
-    CONSTRAINT pk_department
-        PRIMARY KEY (department_id)
+    PRIMARY KEY (department_id)
 );
 
 
@@ -62,7 +59,7 @@ CREATE TABLE department (
 
 CREATE TABLE employee (
     employee_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    manager_id BIGINT UNSIGNED NOT NULL,
+    manager_id BIGINT UNSIGNED  DEFAULT NULL,
     department_id BIGINT UNSIGNED NOT NULL,
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
@@ -70,14 +67,7 @@ CREATE TABLE employee (
     start_date TIMESTAMP NULL,
     email_address VARCHAR(254) NOT NULL UNIQUE,
 
-    CONSTRAINT pk_employee
-        PRIMARY KEY (employee_id),
-
-    CONSTRAINT fk_employee_to_manager
-        FOREIGN KEY (manager_id)
-        REFERENCES employee(employee_id)
-        ON UPDATE RESTRICT
-        ON DELETE RESTRICT,
+    PRIMARY KEY (employee_id),
 
     CONSTRAINT fk_employee_to_department
         FOREIGN KEY (department_id)
@@ -105,8 +95,7 @@ CREATE TABLE workflow_step (
         'complete'
     ) NOT NULL,
 
-    CONSTRAINT pk_workflow_step
-        PRIMARY KEY (workflow_step_id),
+    PRIMARY KEY (workflow_step_id),
 
     CONSTRAINT fk_workflow_step_request_type
         FOREIGN KEY (request_type_id)
@@ -142,8 +131,7 @@ CREATE TABLE request (
         'email_service'
     ) NOT NULL,
 
-    CONSTRAINT pk_request
-        PRIMARY KEY (request_id),
+    PRIMARY KEY (request_id),
 
     CONSTRAINT fk_request_request_type
         FOREIGN KEY (request_type_id)
@@ -184,8 +172,7 @@ CREATE TABLE request_type_field (
     is_required BOOLEAN NOT NULL DEFAULT FALSE,
     display_order INT NOT NULL,
 
-    CONSTRAINT pk_request_type_field
-        PRIMARY KEY (field_id),
+    PRIMARY KEY (field_id),
 
     CONSTRAINT fk_request_type
         FOREIGN KEY (request_type_id)
@@ -208,8 +195,7 @@ CREATE TABLE request_field_value (
     field_val VARCHAR(255),
     value_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT pk_field_val
-        PRIMARY KEY (field_id, request_id),
+    PRIMARY KEY (field_id, request_id),
 
     CONSTRAINT fk_field_val_field
         FOREIGN KEY (field_id)
@@ -234,8 +220,7 @@ CREATE TABLE request_notes (
     note LONGTEXT NOT NULL,
     note_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT pk_request_notes
-        PRIMARY KEY (request_note_id),
+    PRIMARY KEY (request_note_id),
 
     CONSTRAINT fk_request
         FOREIGN KEY (request_id)
@@ -260,8 +245,7 @@ CREATE TABLE request_history (
     request_id BIGINT UNSIGNED NOT NULL,
     created_by_emp_id BIGINT UNSIGNED NOT NULL,
 
-    CONSTRAINT pk_history_id
-        PRIMARY KEY (request_history_id),
+    PRIMARY KEY (request_history_id),
 
     CONSTRAINT fk_request_to_history
         FOREIGN KEY (request_id)
@@ -295,8 +279,7 @@ CREATE TABLE approval (
         'deferred'
     ),
 
-    CONSTRAINT pk_approval
-        PRIMARY KEY (approval_id),
+    PRIMARY KEY (approval_id),
 
     CONSTRAINT fk_approval_to_request
         FOREIGN KEY (request_id)
@@ -331,8 +314,7 @@ CREATE TABLE employee_history (
         'deleted'
     ) NOT NULL,
 
-    CONSTRAINT pk_employee_history
-        PRIMARY KEY (employee_history_id),
+    PRIMARY KEY (employee_history_id),
 
     CONSTRAINT fk_employee_to_history
         FOREIGN KEY (employee_id)
@@ -361,8 +343,7 @@ CREATE TABLE authorization (
     effective_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
 
-    CONSTRAINT pk_authorization
-        PRIMARY KEY (auth_id),
+    PRIMARY KEY (auth_id),
 
     CONSTRAINT fk_auth_type_to_auth
         FOREIGN KEY (auth_type_id)
@@ -397,8 +378,7 @@ CREATE TABLE request_auth (
     expiration_date TIMESTAMP NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
 
-    CONSTRAINT pk_request_auth
-        PRIMARY KEY (request_auth_id),
+    PRIMARY KEY (request_auth_id),
 
     CONSTRAINT fk_request_auth_to_request
         FOREIGN KEY (request_id)
@@ -432,8 +412,7 @@ CREATE TABLE request_type_auth (
     expiration_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
 
-    CONSTRAINT pk_request_type_auth
-        PRIMARY KEY (request_type_auth_id),
+    PRIMARY KEY (request_type_auth_id),
 
     CONSTRAINT fk_type_auth_to_type
         FOREIGN KEY (request_type_id)
@@ -459,3 +438,10 @@ ALTER TABLE department
         REFERENCES employee(employee_id)
         ON UPDATE RESTRICT
         ON DELETE RESTRICT;
+
+ALTER TABLE department 
+    ADD CONSTRAINT fk_employee_to_manager
+        FOREIGN KEY (manager_id)
+        REFERENCES employee(employee_id)
+        ON UPDATE RESTRICT
+        ON DELETE RESTRICT,

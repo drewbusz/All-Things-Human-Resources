@@ -453,24 +453,3 @@ AND assigned_emp_id = ?;
 The corresponding change is then recorded in `request_history`.
 
 -------
-
-#### Use Case 2
-
-
-
--------
-
-
-
-#### Use Case 3
-
-**Objective:**
-
-
-**Assumptions:**
-
-
-**Expected Output:** 
-
-
-**Query:**

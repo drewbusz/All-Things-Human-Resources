@@ -104,9 +104,8 @@ system designed for human resource teams in small to mid-sized businesses.
 - Relationship: Has Values > Request_Field_Value
 
 ### Entity: Request_Field_Value
-- Attribute: field_val_id (PK, bigint)
-- Attribute: field_id (FK, bigint)
-- Attribute: request_id (FK, bigint)
+- Attribute: field_id (PK, FK, bigint)
+- Attribute: request_id (PK, FK, bigint)
 - Attribute: field_value (varchar)
 - Attribute: value_date (date)
 - Relationship: Value For > Request_Type_Field
@@ -205,9 +204,9 @@ system designed for human resource teams in small to mid-sized businesses.
 - Attribute: auth_type_id (PK, bigint)
 - Attribute: auth_type_name (enum: view only, modification, approval, full access)
 - Attribute: description (varchar)
-- Attribute: view (boolean)
-- Attribute: update (boolean)
-- Attribute: approve (boolean)
+- Attribute: can_view (boolean)
+- Attribute: can_update (boolean)
+- Attribute: can_approve (boolean)
 - Attribute: is_active (boolean)
 - Attribute: created_on (date)
 - Relationship: Defines > Authorization
@@ -237,6 +236,7 @@ system designed for human resource teams in small to mid-sized businesses.
 
 -------
 
+
 ## 3 Key Uses cases & Queries 
 
 ### Use Case Objectives, Assumptions, Expected Output
@@ -261,14 +261,14 @@ and self_service intake source.
 
 **Query 1:** 
 SELECT workflow_step_id 
-FROM Workflow_Step
+FROM workflow_step
 WHERE request_type_id = ?
 AND is_active = 1 
-AND step_num = 1; 
+AND step_num = 0; 
 
 
 **Query 2:**
-INSERT INTO Request (
+INSERT INTO request (
     request_type_id, 
     employee_id, 
     current_step_id, 
@@ -287,7 +287,7 @@ VALUES (
     'self_service'
 );  
 **Query 3:**
-INSERT INTO Request_Field_Value ( 
+INSERT INTO request_field_value ( 
     field_id, 
     request_id, 
     field_value, 
@@ -305,8 +305,8 @@ SELECT
     rta.auth_type_id, 
     a.auth_id,
     a.employee_id
-FROM Req_type_Auth rta
-JOIN Authorization a
+FROM req_type_auth rta
+JOIN authorization a
     ON rta.auth_type_id = a.auth_type_id
 WHERE rta.is_active = 1 
 AND a.is_active = 1
@@ -314,7 +314,7 @@ AND rta.req_type_id = ?;
 
 
 **Query 5:**
-INSERT INTO Request_Auth (
+INSERT INTO request_auth (
     request_id, 
     employee_id, 
     auth_id, 

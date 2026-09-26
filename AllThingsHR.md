@@ -1,5 +1,5 @@
 
-# All Things HR Inventory Database System 
+# All Things HR Database System 
 
 ## Document Summary 
 This document outlines the intitial database design for a simple workflow management 

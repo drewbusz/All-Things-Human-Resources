@@ -6,7 +6,7 @@ INSERT INTO request_type (
     name,
     is_active,
     description,
-    approval_request
+    approval_required
 )
 VALUES
     (
@@ -302,7 +302,7 @@ INSERT INTO request (
     expected_completion,
     brief_summary,
     confidentiality_level,
-    instake_source
+    intake_source
 )
 VALUES
     (

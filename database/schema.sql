@@ -9,7 +9,7 @@ CREATE TABLE request_type (
     name VARCHAR(125) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT FALSE,
     description LONGTEXT NOT NULL,
-    approval_request BOOLEAN NOT NULL DEFAULT FALSE,
+    approval_required BOOLEAN NOT NULL DEFAULT FALSE,
 
     PRIMARY KEY (request_type_id)
 );
@@ -126,7 +126,7 @@ CREATE TABLE request (
         'Highly Confidential'
     ) NOT NULL,
 
-    instake_source ENUM(
+    intake_source ENUM(
         'self_service',
         'email_service'
     ) NOT NULL,
@@ -342,6 +342,7 @@ CREATE TABLE authorization (
     auth_reason VARCHAR(255) NOT NULL,
     effective_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    expiration_date DATE NULL, 
 
     PRIMARY KEY (auth_id),
 
@@ -445,3 +446,38 @@ ALTER TABLE department
         REFERENCES employee(employee_id)
         ON UPDATE RESTRICT
         ON DELETE RESTRICT,
+
+-- ============================================================
+-- REQUEST VIEW FOR SIMPLIFIED BACKEND PROCESSING 
+-- ============================================================
+CREATE VIEW request_view AS
+SELECT
+    r.request_id,
+    r.request_type_id,
+    rt.name AS request_type,
+    r.employee_id,
+    CONCAT(e.first_name, ' ', e.last_name) AS submitted_by,
+    r.assigned_emp_id,
+    CONCAT(a.first_name, ' ', a.last_name) AS assigned_to,
+    r.current_step_id,
+    ws.step_name AS current_step,
+    ws.step_code,
+    r.submission_date,
+    r.priority_level,
+    r.expected_completion,
+    r.brief_summary,
+    r.confidentiality_level,
+    r.intake_source
+FROM request r
+
+JOIN request_type rt
+    ON r.request_type_id = rt.request_type_id
+
+JOIN employee e
+    ON r.employee_id = e.employee_id
+
+LEFT JOIN employee a
+    ON r.assigned_emp_id = a.employee_id
+
+LEFT JOIN workflow_step ws
+    ON r.current_step_id = ws.workflow_step_id;

@@ -80,9 +80,8 @@ The following software is required to configure and run the application:
 
 1. Install and start MariaDB Server.
 2. Open HeidiSQL and connect to the local MariaDB server.
-3. Create the application database.
-4. Run `database/schema.sql` to create the database tables and constraints.
-5. Run `database/seed.sql` to populate the database with demonstration data.
+3. Run `database/schema.sql` to create the database tables and constraints.
+4. Run `database/seed.sql` to populate the database with demonstration data.
 
 ### 2.3 Environment Configuration
 
@@ -452,4 +451,22 @@ AND assigned_emp_id = ?;
 
 The corresponding change is then recorded in `request_history`.
 
+```sql
+INSERT INTO request_history (
+    request_id, 
+    created_by_emp_id, 
+    modified_field, 
+    previous_value, 
+    current_value, 
+    type
+)
+VALUES  (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    'updated'
+); 
+```
 -------

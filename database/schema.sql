@@ -67,13 +67,14 @@ CREATE TABLE department (
 
 CREATE TABLE employee (
     employee_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    manager_id BIGINT UNSIGNED  DEFAULT NULL,
+    manager_id BIGINT UNSIGNED DEFAULT NULL,
     department_id BIGINT UNSIGNED NOT NULL,
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
     title VARCHAR(255) NOT NULL,
     start_date TIMESTAMP NULL,
     email_address VARCHAR(254) NOT NULL UNIQUE,
+    status ENUM{'active', 'inactive'},
 
     PRIMARY KEY (employee_id),
 

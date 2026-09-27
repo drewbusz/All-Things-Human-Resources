@@ -1,5 +1,6 @@
 // Request used for the Assignment 4 UC-4 vertical slice.
 const requestId = 1;
+const employeeId = 2;
 
 // References to the HTML elements that will display request data.
 const requestIdElement = document.getElementById("request-id");
@@ -15,7 +16,7 @@ const saveStatusButton = document.getElementById("save-status");
 // Retrieves the request from the backend and displays its current data.
 async function loadRequest() {
     try {
-        const response = await fetch(`http://localhost:3000/api/requests/${requestId}`);
+        const response = await fetch(`/api/requests/${requestId}?employeeId=${employeeId}`);
 
         if (!response.ok) {
             throw new Error("Unable to retrieve the request.");
@@ -60,13 +61,14 @@ async function updateRequestStatus() {
         statusMessageElement.textContent = "";
 
         const response = await fetch(
-            `http://localhost:3000/api/requests/${requestId}/status`,
+            `/api/requests/${requestId}/status`,
             {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
+                    employeeId: employeeId,
                     status: statusSelectElement.value
                 })
             }

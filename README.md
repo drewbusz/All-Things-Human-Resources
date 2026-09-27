@@ -76,11 +76,11 @@ The following software is required to configure and run the application:
 - npm
 - Modern web browser
 
-### 2.2 Database Setup
+### 2.2 Database Configuration
 
 1. Install and start MariaDB Server.
 2. Open HeidiSQL and connect to the local MariaDB server.
-3. Run `database/schema.sql` to create the database tables and constraints.
+3. Run `database/schema.sql` to create the database, tables, views and constraints.
 4. Run `database/seed.sql` to populate the database with demonstration data.
 
 ### 2.3 Environment Configuration
@@ -405,30 +405,26 @@ WHERE request_id = ?
 AND assigned_emp_id = ?;
 ```
 
-This updates the request while also ensuring that the request is assigned to the HR staff member performing the operation.
-
-**Query 6 — Record the workflow change in request history:**
+**Query 6 — Record the workflow step change in request history:**
 
 ```sql
 INSERT INTO request_history (
     request_id,
-    modified_by_employee_id,
-    type,
+    modified_by_employee_id, 
     modified_field,
     previous_value,
-    current_value
+    current_value, 
+    type
 )
 VALUES (
     ?,
     ?,
     'updated',
-    'current_step_id',
     ?,
-    ?
+    ?,
+    'current_step_id',
 );
 ```
-
-The previous and new workflow step values are stored so the status change can be audited.
 
 **Query 7 — Resolve the request:**
 

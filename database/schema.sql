@@ -257,11 +257,11 @@ CREATE TABLE request_history (
     previous_value VARCHAR(255) NOT NULL, 
     current_value VARCHAR(255) NOT NULL, 
     date_modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, 
-    type ENUM{
+    type ENUM(
         'created', 
         'updated', 
         'deleted'
-    } NOT NULL
+    ) NOT NULL
 
     PRIMARY KEY (request_history_id),
 

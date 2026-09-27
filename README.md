@@ -1,15 +1,15 @@
 # All Things Human Resources
 
-All Things Human Resources is a database-backed workflow management system developed for INF-C451 System Implementation.
+All Things Human Resources is a database-backed workflow management system developed for INFO-C451 System Implementation.
 
-This version of the project represents **Vertical Slide 1**. The documentation describes the functionality, database implementation, and use cases included in this vertical slice. Additional functionality may be implemented in subsequent vertical slices. 
+This version of the project represents **Vertical Slice 1**. The documentation describes the functionality, database implementation, and use cases included in this vertical slice. Additional functionality may be implemented in subsequent vertical slices. 
 
 ----------
 
 **System Name:** All Things HR
 **Authors:** Team Bravo
 **Date:** 9/24/2026
-**Course:** INFO-C490 Fall 2026
+**Course:** INFO-C451 Fall 2026
 
 ----------
 
@@ -21,7 +21,7 @@ This version of the project represents **Vertical Slide 1**. The documentation d
        
 ### Version 1.0.0 Summary
 
-Version 1.0.0 represents **Vertical Slice 1** of the All Things HR system. This release establishes the initial database schema, referential integrity constaints, demonstration data, and the application components reuired to suport the use cases included in this vertical slice. 
+Version 1.0.0 represents **Vertical Slice 1** of the All Things HR system. This release establishes the initial database schema, referential integrity constraints, demonstration data, and the application components required to support the use cases included in this vertical slice. 
 
 
 ----------
@@ -62,8 +62,6 @@ Version 1.0.0 represents **Vertical Slice 1** of the All Things HR system. This 
 ### 1.3 Project Scope: 
 
 ----------
-## Installation and Setup
-
 ## 2. Installation and Setup
 
 ### 2.1 Required Software
@@ -85,7 +83,7 @@ The following software is required to configure and run the application:
 
 ### 2.3 Environment Configuration
 
-Copy `.env.example` to `.env` and configure the local MariaDB connection information.
+From the backend directory, copy `.env.example` to `.env` and configure the local MariaDB connection information.
 
 Example:
 
@@ -105,6 +103,7 @@ The `.env` file should not be committed to the repository because it may contain
 Open a terminal in the project directory and run:
 
 ```bash
+cd backend
 npm install
 ```
 
@@ -112,7 +111,7 @@ This installs the Node.js dependencies defined in `package.json`.
 
 ### 2.5 Start the Back End
 
-Start the Node.js/Express server with:
+From the backend directory, start the Node.js/Express server with:
 
 ```bash
 npm start
@@ -165,7 +164,7 @@ The browser communicates with the Node.js/Express server, which handles communic
 - Relationship: Categorizes > Request
 - Relationship: Defines > Workflow_Step
 - Relationship: Defines > Request_Type_Field
-- Relationship: Has > Req_Type_Auth
+- Relationship: Has > Request_Type_Auth
 
 ### Entity: Workflow_Step
 - Attribute: workflow_step_id (PK, bigint)
@@ -185,14 +184,13 @@ The browser communicates with the Node.js/Express server, which handles communic
 - Attribute: field_type (varchar)
 - Attribute: is_required (bool)
 - Attribute: display_order (int)
-- Attribute: is_active (bool)
 - Relationship: Defined For > Request_Type
 - Relationship: Has Values > Request_Field_Value
 
 ### Entity: Request_Field_Value
 - Attribute: field_id (PK, FK, bigint)
 - Attribute: request_id (PK, FK, bigint)
-- Attribute: field_value (varchar)
+- Attribute: field_val (varchar)
 - Attribute: value_date (timestamp)
 - Relationship: Value For > Request_Type_Field
 - Relationship: Belongs To > Request
@@ -209,27 +207,25 @@ The browser communicates with the Node.js/Express server, which handles communic
 ### Entity: Request_History
 - Attribute: request_history_id (PK, bigint)
 - Attribute: request_id (FK, bigint)
-- Attribute: modified_by_employee_id (FK, bigint)
+- Attribute: created_by_emp_id (FK, bigint)
 - Attribute: type (enum: created, updated, deleted)
 - Attribute: modified_field (varchar)
 - Attribute: previous_value (varchar)
 - Attribute: current_value (varchar)
 - Attribute: date_modified (timestamp)
 - Relationship: Tracks > Request
-- Relationship: Modified By > Employee
+- Relationship: Created By > Employee
 
 ### Entity: Approval
 - Attribute: approval_id (PK, bigint)
 - Attribute: request_id (FK, bigint)
 - Attribute: approving_emp_id (FK, bigint)
-- Attribute: requesting_emp_id (FK, bigint)
 - Attribute: submission_date (timestamp)
 - Attribute: summary (longtext)
 - Attribute: decision (enum: approved, denied, deferred)
 - Attribute: decision_date (timestamp)
 - Relationship: Applies To > Request
 - Relationship: Approved By > Employee
-- Relationship: Requested By > Employee
 
 ### Entity: Employee
 - Attribute: employee_id (PK, bigint)
@@ -297,7 +293,7 @@ The browser communicates with the Node.js/Express server, which handles communic
 - Attribute: is_active (boolean)
 - Attribute: created_on (timestamp)
 - Relationship: Defines > Authorization
-- Relationship: Assigned To > Req_Type_Auth
+- Relationship: Assigned To > Request_Type_Auth
 
 ### Entity: Request_Auth
 - Attribute: request_auth_id (PK, bigint)
@@ -325,7 +321,7 @@ The browser communicates with the Node.js/Express server, which handles communic
 -------
 
 
-## 4 Key Uses cases & Queries 
+## 4 Key Use Cases & Queries
 
 ### Use Case Objectives, Assumptions, Expected Output
 
@@ -337,10 +333,10 @@ Allow an HR staff member to retrieve an assigned HR request, review its informat
 **Assumptions:**
 - The HR staff member already exists in the 'employee' table. 
 - The request already exists in the 'request' table. 
-- The request is assiigned to the HR staff member through 'assigned_emp_id'. 
+- The request is assigned to the HR staff member through 'assigned_emp_id'. 
 - The HR staff member has the authorization required to process the request. 
 - The applicable workflow steps already exist in 'workflow_step'. 
-- Input received by the back end has been validated before database operatioons are performed. 
+- Input received by the back end has been validated before database operations are performed. 
 
 **Expected Output:** 
 The assigned request and its associated information are available to the HR staff member. As the request is processed, new notes are stored in 'request_notes', changes to the request are recorded in 'request_history', and 'current_step_id' is updated to reflect the request's current position in the workflow. When processing is complete, the request is moved to the workflow step identified by the 'complete' step code. 
@@ -353,7 +349,7 @@ WHERE request_id = ?
 AND assigned_emp_id = ?; 
 ```
 
-The first parameter identifies the request being opened. The second identifies the logged-in HR employee. This preseents the query from returning the request unless it is assigned to that employee. 
+The first parameter identifies the request being opened. The second identifies the logged-in HR employee. This prevents the query from returning the request unless it is assigned to that employee. 
 
 **Query 2 - Retrieve the request's configurable field values:**
 ```sql
@@ -362,10 +358,10 @@ SELECT
     rtf.field_type, 
     rfv.field_val 
 FROM request_field_value rfv
-JOIN request_type_field rft
+JOIN request_type_field rtf
     ON rfv.field_id = rtf.field_id
 WHERE rfv.request_id = ?
-ORDER BY rft.display_order; 
+ORDER BY rtf.display_order;
 ```
 
 **Query 3 - Add a processing note:**
@@ -381,7 +377,7 @@ VALUES (
     ?
 );
 ```
-`note_date` is omitted because the database automatically assigned `CURRENT_TIMESTAMP`
+`note_date` is omitted because the database automatically assigns `CURRENT_TIMESTAMP`
 
 **Query 4 - Identify the next workflow step:** 
 ```sql
@@ -412,7 +408,7 @@ This updates the request while also ensuring that the request is assigned to the
 ```sql
 INSERT INTO request_history (
     request_id,
-    modified_by_employee_id,
+    created_by_emp_id,
     type,
     modified_field,
     previous_value,

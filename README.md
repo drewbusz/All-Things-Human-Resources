@@ -80,9 +80,8 @@ The following software is required to configure and run the application:
 
 1. Install and start MariaDB Server.
 2. Open HeidiSQL and connect to the local MariaDB server.
-3. Create the application database.
-4. Run `database/schema.sql` to create the database tables and constraints.
-5. Run `database/seed.sql` to populate the database with demonstration data.
+3. Run `database/schema.sql` to create the database tables and constraints.
+4. Run `database/seed.sql` to populate the database with demonstration data.
 
 ### 2.3 Environment Configuration
 
@@ -141,7 +140,7 @@ The browser communicates with the Node.js/Express server, which handles communic
 - Attribute: employee_id (FK, bigint)
 - Attribute: assigned_emp_id (FK, bigint)
 - Attribute: current_step_id (FK, bigint)
-- Attribute: submission_date (date)
+- Attribute: submission_date (timestamp)
 - Attribute: priority_level (enum: high, medium, low)
 - Attribute: expected_completion (date)
 - Attribute: brief_summary (longtext)
@@ -194,7 +193,7 @@ The browser communicates with the Node.js/Express server, which handles communic
 - Attribute: field_id (PK, FK, bigint)
 - Attribute: request_id (PK, FK, bigint)
 - Attribute: field_value (varchar)
-- Attribute: value_date (date)
+- Attribute: value_date (timestamp)
 - Relationship: Value For > Request_Type_Field
 - Relationship: Belongs To > Request
 
@@ -203,7 +202,7 @@ The browser communicates with the Node.js/Express server, which handles communic
 - Attribute: request_id (FK, bigint)
 - Attribute: created_by_emp_id (FK, bigint)
 - Attribute: note (longtext)
-- Attribute: note_date (date)
+- Attribute: note_date (timestamp)
 - Relationship: Belongs To > Request
 - Relationship: Created By > Employee
 
@@ -215,7 +214,7 @@ The browser communicates with the Node.js/Express server, which handles communic
 - Attribute: modified_field (varchar)
 - Attribute: previous_value (varchar)
 - Attribute: current_value (varchar)
-- Attribute: date_modified (date)
+- Attribute: date_modified (timestamp)
 - Relationship: Tracks > Request
 - Relationship: Modified By > Employee
 
@@ -224,10 +223,10 @@ The browser communicates with the Node.js/Express server, which handles communic
 - Attribute: request_id (FK, bigint)
 - Attribute: approving_emp_id (FK, bigint)
 - Attribute: requesting_emp_id (FK, bigint)
-- Attribute: submission_date (date)
+- Attribute: submission_date (timestamp)
 - Attribute: summary (longtext)
 - Attribute: decision (enum: approved, denied, deferred)
-- Attribute: decision_date (date)
+- Attribute: decision_date (timestamp)
 - Relationship: Applies To > Request
 - Relationship: Approved By > Employee
 - Relationship: Requested By > Employee
@@ -239,7 +238,7 @@ The browser communicates with the Node.js/Express server, which handles communic
 - Attribute: first_name (varchar)
 - Attribute: last_name (varchar)
 - Attribute: title (varchar)
-- Attribute: start_date (date)
+- Attribute: start_date (timestamp)
 - Attribute: status (enum: active, inactive)
 - Attribute: email_address (varchar)
 - Relationship: Belongs To > Department
@@ -261,7 +260,7 @@ The browser communicates with the Node.js/Express server, which handles communic
 - Attribute: modified_field (varchar)
 - Attribute: previous_value (varchar)
 - Attribute: current_value (varchar)
-- Attribute: date_modified (date)
+- Attribute: date_modified (timestamp)
 - Relationship: Tracks > Employee
 - Relationship: Modified By > Employee
 
@@ -280,7 +279,7 @@ The browser communicates with the Node.js/Express server, which handles communic
 - Attribute: employee_id (FK, bigint)
 - Attribute: authorized_by_id (FK, bigint)
 - Attribute: auth_reason (varchar)
-- Attribute: effective_date (date)
+- Attribute: effective_date (timestamp)
 - Attribute: expiration_date (date)
 - Attribute: is_active (boolean)
 - Relationship: Has > Authorization_Types
@@ -296,7 +295,7 @@ The browser communicates with the Node.js/Express server, which handles communic
 - Attribute: can_update (boolean)
 - Attribute: can_approve (boolean)
 - Attribute: is_active (boolean)
-- Attribute: created_on (date)
+- Attribute: created_on (timestamp)
 - Relationship: Defines > Authorization
 - Relationship: Assigned To > Req_Type_Auth
 
@@ -305,8 +304,8 @@ The browser communicates with the Node.js/Express server, which handles communic
 - Attribute: request_id (FK, bigint)
 - Attribute: employee_id (FK, bigint)
 - Attribute: auth_id (FK, bigint)
-- Attribute: effective_date (date)
-- Attribute: expiration_date (date)
+- Attribute: effective_date (timestamp)
+- Attribute: expiration_date (timestamp)
 - Attribute: is_active (bool)
 - Relationship: Applies To > Request
 - Relationship: Granted To > Employee
@@ -316,8 +315,8 @@ The browser communicates with the Node.js/Express server, which handles communic
 - Attribute: request_type_auth_id (PK, bigint)
 - Attribute: request_type_id (FK, bigint)
 - Attribute: auth_type_id (FK, bigint)
-- Attribute: effective_date (date)
-- Attribute: expiration_date (date)
+- Attribute: effective_date (timestamp)
+- Attribute: expiration_date (timestamp)
 - Attribute: is_active (bool)
 - Relationship: Applies To > Request_Type
 - Relationship: Uses > Authorization_Types
@@ -452,4 +451,22 @@ AND assigned_emp_id = ?;
 
 The corresponding change is then recorded in `request_history`.
 
+```sql
+INSERT INTO request_history (
+    request_id, 
+    created_by_emp_id, 
+    modified_field, 
+    previous_value, 
+    current_value, 
+    type
+)
+VALUES  (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    'updated'
+); 
+```
 -------

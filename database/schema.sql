@@ -1,3 +1,11 @@
+-- ============================================================
+-- CREATE THE all_things_hr DATABASE
+-- ============================================================
+CREATE DATABASE all_things_hr
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_uca1400_ai_ci; 
+
+ USE all_things_hr; 
 
 
 -- ============================================================
@@ -59,13 +67,14 @@ CREATE TABLE department (
 
 CREATE TABLE employee (
     employee_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    manager_id BIGINT UNSIGNED  DEFAULT NULL,
+    manager_id BIGINT UNSIGNED DEFAULT NULL,
     department_id BIGINT UNSIGNED NOT NULL,
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
     title VARCHAR(255) NOT NULL,
     start_date TIMESTAMP NULL,
     email_address VARCHAR(254) NOT NULL UNIQUE,
+    status ENUM{'active', 'inactive'},
 
     PRIMARY KEY (employee_id),
 
@@ -244,6 +253,15 @@ CREATE TABLE request_history (
     request_history_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     request_id BIGINT UNSIGNED NOT NULL,
     created_by_emp_id BIGINT UNSIGNED NOT NULL,
+    modified_field VARCHAR(255) NOT NULL, 
+    previous_value VARCHAR(255) NOT NULL, 
+    current_value VARCHAR(255) NOT NULL, 
+    date_modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, 
+    type ENUM{
+        'created', 
+        'updated', 
+        'deleted'
+    } NOT NULL
 
     PRIMARY KEY (request_history_id),
 
@@ -440,12 +458,12 @@ ALTER TABLE department
         ON UPDATE RESTRICT
         ON DELETE RESTRICT;
 
-ALTER TABLE department 
+ALTER TABLE employee 
     ADD CONSTRAINT fk_employee_to_manager
         FOREIGN KEY (manager_id)
         REFERENCES employee(employee_id)
         ON UPDATE RESTRICT
-        ON DELETE RESTRICT,
+        ON DELETE RESTRICT;
 
 -- ============================================================
 -- REQUEST VIEW FOR SIMPLIFIED BACKEND PROCESSING 

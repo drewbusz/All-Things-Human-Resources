@@ -440,12 +440,12 @@ ALTER TABLE department
         ON UPDATE RESTRICT
         ON DELETE RESTRICT;
 
-ALTER TABLE department 
+ALTER TABLE employee 
     ADD CONSTRAINT fk_employee_to_manager
         FOREIGN KEY (manager_id)
         REFERENCES employee(employee_id)
         ON UPDATE RESTRICT
-        ON DELETE RESTRICT,
+        ON DELETE RESTRICT;
 
 -- ============================================================
 -- REQUEST VIEW FOR SIMPLIFIED BACKEND PROCESSING 

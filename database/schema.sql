@@ -471,31 +471,28 @@ ALTER TABLE employee
 CREATE VIEW request_view AS
 SELECT
     r.request_id,
-    r.request_type_id,
-    rt.name AS request_type,
-    r.employee_id,
-    CONCAT(e.first_name, ' ', e.last_name) AS submitted_by,
-    r.assigned_emp_id,
-    CONCAT(a.first_name, ' ', a.last_name) AS assigned_to,
-    r.current_step_id,
-    ws.step_name AS current_step,
-    ws.step_code,
     r.submission_date,
+    r.employee_id,
+    r.request_type_id,
+    r.assigned_emp_id,
+    r.current_step_id,
     r.priority_level,
+    r.confidentiality_level,
+    r.intake_source,
     r.expected_completion,
     r.brief_summary,
-    r.confidentiality_level,
-    r.intake_source
+    rt.name AS request_type,
+    ws.step_name AS status, 
+    ws.step_code As status_code, 
+    ws.step_num     AS current_step_num  
+    CONCAT(e.first_name, ' ', e.last_name) AS submitted_by,
+    CONCAT(a.first_name, ' ', a.last_name) AS assigned_to    
 FROM request r
-
 JOIN request_type rt
     ON r.request_type_id = rt.request_type_id
-
 JOIN employee e
     ON r.employee_id = e.employee_id
-
 LEFT JOIN employee a
     ON r.assigned_emp_id = a.employee_id
-
 LEFT JOIN workflow_step ws
     ON r.current_step_id = ws.workflow_step_id;

@@ -41,10 +41,9 @@ Version 1.0.0 represents **Vertical Slice 1** of the All Things HR system. This 
    - [3.1 Relationship Summary](#31-relationship-summary)
 4. [Key Use Cases & Queries](#4-key-use-cases--queries)
    - [4.1 Use Case 1](#41-use-case-1)
-   - [4.2 Use Case 2](#42-use-case-2)
-   - [4.3 Use Case 3](#43-use-case-3)
+
 ----------
-## Introduction & Summary 
+## 1. Introduction & Summary 
 
 ### 1.1 Project Structure
 
@@ -130,7 +129,7 @@ http://localhost:3000
 The browser communicates with the Node.js/Express server, which handles communication with the MariaDB database.
 
 ----------
-## 3 Entities, Attributes and Relationships: 
+## 3. Entities, Attributes and Relationships: 
 
 ## Entities, Attributes, and Relationships
 ### Entity: Request
@@ -346,7 +345,7 @@ The assigned request and its associated information are available to the HR staf
 SELECT * 
 FROM request_view
 WHERE request_id = ?
-AND assigned_emp_id = ?; 
+    AND assigned_emp_id = ?; 
 ```
 
 The first parameter identifies the request being opened. The second identifies the logged-in HR employee. This prevents the query from returning the request unless it is assigned to that employee. 
@@ -364,41 +363,29 @@ WHERE rfv.request_id = ?
 ORDER BY rtf.display_order;
 ```
 
-**Query 3 - Add a processing note:**
-```sql
-INSERT INTO request_notes (
-    request_id, 
-    created_by_emp_id, 
-    note
-)
-VALUES (
-    ?,
-    ?,
-    ?
-);
-```
-`note_date` is omitted because the database automatically assigns `CURRENT_TIMESTAMP`
-
-**Query 4 - Identify the next workflow step:** 
+**Query 3 - Identify the next workflow step:** 
 ```sql
 SELECT
     workflow_step_id, 
+    request_type_id, 
+    step_num, 
     step_name, 
-    step_code
+    step_code, 
+    is_active
 FROM workflow_step
 WHERE request_type_id = ?
-AND step_num = ?
-AND is_active = TRUE; 
+    AND step_num = ?
+    AND is_active = TRUE 
+LIMIT 1; 
 ```
-The application supplies the request type and next workflow step number. 
 
-**Query 5 — Update the request's current workflow step:**
+**Query 4 — Update the request's current workflow step:**
 
 ```sql
 UPDATE request
 SET current_step_id = ?
 WHERE request_id = ?
-AND assigned_emp_id = ?;
+    AND assigned_emp_id = ?;
 ```
 
 **Query 6 — Record the workflow step change in request history:**
@@ -421,45 +408,5 @@ VALUES (
     ?,
     'current_step_id',
 );
-```
-
-**Query 7 — Resolve the request:**
-
-```sql
-SELECT workflow_step_id
-FROM workflow_step
-WHERE request_type_id = ?
-AND step_code = 'complete'
-AND is_active = TRUE;
-```
-
-After obtaining the appropriate `workflow_step_id`, the request is moved to that step:
-
-```sql
-UPDATE request
-SET current_step_id = ?
-WHERE request_id = ?
-AND assigned_emp_id = ?;
-```
-
-The corresponding change is then recorded in `request_history`.
-
-```sql
-INSERT INTO request_history (
-    request_id, 
-    created_by_emp_id, 
-    modified_field, 
-    previous_value, 
-    current_value, 
-    type
-)
-VALUES  (
-    ?,
-    ?,
-    ?,
-    ?,
-    ?,
-    'updated'
-); 
 ```
 -------

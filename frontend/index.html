@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>All Things HR | Process Request</title>
+
+    <!-- Connects the shared stylesheet used to format the interface -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+    <!-- Application header -->
+    <header>
+        <h1>All Things Human Resources</h1>
+    </header>
+
+    <main>
+        <!-- UC-4: HR staff processes and updates an assigned request -->
+        <section>
+            <h2>Process HR Request</h2>
+
+            <!-- Displays information for the request being processed -->
+            <div id="request-details">
+                <h3>Request Information</h3>
+
+                <p>
+                    <strong>Request ID:</strong>
+                    <span id="request-id">1</span>
+                </p>
+
+                <p>
+                    <strong>Request Type:</strong>
+                    <span id="request-type">Employee Information Change</span>
+                </p>
+
+                <p>
+                    <strong>Summary:</strong>
+                    <span id="request-summary">
+                        Request to update the employee job title in the HR system.
+                    </span>
+                </p>
+
+                <p>
+                    <strong>Priority:</strong>
+                    <span id="request-priority">Medium</span>
+                </p>
+
+                <p>
+                    <strong>Current Status:</strong>
+                    <span id="current-status">HR Processing</span>
+                </p>
+
+                <p>
+                    <strong>Expected Completion:</strong>
+                    <span id="expected-completion">10/02/2026</span>
+                </p>
+            </div>
+
+            <!-- Allows HR staff to select and save a new workflow status -->
+            <div id="status-update">
+                <h3>Update Request Status</h3>
+
+                <label for="status-select">New Status:</label>
+
+                <select id="status-select">
+                    <option value="HR Processing">HR Processing</option>
+                    <option value="Quality Control">Quality Control</option>
+                    <option value="Complete">Complete</option>
+                </select>
+
+                <button id="save-status" type="button">
+                    Save Status Update
+                </button>
+
+                <!-- JavaScript will display success or error feedback here -->
+                <p id="status-message"></p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Handles frontend behavior and communication with the backend -->
+    <script src="js/app.js"></script>
+
+</body>
+</html>

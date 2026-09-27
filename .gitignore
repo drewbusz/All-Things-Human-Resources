@@ -1,0 +1,12 @@
+# Local environment variables and credentials
+.env
+.env.*
+
+# Keep environment variable templates in the repository
+!.env.example
+
+# Node.js dependencies
+node_modules/
+
+# macOS system files
+.DS_Store

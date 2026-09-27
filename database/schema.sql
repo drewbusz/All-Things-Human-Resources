@@ -261,7 +261,7 @@ CREATE TABLE request_history (
         'created', 
         'updated', 
         'deleted'
-    ) NOT NULL
+    } NOT NULL
 
     PRIMARY KEY (request_history_id),
 

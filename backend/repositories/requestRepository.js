@@ -114,11 +114,37 @@ async function updateRequestWorkflowStep(
         await connection.beginTransaction();
 
 
+        // Get the current workflow step before changing it.
+        const [currentRows] = await connection.execute(
+            `
+            SELECT current_step_id
+            FROM request
+            WHERE request_id = ?
+              AND assigned_emp_id = ?
+            FOR UPDATE
+            `,
+            [
+                requestId,
+                employeeId
+            ]
+        );
+
+
+        if (currentRows.length === 0) {
+
+            await connection.rollback();
+
+            return false;
+        }
+
+
+        const previousWorkflowStepId =
+            currentRows[0].current_step_id;
+
+
         const updateSql = `
             UPDATE request
-
             SET current_step_id = ?
-
             WHERE request_id = ?
               AND assigned_emp_id = ?
         `;
@@ -143,23 +169,16 @@ async function updateRequestWorkflowStep(
         }
 
 
-        /*
-         * The current database schema only stores
-         * request_id and created_by_emp_id in request_history.
-         *
-         * This records that the employee performed an update.
-         * The insert should be expanded when request_history
-         * is updated to include the audit fields documented
-         * in the project design.
-         */
-
         const historySql = `
             INSERT INTO request_history (
                 request_id,
-                created_by_emp_id
+                created_by_emp_id,
+                modified_field,
+                previous_value,
+                current_value,
+                type
             )
-
-            VALUES (?, ?)
+            VALUES (?, ?, ?, ?, ?, ?)
         `;
 
 
@@ -167,7 +186,11 @@ async function updateRequestWorkflowStep(
             historySql,
             [
                 requestId,
-                employeeId
+                employeeId,
+                "current_step_id",
+                String(previousWorkflowStepId),
+                String(workflowStepId),
+                "updated"
             ]
         );
 

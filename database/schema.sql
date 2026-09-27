@@ -74,7 +74,7 @@ CREATE TABLE employee (
     title VARCHAR(255) NOT NULL,
     start_date TIMESTAMP NULL,
     email_address VARCHAR(254) NOT NULL UNIQUE,
-    status ENUM{'active', 'inactive'},
+    status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
 
     PRIMARY KEY (employee_id),
 

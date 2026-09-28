@@ -3,7 +3,7 @@
 -- ============================================================
 CREATE DATABASE all_things_hr
     CHARACTER SET utf8mb4
-    COLLATE utf8mb4_uca1400_ai_ci; 
+    COLLATE utf8mb4_unicode_ci;
 
  USE all_things_hr; 
 
@@ -261,7 +261,7 @@ CREATE TABLE request_history (
         'created', 
         'updated', 
         'deleted'
-    } NOT NULL
+    ) NOT NULL,
 
     PRIMARY KEY (request_history_id),
 
@@ -483,10 +483,10 @@ SELECT
     r.brief_summary,
     rt.name AS request_type,
     ws.step_name AS status, 
-    ws.step_code As status_code, 
-    ws.step_num     AS current_step_num  
+    ws.step_code AS status_code, 
+    ws.step_num AS current_step_num,
     CONCAT(e.first_name, ' ', e.last_name) AS submitted_by,
-    CONCAT(a.first_name, ' ', a.last_name) AS assigned_to    
+    CONCAT(a.first_name, ' ', a.last_name) AS assigned_to  
 FROM request r
 JOIN request_type rt
     ON r.request_type_id = rt.request_type_id

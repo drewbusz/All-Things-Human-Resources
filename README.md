@@ -82,7 +82,7 @@ The following software is required to configure and run the application:
 
 ### 2.3 Environment Configuration
 
-From the backend directory, copy `.env.example` to `.env` and configure the local MariaDB connection information.
+From the backend directory, copy `.env.example` to `.env`, then configure the local MariaDB environment variables with your local database host, port, username, and password.
 
 Example:
 
@@ -342,10 +342,35 @@ The assigned request and its associated information are available to the HR staf
 
 **Query 1 - Retrieve an assigned request.:**
 ```sql
-SELECT * 
-FROM request_view
-WHERE request_id = ?
-    AND assigned_emp_id = ?; 
+SELECT
+            r.request_id,
+            r.submission_date,
+            r.employee_id,
+            r.request_type_id,
+            r.assigned_emp_id,
+            r.current_step_id,
+            r.priority_level,
+            r.confidentiality_level,
+            r.intake_source,
+            r.expected_completion,
+            r.brief_summary,
+
+            rt.name AS request_type,
+
+            ws.step_name AS status,
+            ws.step_code AS status_code,
+            ws.step_num AS current_step_num
+
+        FROM request r
+
+        INNER JOIN request_type rt
+            ON r.request_type_id = rt.request_type_id
+
+        LEFT JOIN workflow_step ws
+            ON r.current_step_id = ws.workflow_step_id
+
+        WHERE r.request_id = ?
+          AND r.assigned_emp_id = ?; 
 ```
 
 The first parameter identifies the request being opened. The second identifies the logged-in HR employee. This prevents the query from returning the request unless it is assigned to that employee. 

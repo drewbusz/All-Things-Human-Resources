@@ -1,46 +1,90 @@
-const requestService = require("../services/requestService");
+const requestService =
+    require("../services/requestService");
 
 
-async function getRequestById(req, res, next) {
+function handleServiceError(
+    error,
+    res,
+    next
+) {
+
+    if (error.code === "REQUEST_NOT_FOUND") {
+
+        return res.status(404).json({
+            success: false,
+            message: error.message
+        });
+    }
+
+
+    const badRequestErrors = [
+        "INVALID_REQUEST_TYPE",
+        "INVALID_SUMMARY",
+        "INVALID_PRIORITY",
+        "INVALID_CONFIDENTIALITY",
+        "INVALID_DATE",
+        "INVALID_EMPLOYEE",
+        "INVALID_STATUS",
+        "INVALID_AUTH_TYPE",
+        "EMPLOYEE_NOT_AUTHORIZED"
+    ];
+
+
+    if (
+        badRequestErrors.includes(
+            error.code
+        )
+    ) {
+
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+
+
+    if (error.code === "UPDATE_FAILED") {
+
+        return res.status(409).json({
+            success: false,
+            message: error.message
+        });
+    }
+
+
+    next(error);
+}
+
+
+async function getRequestById(
+    req,
+    res,
+    next
+) {
 
     try {
 
-        const requestId = Number(req.params.id);
-        const employeeId = Number(req.query.employeeId);
+        const requestId =
+            Number(req.params.id);
 
 
-        if (!Number.isInteger(requestId) || requestId <= 0) {
-
-            return res.status(400).json({
-                success: false,
-                message: "A valid request ID is required."
-            });
-        }
-
-
-        if (!Number.isInteger(employeeId) || employeeId <= 0) {
+        if (
+            !Number.isInteger(requestId) ||
+            requestId <= 0
+        ) {
 
             return res.status(400).json({
-                success: false,
-                message: "A valid employee ID is required."
-            });
-        }
-
-
-        const request = await requestService.getRequestById(
-            requestId,
-            employeeId
-        );
-
-
-        if (!request) {
-
-            return res.status(404).json({
                 success: false,
                 message:
-                    "The HR request was not found or is not assigned to this employee."
+                    "A valid request ID is required."
             });
         }
+
+
+        const request =
+            await requestService.getRequestById(
+                requestId
+            );
 
 
         return res.status(200).json({
@@ -50,100 +94,246 @@ async function getRequestById(req, res, next) {
 
     } catch (error) {
 
-        next(error);
+        return handleServiceError(
+            error,
+            res,
+            next
+        );
     }
 }
 
 
-async function updateRequestStatus(req, res, next) {
+async function getWorkflowStepsByRequestType(
+    req,
+    res,
+    next
+) {
 
     try {
 
-        const requestId = Number(req.params.id);
-        const employeeId = Number(req.body.employeeId);
-        const status = req.body.status;
+        const requestTypeId =
+            Number(
+                req.params.requestTypeId
+            );
 
 
-        if (!Number.isInteger(requestId) || requestId <= 0) {
+        if (
+            !Number.isInteger(requestTypeId) ||
+            requestTypeId <= 0
+        ) {
 
             return res.status(400).json({
                 success: false,
-                message: "A valid request ID is required."
+                message:
+                    "A valid request type ID is required."
             });
         }
 
 
-        if (!Number.isInteger(employeeId) || employeeId <= 0) {
+        const workflowSteps =
+            await requestService
+                .getWorkflowStepsByRequestType(
+                    requestTypeId
+                );
+
+
+        return res.status(200).json({
+            success: true,
+            data: workflowSteps
+        });
+
+    } catch (error) {
+
+        return handleServiceError(
+            error,
+            res,
+            next
+        );
+    }
+}
+
+
+async function getRequestHistoryByRequestId(
+    req,
+    res,
+    next
+) {
+
+    try {
+
+        const requestId =
+            Number(req.params.id);
+
+
+        if (
+            !Number.isInteger(requestId) ||
+            requestId <= 0
+        ) {
 
             return res.status(400).json({
                 success: false,
-                message: "A valid employee ID is required."
+                message:
+                    "A valid request ID is required."
+            });
+        }
+
+
+        const history =
+            await requestService
+                .getRequestHistoryByRequestId(
+                    requestId
+                );
+
+
+        return res.status(200).json({
+            success: true,
+            data: history
+        });
+
+    } catch (error) {
+
+        return handleServiceError(
+            error,
+            res,
+            next
+        );
+    }
+}
+
+
+async function getAssignedRequestsByEmpId(
+    req,
+    res,
+    next
+) {
+
+    try {
+
+        const employeeId =
+            Number(
+                req.params.employeeId
+            );
+
+
+        if (
+            !Number.isInteger(employeeId) ||
+            employeeId <= 0
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "A valid employee ID is required."
+            });
+        }
+
+
+        const requests =
+            await requestService
+                .getAssignedRequestsByEmpId(
+                    employeeId
+                );
+
+
+        return res.status(200).json({
+            success: true,
+            data: requests
+        });
+
+    } catch (error) {
+
+        return handleServiceError(
+            error,
+            res,
+            next
+        );
+    }
+}
+
+
+async function updateRequest(
+    req,
+    res,
+    next
+) {
+
+    try {
+
+        const requestId =
+            Number(req.params.id);
+
+        const actingEmployeeId =
+            Number(
+                req.body.actingEmployeeId
+            );
+
+
+        if (
+            !Number.isInteger(requestId) ||
+            requestId <= 0
+        ) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "A valid request ID is required."
             });
         }
 
 
         if (
-            typeof status !== "string" ||
-            status.trim().length === 0
+            !Number.isInteger(
+                actingEmployeeId
+            ) ||
+            actingEmployeeId <= 0
         ) {
 
             return res.status(400).json({
                 success: false,
-                message: "A request status is required."
+                message:
+                    "A valid acting employee ID is required."
             });
         }
 
 
+        const requestData = {
+            ...req.body
+        };
+
+
+        delete requestData.actingEmployeeId;
+
+
         const updatedRequest =
-            await requestService.updateRequestStatus(
+            await requestService.updateRequest(
                 requestId,
-                employeeId,
-                status.trim()
+                actingEmployeeId,
+                requestData
             );
 
 
         return res.status(200).json({
             success: true,
-            message: "Request status updated successfully.",
+            message:
+                "HR request updated successfully.",
             data: updatedRequest
         });
 
     } catch (error) {
 
-
-        if (error.code === "REQUEST_NOT_FOUND") {
-
-            return res.status(404).json({
-                success: false,
-                message: error.message
-            });
-        }
-
-
-        if (error.code === "INVALID_STATUS") {
-
-            return res.status(400).json({
-                success: false,
-                message: error.message
-            });
-        }
-
-
-        if (error.code === "UPDATE_FAILED") {
-
-            return res.status(409).json({
-                success: false,
-                message: error.message
-            });
-        }
-
-
-        next(error);
+        return handleServiceError(
+            error,
+            res,
+            next
+        );
     }
 }
 
 
 module.exports = {
     getRequestById,
-    updateRequestStatus
+    getWorkflowStepsByRequestType,
+    getRequestHistoryByRequestId,
+    getAssignedRequestsByEmpId,
+    updateRequest
 };

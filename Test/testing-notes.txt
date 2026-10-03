@@ -1,5 +1,5 @@
 
-## Amber's Notes 
+## Amber's Assignment 5 Notes 
 - Employee backend needs to include getEmployeesByAuthType that retrieves a list of employees using an auth_type_id 
 	* This will be used to fill the options in the Assigned Employee: select menu 
 
@@ -10,9 +10,18 @@
 	- remove employeeId from getRequestById or add employeeId to requestRoutes.js
 	- Add getAssignedRequestsByEmpId export
 
-
 - requestRoutes Notes: 
 	- add update request patch to submit multiple changes 
 
 - Database notes: 
 	- Add more employees, auth types, authorizations, and request authorizations to seed.sql
+
+- processRequestPage: 
+	- Add a "Request History" tab that retrieves and displays the associated history 
+	- Add fields to display the assigned employee and requesting employee once the GET method has been established 
+
+- Pages still needed: 
+	- Processing home
+	- Request History display 
+	- Assigned Requests display page 
+	- New Requests display page 

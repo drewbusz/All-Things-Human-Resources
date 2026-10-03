@@ -37,7 +37,7 @@ const navigation = {
                 label: "My Assigned Requests"
             },
             {
-                page: "new-requests"
+                page: "new-requests",
                 label: "New Requests"
             },
         ]
@@ -47,22 +47,22 @@ const navigation = {
 
         links: [
             {
-                page: "manager-home"
+                page: "manager-home",
                 label: "Management Home"
             },
             {
-                page: "pending-approvals"
+                page: "pending-approvals",
                 label: "Pending Approval Requests"
             },
             {
-                page: "my-team"
+                page: "my-team",
                 label: "My Team"
             },
         ]
     },
 }; 
 // Function for dynamically loading page title and navigation links based on user type 
-export function loadNavigation(section) { 
+export async function loadNavigation(section) { 
     const config = navigation[section]; 
 
     if (!config) { 
@@ -70,7 +70,7 @@ export function loadNavigation(section) {
         return; 
     }
 
-    const headerTitle = document.getElementById("header-title"); 
+    const headerTitle = document.getElementById("page-title"); 
     const hamburgerMenu = document.getElementById("hamburger-menu"); 
 
     headerTitle.textContent = config.title; 
@@ -79,4 +79,4 @@ export function loadNavigation(section) {
             ${link.label}
         </button>
     `).join(""); 
-}
+} 

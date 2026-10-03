@@ -13,8 +13,8 @@ import { loadProcessRequestPage } from "./pages/processRequestPage.js";
 
 
 
-export function loadPage(page, data = {}) { 
-
+export function loadPage(page, requestId = null, employeeId = null) { 
+    console.log("Loading page: " & page & "For Request ID: " & requestId); 
     switch (page) {
         //====================
         // HR Staff Pages 
@@ -22,7 +22,7 @@ export function loadPage(page, data = {}) {
         // hr staff processing home page 
         case "processing-home": 
             loadNavigation("processing"); 
-            // loadProcessingHomePage(); 
+            loadProcessingHomePage(); 
             break;
         // Requests assigned to the user for processing
         case "assigned-requests":
@@ -36,7 +36,7 @@ export function loadPage(page, data = {}) {
         // Load a specific request 
         case "process-request":
             loadNavigation("processing");
-            loadProcessRequestPage(data.requestId); 
+            loadProcessRequestPage(requestId, employeeId); 
             break; 
 
         //====================
@@ -90,4 +90,4 @@ export function loadPage(page, data = {}) {
     }
 }
 
-export default loadPage; 
+

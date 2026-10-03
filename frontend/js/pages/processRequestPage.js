@@ -3,7 +3,7 @@
 import {
     formatDateForInput,
     formatDateForDisplay
-} from "../utils/dateHelpers.js";
+} from "../utils/dateHelper.js";
 
 export async function loadProcessRequestPage(requestId) { 
 
@@ -27,10 +27,23 @@ export async function loadProcessRequestPage(requestId) {
         }
 
         const workflowSteps = await workflowResponse.json(); 
-        const statusOptions = workflowSteps.map(step => {
-            const selected = Number(step.workflow_step.id) === Number(request.current_step_id) ? "selected" : "";
-            return `<option value="${step.workflow_step_id}" ${selected}>${step.step_name}</option>`;
-        }).join(""); 
+        const statusOptions =
+            workflowSteps.map(step => {
+                const selected =
+                    Number(step.workflow_step_id) ===
+                    Number(request.current_step_id) 
+                        ? "selected"
+                        : "";
+
+                return `
+                    <option
+                        value="${step.workflow_step_id}" 
+                        ${selected}
+                    >
+                        ${step.step_name}
+                    </option>`;
+            })
+                .join(""); 
 
         // ----------------------------------------------------
         // Render Process Request Form
@@ -70,7 +83,7 @@ export async function loadProcessRequestPage(requestId) {
                     <div>
                         <label for="request-priority">Priority Level:</label>
                         <select id="request-priority" name="priority_level">
-                            <option value="" ${request.priority_level ? "selected" : ""}></option>
+                            <option value="" ${!request.priority_level ? "selected" : ""}></option>
                             <option value="low" ${request.priority_level === "low" ? "selected" : ""}>Low</option>
                             <option value="medium" ${request.priority_level === "medium" ? "selected" : ""}>Medium</option>
                             <option value="high" ${request.priority_level === "high" ? "selected" : ""}>High</option>
@@ -149,27 +162,27 @@ export async function loadProcessRequestPage(requestId) {
 // Save request changes
 // ==============================
 async function saveRequestChanges(
-    requestId, 
+    requestId,
     requestTypeId
-) { 
-    const message = document.getElementById("request-message"); 
+) {
+    const message = document.getElementById("request-message");
 
     // Read the form values 
-    const priority = document.getElementById("request-priority").value; 
-    const expectedCompletion = document.getElementById("expected-completion").value; 
-    const currentStepId = document.getElementById("current-step-id").value; 
+    const priority = document.getElementById("request-priority").value;
+    const expectedCompletion = document.getElementById("expected-completion").value;
+    const currentStepId = document.getElementById("current-step-id").value;
 
     const requestData = {
-        request_type_id: requestTypeId;
-        brief_summary: documernt.getElementById("request-summary").value,
+        request_type_id: requestTypeId,
+        brief_summary: document.getElementById("request-summary").value,
         priority_level: priority === "" ? null : priority,
         confidentiality_level: document.getElementById("confidentiality-level").value,
         expected_completion: expectedCompletion === "" ? null : expectedCompletion,
         current_step_id: Number(currentStepId)
-    }; 
+    };
 
     // Submit one update request 
-    try { 
+    try {
         const response = await fetch(`/api/requests/${requestId}`,
             {
                 method: "PATCH",
@@ -180,19 +193,18 @@ async function saveRequestChanges(
                 body:
                     JSON.stringify(requestData)
             }
-        ); 
-        const result = await response.json(); 
+        );
+        const result = await response.json();
 
-        if (!response.ok) { 
-            throw new Error(result.error || "Unable to update request."); 
+        if (!response.ok) {
+            throw new Error(result.error || "Unable to update request.");
         }
 
-        message.textContent = "Request updated successfully."; 
-    } catch (error) { 
-        console.error(error); 
+        message.textContent = "Request updated successfully.";
+    } catch (error) {
+        console.error(error);
 
-        message.textContent = error.message || "Unable to update request."; 
+        message.textContent = error.message || "Unable to update request.";
 
-}
-
-   
+    }
+} 

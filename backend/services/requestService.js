@@ -182,6 +182,13 @@ async function updateRequest(
      * Priority
      */
     if (
+        requestData.priority_level === ""
+    ) {
+        requestData.priority_level = null;
+    }
+
+
+    if (
         requestData.priority_level !== undefined
     ) {
 
@@ -197,7 +204,7 @@ async function updateRequest(
             !validPriorities.includes(
                 requestData.priority_level
             )
-        ) {
+        ){
 
             throw createServiceError(
                 "Priority must be low, medium, high, or blank.",
@@ -239,6 +246,13 @@ async function updateRequest(
     /*
      * Expected completion
      */
+    if (
+        requestData.expected_completion === ""
+    ) {
+        requestData.expected_completion = null;
+    }
+
+
     if (
         requestData.expected_completion !==
             undefined &&

@@ -1,0 +1,18 @@
+
+## Amber's Notes 
+- Employee backend needs to include getEmployeesByAuthType that retrieves a list of employees using an auth_type_id 
+	* This will be used to fill the options in the Assigned Employee: select menu 
+
+- requestRepository Notes: 
+	- Add getWorkflowStepsByRequestType export to fill status change drop-down
+	- Match getRequestById SQL statement to request_view so that assigned employee and requesting employee details are retrieved for display
+	- Add getRequestHistoryByRequestId export to retrieve and display request history
+	- remove employeeId from getRequestById or add employeeId to requestRoutes.js
+	- Add getAssignedRequestsByEmpId export
+
+
+- requestRoutes Notes: 
+	- add update request patch to submit multiple changes 
+
+- Database notes: 
+	- Add more employees, auth types, authorizations, and request authorizations to seed.sql

@@ -17,7 +17,22 @@ header h1 {
     margin: 0;
     font-size: 24px;
 }
-
+/* style lines for hamburger menu */
+.menu-toggle span { 
+    display: block; 
+    width: 25px; 
+    height:3px; 
+    background-color: black; 
+    margin: 5px;
+}
+/* hamburger menu toggle */
+.hamburger-menu { 
+    display: none; 
+}
+.hamburger-menu.active { 
+    display:flex; 
+    flex-direction: column; 
+}
 /* Centers the main workspace and limits its width on larger screens */
 main {
     max-width: 900px;

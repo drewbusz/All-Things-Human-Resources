@@ -13,8 +13,8 @@ import { loadProcessRequestPage } from "./pages/processRequestPage.js";
 
 
 
-export function loadPage(page, requestId = null, employeeId = null) { 
-    console.log("Loading page: " & page & "For Request ID: " & requestId); 
+export function loadPage(page, requestId = null, actingEmployeeId = null) { 
+    console.log("Loading page: " + page + " For Request ID: " + requestId); 
     switch (page) {
         //====================
         // HR Staff Pages 
@@ -36,7 +36,7 @@ export function loadPage(page, requestId = null, employeeId = null) {
         // Load a specific request 
         case "process-request":
             loadNavigation("processing");
-            loadProcessRequestPage(requestId, employeeId); 
+            loadProcessRequestPage(requestId, 2); 
             break; 
 
         //====================

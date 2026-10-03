@@ -155,7 +155,28 @@ form input[readonly] {
     background-color: #eef1f4;
 }
 
+.form-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
 
+    .field-label,
+    .form-row label {
+        font-weight: bold;
+    }
+
+.field-value {
+    padding: 10px 0;
+}
+
+.form-row input,
+.form-row select,
+.form-row textarea {
+    width: 100%;
+}
 /* ============================================================
    FORM BUTTONS
    ============================================================ */

@@ -5,7 +5,7 @@ import {
     formatDateForDisplay
 } from "../utils/dateHelper.js";
 
-export async function loadProcessRequestPage(requestId) { 
+export async function loadProcessRequestPage(requestId, actingEmployeeId) { 
 
     const contentArea = document.getElementById("contentArea");
     
@@ -16,71 +16,81 @@ export async function loadProcessRequestPage(requestId) {
         if (!response.ok) {
             throw new Error("Unable to retrieve request.");
         }
+        const result = await response.json();
+        const request = result.data; 
 
-        const request = await response.json();
+        console.log("Request retrieved: ", request);  
+        console.log("Request type ID: ", request.request_type_id);
 
-        // Retrieve the workflow steps for the request type 
+        // Retrieve the workflow steps for the request type
+        console.log("Requesting workflow steps for request type ID: " + request.request_type_id);  
         const workflowResponse = await fetch(`/api/requests/workflow-steps/${request.request_type_id}`); 
 
         if (!workflowResponse.ok) { 
             throw new Error("Unable to retrieve workflow steps.");
         }
 
-        const workflowSteps = await workflowResponse.json(); 
+        const workflowResult = await workflowResponse.json();
+        const workflowSteps = workflowResult.data; 
         const statusOptions =
             workflowSteps.map(step => {
                 const selected =
                     Number(step.workflow_step_id) ===
-                    Number(request.current_step_id) 
+                    Number(request.current_step_id)
                         ? "selected"
                         : "";
-
+        
                 return `
                     <option
-                        value="${step.workflow_step_id}" 
+                        value="${step.workflow_step_id}"
                         ${selected}
                     >
                         ${step.step_name}
                     </option>`;
             })
-                .join(""); 
+                .join("");
 
         // ----------------------------------------------------
         // Render Process Request Form
         // ----------------------------------------------------
         contentArea.innerHTML = `
             <section>
-                <h2>Process HR Request</h2>
+                <h2>Process HR Request ID: ${request.request_id}</h2>
 
                 <form id="process-request-form">
                     <h3>Request Information</h3>
-
-                    <!-- Request ID -->
-                    <div>
-                        <label for="request-id">Request ID:</label>
-                        <input type="text" id="request-id" value="${request.request_id}" readonly>
-                    </div>
-
-                    <!-- Request Type -->
-                    <div>
-                        <label for="request-type">Request Type:</label>
-                        <input type="text" id="request-type" value="${request.request_type}" readonly>
-                    </div>
-
-                    <!-- Submission Date -->
-                    <div>
-                        <label for="submission-date">Submission Date:</label>
-                        <input type="text" id="submission-date" value="${formatDateForDisplay(request.submission_date)}" readonly>
+                    <!-- Requesting Employee -->
+                    <div class="form-row">
+                        <span class="field-label">Request Submitted By:</span>
+                        <span id="submitted_by" class="field-value">${request.submitted_by}</span>
                     </div>
                     
+                    <!-- Request Type -->
+                    <div class="form-row">
+                        <span class="field-label">Request Type:</span>
+                        <span id="request-type" class="field-value">
+                            ${request.request_type}
+                        </span>
+                    </div>
+                    <!-- Submission Date -->
+                    <div class="form-row">
+                        <span class="field-label">Submission Date:</span>
+                        <span id="submission-date" class="field-value">
+                            ${formatDateForDisplay(request.submission_date)}
+                        </span>
+                    </div>
                     <!-- Summary -->
-                    <div>
+                    <div class="form-row">
                         <label for="request-summary">Summary:</label>
                         <textarea id="request-summary" name="brief_summary" required>${request.brief_summary ?? ""}</textarea>
                     </div>
-
+                    <!-- Assigned To -->
+                    <div class="form-row">
+                        <label for="assigned_to">Current Owner:</label>
+                        <input type="text" id="assigned_to" value="${request.assigned_to}" readonly>
+                    </div>
                     <!-- Priority -->
-                    <div>
+                    <div class="form-row">
                         <label for="request-priority">Priority Level:</label>
                         <select id="request-priority" name="priority_level">
                             <option value="" ${!request.priority_level ? "selected" : ""}></option>
@@ -89,20 +99,18 @@ export async function loadProcessRequestPage(requestId) {
                             <option value="high" ${request.priority_level === "high" ? "selected" : ""}>High</option>
                         </select>
                     </div>
-
                     <!-- Confidentiality -->
-                    <div>
+                    <div class="form-row">
                         <label for="confidentiality-level">Confidentiality:</label>
                         <select id="confidentiality-level" name="confidentiality-level">
-                            <option value="" ${request.confidentiality_level ? "selected" : ""}></option>
+                            <option value="" ${!request.confidentiality_level ? "selected" : ""}></option>
                             <option value="Nonconfidential" ${request.confidentiality_level === "Nonconfidential" ? "selected" : ""}>Nonconfidential</option>
                             <option value="Confidential" ${request.confidentiality_level === "Confidential" ? "selected" : ""}>Confidential</option>
                             <option value="Highly Confidential" ${request.confidentiality_level === "Highly Confidential" ? "selected" : ""}>Highly Confidential</option>
                         </select>
                     </div>
-
                     <!-- Expected Completion -->
-                    <div>
+                    <div class="form-row">
                         <label for="expected-completion">
                             Expected Completion:
                         </label>
@@ -114,19 +122,18 @@ export async function loadProcessRequestPage(requestId) {
                             value="${formatDateForInput(request.expected_completion)}"
                         >
                     </div>
-
                     <!-- Status -->
-                    <div>
+                    <div class="form-row">
                         <label for="current-status">Current Status:</label>
                         <select
                             id="current-step-id"
                             name="current-status"
                             required
                         >
-                            ${statusOptions}
+                           ${statusOptions}
                         </select>
                     </div>
-
+                    <hr>
                     <!-- Submit button -->
                     <button type="submit">Save Changes</button>
 
@@ -140,12 +147,13 @@ export async function loadProcessRequestPage(requestId) {
         // Single form submission
         // ==============================
         const form = document.getElementById("process-request-form"); 
-        form.addEventListener("submi", async (event) => { 
+        form.addEventListener("submit", async (event) => { 
             event.preventDefault(); 
 
             await saveRequestChanges(
                 requestId,
-                request.request_type_id
+                request.request_type_id,
+                actingEmployeeId
             ); 
         })
 
@@ -163,7 +171,8 @@ export async function loadProcessRequestPage(requestId) {
 // ==============================
 async function saveRequestChanges(
     requestId,
-    requestTypeId
+    requestTypeId,
+    actingEmployeeId
 ) {
     const message = document.getElementById("request-message");
 
@@ -173,7 +182,8 @@ async function saveRequestChanges(
     const currentStepId = document.getElementById("current-step-id").value;
 
     const requestData = {
-        request_type_id: requestTypeId,
+        request_type_id: requestTypeId, 
+        actingEmployeeId: actingEmployeeId,
         brief_summary: document.getElementById("request-summary").value,
         priority_level: priority === "" ? null : priority,
         confidentiality_level: document.getElementById("confidentiality-level").value,
@@ -197,7 +207,7 @@ async function saveRequestChanges(
         const result = await response.json();
 
         if (!response.ok) {
-            throw new Error(result.error || "Unable to update request.");
+            throw new Error(result.message || result.error || "Unable to update request.");
         }
 
         message.textContent = "Request updated successfully.";

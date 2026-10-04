@@ -1,11 +1,4 @@
-// HR Staff process request page
-
-import { 
-    getRequestById, 
-    getWorkflowStepsByRequestType, 
-    getRequestHistory, 
-    updateRequest,
-} from "../api/requestApi.js"; 
+// New Request Page - Authorized HR Staff
 
 import {
     formatDateForInput,
@@ -16,18 +9,32 @@ import {
     formatFieldName
 } from "../utils/textFormatHelper.js";
 
-export async function loadProcessRequestPage(requestId, actingEmployeeId) {
+export async function loadNewRequestPage(requestId, actingEmployeeId) {
 
-try {
     const contentArea = document.getElementById("contentArea");
 
-    
-    const request = await getRequestById(requestId); 
-        
+    try {
+        // Retrieve the existing request from the Express backend
+        const response = await fetch(`/api/requests/${requestId}`);
+
+        if (!response.ok) {
+            throw new Error("Unable to retrieve request.");
+
+        }
+        const result = await response.json();
+        const request = result.data;
+
+        console.log("Request retrieved: ", request);
 
         // Retrieve the workflow steps for the request type
-        const workflowSteps = await getWorkflowStepsByRequestType(request.request_type_id); 
+        const workflowResponse = await fetch(`/api/requests/workflow-steps/${request.request_type_id}`);
 
+        if (!workflowResponse.ok) {
+            throw new Error("Unable to retrieve workflow steps.");
+        }
+
+        const workflowResult = await workflowResponse.json();
+        const workflowSteps = workflowResult.data;
         const statusOptions =
             workflowSteps.map(step => {
                 const selected =
@@ -47,9 +54,16 @@ try {
                 .join("");
 
         // retrieve the request history to build the history card
-    const requestHistory = await getRequestHistory(requestId);
-    
-    const historyRows = requestHistory.map(history => `
+        const historyResponse = await fetch(`/api/requests/${requestId}/history`);
+
+        if (!historyResponse.ok) {
+            throw new Error("unable to review request history");
+            console.log("Unable to retrieve request history for request Id: " + requestId);
+        }
+
+        const historyResult = await historyResponse.json();
+        const requestHistory = historyResult.data;
+        const historyRows = requestHistory.map(history => `
              <div class="history-item">
                 <span class="history-date">${formatDateForDisplay(history.date_modified)}</span>
                 <span class="history-user">${history.modified_by}</span> 
@@ -57,6 +71,17 @@ try {
                 <span class="history-change">${history.previous_value ?? ""} > ${history.current_value ?? ""}</span>
             </div>
         `).join("");
+
+        // retrieve active request types 
+        //const requestTypeResponse = await fetch(`/api/requests/requestTypes`);
+
+        // if (!requestTypeResponse.ok) {
+        //     throw new Error("Unable to retrieve request types");
+        //     console.log("unable to retrieve request types");
+        //}
+
+        //const requestTypeResult = await requestTypeResponse.json();
+        // const requestTypes = requestTypeResult.data;
 
         // ----------------------------------------------------
         // Render Process Request Form
@@ -67,30 +92,7 @@ try {
         staticCard.classList.add("card");
 
         staticCard.innerHTML = `
-            <h3>Request Information</h3>
-            <hr>
-            <div class="card-row">
-                <div class="info-item">
-                    <span class="info-label">Request Type</span>
-                    <span class="info-value">${request.request_type}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Submitted By</span>
-                    <span class="info-value">${request.submitted_by}</span>
-                </div>
-
-                <div class="info-item">
-                    <span class="info-label">Request Date</span>
-                    <span class="info-value">${formatDateForDisplay(request.submission_date)}</span>
-                </div>
-                
             
-                
-                <div class="info-item">
-                    <span class="info-label">Current Owner</span>
-                    <span class="info-value">${request.assigned_to}</span>
-                </div>
-            </div>
             
         `;
 
@@ -99,23 +101,33 @@ try {
         requestForm.id = "process-request-form";
 
         requestForm.innerHTML = `
+
         <div class="card">
-            <h3>HR Request Processing | Request ID: ${request.request_id}</h3>
-            <hr>
+        <h3>New Request Information</h3>
+        <hr>
+        <div class="card-row">    
+            <div class="info-item">
+                <span class="info-label">Submitted By</span>
+                <span class="info-value">${request.submitted_by}</span>
+            </div>
+        <div class="info-item">
+            <span class="info-label">Request Date</span>
+            <span class="info-value">${formatDateForDisplay(request.submission_date)}</span>
+        </div>
+        </div>
+        
+        <hr>
         <div class="process-form-layout">
         
         <div class="form-column">
+            
             <div class="form-field">
-                    <label for="expected-completion">Expected Completion</label>
-
-                    <input
-                        type="date"
-                        id="expected-completion"
-                        name="expected_completion"
-                        value="${formatDateForInput(request.expected_completion)}"
-                    >
+                <div class="info-item">
+                    <span class="info-label">Current Owner</span>
+                    <span class="info-value">${request.assigned_to}</span>
                 </div>
-                <div class="form-field">
+            </div>
+            <div class="form-field">
                     <label for="current-status">
                         Current Status
                     </label>
@@ -124,6 +136,17 @@ try {
                         ${statusOptions}
                     </select>
                 </div>
+            <div class="form-field">
+                <label for="expected-completion">Expected Completion</label>
+
+                <input
+                    type="date"
+                    id="expected-completion"
+                    name="expected_completion"
+                    value="${formatDateForInput(request.expected_completion)}"
+                >
+                </div>
+                
             <div class="form-field">
                 <label for="request-priority">Priority Level</label>
                 <select id="request-priority" name="priority_level">
@@ -146,6 +169,11 @@ try {
         
                 
         <div class="form-column">
+            <div class="info-item">
+                <span class="info-label">Request Type</span>
+                <span class="info-value">${request.request_type}</span>
+            </div>
+            
             <div class="form-field summary-field">
                <label for="request-summary">Summary</label>
                <textarea id="request-summary" name="brief_summary">${request.brief_summary ?? ""}</textarea>
@@ -189,7 +217,7 @@ try {
         `;
 
         // Render the cards within the content area
-        contentArea.appendChild(staticCard);
+        //contentArea.appendChild(staticCard);
         contentArea.appendChild(requestForm);
         contentArea.appendChild(historyCard);
 
@@ -202,7 +230,7 @@ try {
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
 
-            await updateRequest(
+            await saveRequestChanges(
                 requestId,
                 request.request_type_id,
                 actingEmployeeId
@@ -217,3 +245,56 @@ try {
         `;
     }
 }
+
+// ==============================
+// Save request changes
+// ==============================
+async function saveRequestChanges(
+    requestId,
+    requestTypeId,
+    actingEmployeeId
+) {
+    const message = document.getElementById("request-message");
+
+    // Read the form values 
+    const priority = document.getElementById("request-priority").value;
+    const expectedCompletion = document.getElementById("expected-completion").value;
+    const currentStepId = document.getElementById("current-step-id").value;
+
+    const requestData = {
+        request_type_id: requestTypeId,
+        actingEmployeeId: actingEmployeeId,
+        brief_summary: document.getElementById("request-summary").value,
+        priority_level: priority === "" ? null : priority,
+        confidentiality_level: document.getElementById("confidentiality-level").value,
+        expected_completion: expectedCompletion === "" ? null : expectedCompletion,
+        current_step_id: Number(currentStepId)
+    };
+
+    // Submit one update request 
+    try {
+        const response = await fetch(`/api/requests/${requestId}`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+                body:
+                    JSON.stringify(requestData)
+            }
+        );
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || result.error || "Unable to update request.");
+        }
+
+        message.textContent = "Request updated successfully.";
+    } catch (error) {
+        console.error(error);
+
+        message.textContent = error.message || "Unable to update request.";
+
+    }
+} 

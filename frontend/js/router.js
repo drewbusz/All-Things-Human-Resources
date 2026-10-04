@@ -10,15 +10,16 @@ import { loadNavigation } from "./navigation.js";
 // importing specific pages 
 import { loadProcessingHomePage } from "./pages/processingHomePage.js"; 
 import { loadProcessRequestPage } from "./pages/processRequestPage.js"; 
+import { loadNewRequestPage } from "./pages/newRequestPage.js"; 
 
 
 
 export function loadPage(page, requestId = null, actingEmployeeId = null) { 
     console.log("Loading page: " + page + " For Request ID: " + requestId); 
     switch (page) {
-        //====================
-        // HR Staff Pages 
-        // ===================
+
+        //=================//
+        // HR Staff Pages // 
         // hr staff processing home page 
         case "processing-home": 
             loadNavigation("processing"); 
@@ -29,20 +30,29 @@ export function loadPage(page, requestId = null, actingEmployeeId = null) {
             loadNavigation("processing");
             // loadAssignedRequestsPage(); 
             break;
-        case "new-requests": 
-            loadNavigation("processing");
-            // loadNewRequestsPage(); 
-            break; 
+        
         // Load a specific request 
         case "process-request":
             loadNavigation("processing");
             loadProcessRequestPage(requestId, 2); 
             break; 
 
-        //====================
-        // Employee page placeholders
-        // ===================
-        // employee home placeholder
+        // Authorized staff page placeholders // 
+        case "authorized-home":
+            loadNavigation("authorized-staff");
+            break; 
+        // All new and unreviewed/unassigned requests
+        case "unassigned-requests":
+            loadNavigation("authorized-staff");
+            break;
+        // open a new unreviewed request 
+        case "new-request":
+            loadNavigation("authorized-staff");
+            loadNewRequestPage(requestId, 2);
+            break; 
+
+        //=============================//
+        // Employee page placeholders // 
         case "employee-home": 
             loadNavigation("employee");
             // loadEmployeeHome(data.employeeId); 
@@ -59,10 +69,8 @@ export function loadPage(page, requestId = null, actingEmployeeId = null) {
             loadNavigation("employee"); 
             // loadEmployeeHistoryPage(data.employeeId); 
             break; 
-
-        //====================
-        // Manager Pages
-        //===================
+        //===============//
+        //]Manager Pages//
         case "manager-home":
             loadNavigation("manager");
             // loadManagerHomePage(); 
@@ -76,9 +84,8 @@ export function loadPage(page, requestId = null, actingEmployeeId = null) {
             // loadApprovalRequestPage(data.approvalId); 
             break; 
 
-        //====================
-        // Shared by all
-        //====================
+        //===============//
+        // Shared by all//
         // placeholder for the new request form
         case "submit-request":
 

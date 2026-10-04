@@ -18,6 +18,7 @@ This version of the project represents **Vertical Slice 1**. The documentation d
 | Date | Version | Note |
 |---|---|---|
 | 9/24/26 | 1.0.0 | Vertical Slice 1 |
+| 10/4/26 | 1.1.0 | Front-End structure added | 
        
 ### Version 1.0.0 Summary
 
@@ -38,9 +39,23 @@ Version 1.0.0 represents **Vertical Slice 1** of the All Things HR system. This 
    - [2.5 Start the Back End](#25-start-the-back-end)
    - [2.6 Start the User Interface](#26-start-the-user-interface)
 3. [Entities, Attributes, and Relationships](#3-entities-attributes-and-relationships)
-   - [3.1 Relationship Summary](#31-relationship-summary)
 4. [Key Use Cases & Queries](#4-key-use-cases--queries)
    - [4.1 Use Case 1](#41-use-case-1)
+   - [4.2 Use Case 2](#42-use-case-2)
+   - [4.3 Use Case 3](#43-use-case-3)
+5. [Front-End Element ID Reference](#5-front-end-element-id-reference)
+    - [5.1 Page and Card Layout](#51-page-and-card-layout)
+    - [5.2 Form Layout](#52-form-layout) 
+    - [5.3 History Layout](#53-history-layout)
+    - [5.4 Class and ID Usage](#54-class-and-id-usage)
+6. [Front-End Structure](#6-front-end-structure)
+    - [6.1 Directory Structure](#61-directory-structure)
+    - [6.2 Front-End Components](#62-front-end-components)
+    - [6.3 Page Loading](#63-page-loading) 
+    - [6.4 Shared Navigation](#64-shared-navigation)
+    - [6.5 Shared Utilities](#65-shared-utilities)
+    - [6.6 Shared APIs](#66-shared-apis)
+
 
 ----------
 ## 1. Introduction & Summary 
@@ -131,7 +146,7 @@ The browser communicates with the Node.js/Express server, which handles communic
 ----------
 ## 3. Entities, Attributes and Relationships: 
 
-## Entities, Attributes, and Relationships
+### Entities, Attributes, and Relationships
 ### Entity: Request
 - Attribute: request_id (PK, bigint)
 - Attribute: request_type_id (FK, bigint)
@@ -435,3 +450,402 @@ VALUES (
 );
 ```
 -------
+
+## 5 Front-End Element Class and ID Reference
+
+The application uses reusable CSS classes to maintain consistent styling, layout, and responsive behavior across dynamically generated pages. Page modules should apply the following classes when creating interface elements.
+
+Element IDs documented in this section correspond to IDs that have styles defined in the application stylesheet. Other IDs may still be assigned to elements when required by JavaScript, even when those IDs do not have associated CSS rules.
+
+### 5.1 Application Header and Navigation
+
+| Element Class | Typical Element | Purpose |
+|---|---|---|
+| `.site-header` | `<header>` | Styles the application header with the primary navigation background, text color, and spacing. |
+| `.navbar` | `<nav>` or `<div>` | Arranges navigation content horizontally and separates the application title from navigation controls. |
+| `.navbar-header` | `<h1>` | Styles the primary heading displayed within the navigation bar. |
+| `.menu-toggle` | `<button>` | Styles the hamburger-menu toggle button. |
+| `.hamburger-menu` | `<div>` or `<nav>` | Defines the dropdown navigation menu displayed below the application header. |
+| `.active` | Hamburger-menu modifier | Displays the hamburger menu when applied together with `.hamburger-menu`. |
+
+The `.hamburger-menu` is hidden by default. Applying the `.active` class changes the menu to a vertically arranged flex container.
+
+Example:
+
+```html
+<header class="site-header">
+    <nav class="navbar">
+        <h1 class="navbar-header">HR Request Management</h1>
+
+        <button class="menu-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </nav>
+
+    <div class="hamburger-menu">
+        <button>Requests</button>
+        <button>Employees</button>
+    </div>
+</header>
+```
+
+---
+
+### 5.2 Page and Card Layout
+
+| Element Class / ID | Typical Element | Purpose |
+|---|---|---|
+| `.card` | `<div>` or `<section>` | Creates a visually grouped content card with a white background, border, spacing, and rounded corners. |
+| `.card-row` | `<div>` | Creates a responsive grid for displaying groups of static information. |
+| `.card-left` | `<div>` or other grid item | Aligns a card element to the left side of its grid area. |
+| `.card-right` | `<div>` or other grid item | Aligns a card element to the right side of its grid area. |
+| `.info-item` | `<div>` | Groups a related label and display value within a card row. |
+| `.info-label` | `<span>` | Formats the label associated with a static information value. |
+| `.info-value` | `<span>` | Formats a static value displayed to the user. |
+| `#contentArea` | Application content container | Ensures sections dynamically loaded into the application's content area use the full available width. |
+| `#card-header` | Card or page heading element | Styles a primary card heading with application colors, spacing, and a bottom border. |
+
+A `.card-row` displays four columns on larger screens, two columns when the viewport is 900 pixels or less, and one column when the viewport is 650 pixels or less.
+
+Example:
+
+```html
+<div class="card">
+    <h3>Request Information</h3>
+
+    <div class="card-row">
+        <div class="info-item">
+            <span class="info-label">
+                Request ID
+            </span>
+
+            <span class="info-value">
+                1001
+            </span>
+        </div>
+    </div>
+</div>
+```
+
+---
+
+### 5.3 General Form Layout
+
+| Element Class | Typical Element | Purpose |
+|---|---|---|
+| `.form-grid` | `<div>` | Creates a responsive grid for editable form fields. |
+| `.form-field` | `<div>` | Groups a form label with its associated input, select, or textarea. |
+| `.full-width` | `.form-field` modifier | Causes a form field to span all four columns of the standard form grid. |
+
+The `.form-grid` uses four columns on larger screens and changes to a single-column layout when the viewport is 650 pixels or less.
+
+Elements placed inside `.form-field` receive consistent label spacing and consistent styling for `<input>`, `<select>`, and `<textarea>` controls.
+
+Example:
+
+```html
+<div class="card">
+    <h3>Request Details</h3>
+
+    <div class="form-grid">
+        <div class="form-field full-width">
+            <label for="request-summary">
+                Summary
+            </label>
+
+            <textarea id="request-summary"></textarea>
+        </div>
+
+        <div class="form-field">
+            <label for="request-priority">
+                Priority
+            </label>
+
+            <select id="request-priority">
+                ...
+            </select>
+        </div>
+    </div>
+</div>
+```
+
+---
+
+### 5.4 Process Request Form Layout
+
+The Process Request page uses additional layout classes to support a two-column form design.
+
+| Element Class | Typical Element | Purpose |
+|---|---|---|
+| `.process-form-layout` | `<div>` | Creates the main two-column layout used by the Process Request form. |
+| `.form-column` | `<div>` | Arranges related form controls vertically within a Process Request form column. |
+| `.summary-field` | `.form-field` modifier or wrapper | Provides additional sizing behavior for the request summary textarea. |
+| `.form-actions` | `<div>` | Contains form action buttons and aligns them to the right side of the form. |
+
+The `.process-form-layout` uses two columns on larger screens, with approximately one-third of the available space assigned to the first column and two-thirds assigned to the second column.
+
+At viewport widths of 750 pixels or less, the layout changes to a single column. Form-action buttons also expand to the full available width.
+
+The textarea contained within `.summary-field` has a minimum height of 250 pixels on larger screens and 100 pixels on smaller screens.
+
+Example:
+
+```html
+<form>
+    <div class="process-form-layout">
+
+        <div class="form-column">
+            <div class="form-field">
+                <label for="request-priority">
+                    Priority
+                </label>
+
+                <select id="request-priority">
+                    ...
+                </select>
+            </div>
+        </div>
+
+        <div class="form-column">
+            <div class="form-field summary-field">
+                <label for="request-summary">
+                    Summary
+                </label>
+
+                <textarea id="request-summary"></textarea>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="form-actions">
+        <button type="submit">
+            Update Request
+        </button>
+    </div>
+</form>
+```
+
+---
+
+### 5.5 History Layout
+
+| Element Class | Typical Element | Purpose |
+|---|---|---|
+| `.history-header` | `<div>` | Defines the column headings displayed above history records. |
+| `.history-item` | `<div>` | Represents an individual request-history record using the history grid layout. |
+| `.history-date` | `<span>` | Displays the date associated with a history record. |
+| `.history-field` | `<span>` | Identifies the request field that was changed. |
+| `.history-change` | `<span>` or `<div>` | Displays the value or description of the recorded change and allows long content to wrap. |
+| `.history-empty` | `<p>` | Styles the message displayed when no request-history records are available. |
+
+The history layout normally uses four columns:
+
+1. Date
+2. Changed field
+3. Additional history information
+4. Change description
+
+At viewport widths of 750 pixels or less, `.history-header` is hidden and each `.history-item` changes to a single-column layout for easier viewing on smaller screens.
+
+Example:
+
+```html
+<div class="card">
+    <h3>Request History</h3>
+
+    <div class="history-header">
+        <span>Date</span>
+        <span>Field</span>
+        <span>Updated By</span>
+        <span>Change</span>
+    </div>
+
+    <div class="history-item">
+        <span class="history-date">
+            10/04/2026
+        </span>
+
+        <span class="history-field">
+            Priority
+        </span>
+
+        <span>
+            Employee 100
+        </span>
+
+        <span class="history-change">
+            Medium → High
+        </span>
+    </div>
+</div>
+```
+
+When no history exists, the `.history-empty` class may be used:
+
+```html
+<p class="history-empty">
+    No request history is available.
+</p>
+```
+
+---
+
+### 5.6 Form Actions and Messages
+
+Form submit buttons receive common styling automatically through the `form button[type="submit"]` CSS selector. A separate button class is therefore not required for standard submit buttons.
+
+Buttons contained within `.form-actions` receive similar styling and are positioned according to the Process Request layout.
+
+The stylesheet also defines the following message element:
+
+| Element ID | Typical Element | Purpose |
+|---|---|---|
+| `#request-message` | `<p>`, `<div>`, or `<span>` | Displays status, success, or error information associated with request form operations. |
+
+Example:
+
+```html
+<form>
+    ...
+
+    <button type="submit">
+        Save Request
+    </button>
+
+    <p id="request-message"></p>
+</form>
+```
+
+---
+
+### 5.7 Responsive Behavior
+
+The application stylesheet defines several responsive breakpoints to ensure that pages remain usable on smaller screens.
+
+At **900 pixels or less**, `.card-row` changes from four columns to two columns.
+
+At **750 pixels or less**:
+
+- `.process-form-layout` changes from two columns to one column.
+- `.summary-field textarea` reduces its minimum height.
+- `.form-actions button` expands to the full available width.
+- `.history-header` is hidden.
+- `.history-item` changes to a single-column layout.
+
+At **650 pixels or less**:
+
+- The `<main>` content area expands to use the available screen width with reduced horizontal padding.
+- `.site-header` uses reduced padding.
+- `.hamburger-menu` expands to the full screen width and removes its rounded corners.
+- `.card-row` changes to a single-column layout.
+- `.form-grid` changes to a single-column layout.
+- `.history-item` remains in a single-column layout.
+
+---
+
+### 5.8 Class and ID Usage
+
+CSS classes are used for reusable styling and layout. Multiple elements may use the same class across different application pages.
+
+Element IDs identify individual elements that require unique styling or JavaScript access. The stylesheet currently defines styles for the following application IDs:
+
+- `#contentArea` identifies the application's dynamically populated content container.
+- `#card-header` identifies a primary heading or header element used within application content.
+- `#request-message` identifies the message area used to display request form feedback.
+
+Additional IDs may be assigned to form controls, forms, navigation elements, or other components when JavaScript needs to uniquely identify them. An ID does not need to have a corresponding CSS rule in order to be used by JavaScript.
+
+In general, **classes define reusable presentation and layout behavior, while IDs identify individual elements that require unique styling or JavaScript interaction.**
+## 6 Front-End Structure 
+
+The front end uses a modular JavaScript structure to separate applicaiton initialization, page routing, navigation configuration, page-specific functionality, shared utilities, and styling. 
+
+The application uses `index.html` as the persistent interface shell. Individual pages are generated dynamically with JavaScript and loaded into the content area without requiring a separate HTML file for each page. 
+
+### 6.1 Directory Structure 
+
+```text
+frontend/
+├── README.md
+├── index.html
+├── css/
+│   └── styles.css
+└── js/
+    ├── app.js
+    ├── navigation.js
+    ├── router.js
+    ├── pages/
+    │   ├── processingHomePage.js
+    │   ├── processRequestPage.js
+    │   └── newRequestPage.js
+    └── utils/
+        ├── dateHelper.js
+        └── testFormatHelper.js
+```
+______
+### 6.2 Front-End Components 
+
+| Component | Responsibility |
+|---|---|
+| `index.html` | Defines the persistent application shell, including the header, hamburger menu, and main content area. |
+| `css/styles.css` | Contains shared application styling, responsive layouts, navigation styling, cards, forms, and other reusable presentation rules. |
+| `js/app.js` | Initializes the front end and manages application-level behavior, including navigation events. |
+| `js/navigation.js` | Defines and renders the header title and hamburger-menu options appropriate for each area of the application. |
+| `js/router.js` | Controls front-end page routing and determines which page module should be loaded based on the user's current workflow. |
+| `js/pages/` | Contains page-specific modules responsible for rendering individual application views and implementing page-specific behavior. |
+| `js/utils/` | Contains reusable helper functions that are shared by multiple page modules, such as date-formatting functions. |
+| `js/api/` | Contains reusable modules that allow the front end to interact with the back end API endpoints. | 
+______
+### 6.3 Page Loading 
+
+The front end does not use a separate HTML document fo reach application page. Instead, `index.html` provides a persistent content container: 
+
+```html 
+<main id="main_content">  
+    <div id="contentArea"></div> 
+</main>
+```
+
+When navigation or another user action requires a different page, the application calls the `loadPage()` function in `router.js`. The router selects the appropriate page module and passes any required contextual data, such as request ID. 
+
+For example: 
+
+ ```javascript 
+ loadPage(
+    "process-request", 
+    requestId, 
+    actingEmployeeId
+); 
+ ```
+
+ The router then invokes the corresponding page-loading function: 
+ ```javascript 
+ case "process-request": 
+    loadNavigation("processing"); 
+
+    loadProcessRequestPage(
+        requestId, 
+        actingEmployeeId
+    );
+    break; 
+ ```
+
+ The page module dynamically generates its interface and inserts it into `contentArea`. 
+______
+### 6.4 Shared Navigation 
+
+`navigation.js` manages the shared header and hamburger-menu configuaration for the different areas of the application. This allows employee, HR processing, and manager pages to display navigation options appropriate to their application context without duplicating navigation markup across individual page modules. 
+
+______
+### 6.5 Shared Utilities 
+
+Reusable functiosn that are not specific to an individual page are stored in `js/utils/`. For example, date-formatting fucntions used by multiple pages are maintained in `dateHelper.js` and imported where required. 
+
+This modular structure reduces duplicated code and separates shared application behavior from page-specific functionality. 
+______
+### 6.6 Shared APIs
+
+The `js/api/requestApi.js` module provides the client-side interface for communicating with the application's request-related API endpoints.

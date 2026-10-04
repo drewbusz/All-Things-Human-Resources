@@ -42,6 +42,28 @@ const navigation = {
             },
         ]
     }, 
+    authorized_staff: {
+        title: "All Things HR | Authorized Staff",
+
+        links: [
+            {
+                page: "authorized-home",
+                label: "Authorized Staff Home"
+            },
+            {
+                page: "unassigned",
+                label: "Unassigned Requests"
+            },
+            {
+                page: "confidential",
+                label: "Confidential Requests"
+            },
+            {
+                page: "all-active-requests", 
+                label: "All Active Requests"
+            }
+        ]
+    }, 
     manager: { 
         title: "All Things HR | Management", 
 

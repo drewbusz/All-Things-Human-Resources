@@ -1,27 +1,49 @@
 
-## Amber's Assignment 5 Notes 
+OUTLINE: 
+1. Bugs 
+2. Backend Needs
+3. Front-end needs 
+4. Database needs 
+5. Complete
+
+
+
+
+## Bugs
+- GET Request history is not properly retrieving and displaying the modified_by user for display 
+
+## Backend Needs
 - Employee backend needs to include getEmployeesByAuthType that retrieves a list of employees using an auth_type_id 
 	* This will be used to fill the options in the Assigned Employee: select menu 
 
 - requestRepository Notes: 
-	- Add getWorkflowStepsByRequestType export to fill status change drop-down
-	- Match getRequestById SQL statement to request_view so that assigned employee and requesting employee details are retrieved for display
-	- Add getRequestHistoryByRequestId export to retrieve and display request history
 	- remove employeeId from getRequestById or add employeeId to requestRoutes.js
-	- Add getAssignedRequestsByEmpId export
+	- GET getAssignedRequestsByEmpId export
+	- GET fields > field values by requestId
+	- PATCH field values
+	- GET all active request types > const requestTypeResponse = await fetch(`/api/requests/requestTypes`); 
 
-- requestRoutes Notes: 
-	- add update request patch to submit multiple changes 
-
-- Database notes: 
-	- Add more employees, auth types, authorizations, and request authorizations to seed.sql
-
+## 3 Front End Needs
 - processRequestPage: 
-	- Add a "Request History" tab that retrieves and displays the associated history 
 	- Add fields to display the assigned employee and requesting employee once the GET method has been established 
 
-- Pages still needed: 
+- Pages still needed 
 	- Processing home
 	- Request History display 
 	- Assigned Requests display page 
 	- New Requests display page 
+
+
+## 4 Database needs 
+	- Add more employees, auth types, authorizations, and request authorizations to seed.sql
+	- Authorization view 
+	- Unassigned items view 
+
+
+## 5 Completed: 
+- Add getRequestHistoryByRequestId export to retrieve and display request history
+- Add getWorkflowStepsByRequestType export to fill status change drop-down
+- Match getRequestById SQL statement to request_view so that assigned employee and requesting employee details are retrieved for display
+- requestRoutes Notes: 
+	- add update request patch to submit multiple changes 
+	- Add a "Request History" tab that retrieves and displays the associated history 

@@ -7,8 +7,6 @@ OUTLINE:
 5. Complete
 
 
-
-
 ## Bugs
 - GET Request history is not properly retrieving and displaying the modified_by user for display 
 
@@ -18,18 +16,23 @@ OUTLINE:
 
 - requestRepository Notes: 
 	- remove employeeId from getRequestById or add employeeId to requestRoutes.js
-	- GET getAssignedRequestsByEmpId export
-	- GET fields > field values by requestId
+	- GET getAssignedRequestsByEmpId 
+	- GET fields > field values (I created the request_field_detail view to simplify this) > 
+			const requestFields = fetch(`/api/requests/${request_id}/fields`); 
 	- PATCH field values
-	- GET all active request types > const requestTypeResponse = await fetch(`/api/requests/requestTypes`); 
+	- GET all active request types > 
+			const requestTypeResponse = await fetch(`/api/requests/activeRequestTypes`); 
+	- POST /api/requests/:requestId/notes
+	- POST /api/requests/:requestId/fields
 
 ## 3 Front End Needs
 - processRequestPage: 
 	- Add fields to display the assigned employee and requesting employee once the GET method has been established 
+- unassignedRequestPage: 
+	- Needs to be edited to include the recent additions to the processRequestPage and should also use the imports from requestApi.js 
 
 - Pages still needed 
 	- Processing home
-	- Request History display 
 	- Assigned Requests display page 
 	- New Requests display page 
 

@@ -1,6 +1,18 @@
 // New Request Page - Authorized HR Staff
 
 import {
+    getRequestById,
+    getWorkflowStepsByRequestType,
+    getRequestHistory,
+    getRequestFields,
+    getActiveRequestTypes,
+    getRequestNotesByRequestId,
+    saveRequestNote,
+    saveRequestFieldValues,
+    updateRequest,
+} from "../api/requestApi.js";
+
+import {
     formatDateForInput,
     formatDateForDisplay
 } from "../utils/dateHelper.js";
@@ -9,32 +21,21 @@ import {
     formatFieldName
 } from "../utils/textFormatHelper.js";
 
-export async function loadNewRequestPage(requestId, actingEmployeeId) {
+export async function loadUnassignedRequestPage(requestId, actingEmployeeId) {
 
     const contentArea = document.getElementById("contentArea");
 
     try {
         // Retrieve the existing request from the Express backend
-        const response = await fetch(`/api/requests/${requestId}`);
-
-        if (!response.ok) {
-            throw new Error("Unable to retrieve request.");
-
-        }
-        const result = await response.json();
-        const request = result.data;
+        const request = await getRequestById(requestId); 
 
         console.log("Request retrieved: ", request);
 
+        // =======================================================
         // Retrieve the workflow steps for the request type
-        const workflowResponse = await fetch(`/api/requests/workflow-steps/${request.request_type_id}`);
+        // =======================================================
+        const workflowSteps = await getWorkflowStepsByRequestType(request.request_type_id);
 
-        if (!workflowResponse.ok) {
-            throw new Error("Unable to retrieve workflow steps.");
-        }
-
-        const workflowResult = await workflowResponse.json();
-        const workflowSteps = workflowResult.data;
         const statusOptions =
             workflowSteps.map(step => {
                 const selected =
@@ -53,16 +54,11 @@ export async function loadNewRequestPage(requestId, actingEmployeeId) {
             })
                 .join("");
 
+        // =======================================================
         // retrieve the request history to build the history card
-        const historyResponse = await fetch(`/api/requests/${requestId}/history`);
+        // =======================================================
+        const requestHistory = await getRequestHistory(requestId);
 
-        if (!historyResponse.ok) {
-            throw new Error("unable to review request history");
-            console.log("Unable to retrieve request history for request Id: " + requestId);
-        }
-
-        const historyResult = await historyResponse.json();
-        const requestHistory = historyResult.data;
         const historyRows = requestHistory.map(history => `
              <div class="history-item">
                 <span class="history-date">${formatDateForDisplay(history.date_modified)}</span>
@@ -72,16 +68,30 @@ export async function loadNewRequestPage(requestId, actingEmployeeId) {
             </div>
         `).join("");
 
+        //==================================
         // retrieve active request types 
-        //const requestTypeResponse = await fetch(`/api/requests/requestTypes`);
+        // =================================
+        const activeRequestTypes = await getActiveRequestTypes(); 
 
-        // if (!requestTypeResponse.ok) {
-        //     throw new Error("Unable to retrieve request types");
-        //     console.log("unable to retrieve request types");
-        //}
-
-        //const requestTypeResult = await requestTypeResponse.json();
-        // const requestTypes = requestTypeResult.data;
+        // ===============================================
+        // Request Type Options for select menu 
+        // Pending backend implementation
+        // ================================================
+        // typeOptions = activeRequestTypes.map(type => {
+        //    const selected =
+        //           Number(type.request_type_id) ===
+        //              Number(request.request_type_id)
+        //              ? "selected"
+        //              : "";
+        //
+        //      return `
+        //          <option value="${type.request_type_id}"
+        //          ${selected}
+        //      >            
+        //          ${type.request_type_id}
+        //      </option>`; 
+        //
+        //}).join(""); 
 
         // ----------------------------------------------------
         // Render Process Request Form
@@ -246,9 +256,9 @@ export async function loadNewRequestPage(requestId, actingEmployeeId) {
     }
 }
 
-// ==============================
-// Save request changes
-// ==============================
+// ===============================================================
+// THIS NEEDS TO BE UPDATED TO USE THE API CALL IN requestApi.js
+// ===============================================================
 async function saveRequestChanges(
     requestId,
     requestTypeId,
@@ -271,7 +281,9 @@ async function saveRequestChanges(
         current_step_id: Number(currentStepId)
     };
 
-    // Submit one update request 
+    // Submit one update request
+
+   
     try {
         const response = await fetch(`/api/requests/${requestId}`,
             {

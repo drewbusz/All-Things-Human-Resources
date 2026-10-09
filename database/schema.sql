@@ -466,7 +466,9 @@ ALTER TABLE employee
         ON DELETE RESTRICT;
 
 -- ============================================================
--- REQUEST VIEW FOR SIMPLIFIED BACKEND PROCESSING 
+-- VIEWS FOR SIMPLIFIED BACKEND PROCESSING 
+-- ============================================================
+-- REQUEST VIEW 
 -- ============================================================
 CREATE VIEW request_view AS
 SELECT
@@ -496,3 +498,26 @@ LEFT JOIN employee a
     ON r.assigned_emp_id = a.employee_id
 LEFT JOIN workflow_step ws
     ON r.current_step_id = ws.workflow_step_id;
+
+
+-- ============================================================
+-- REQUEST FIELD VIEW 
+-- ============================================================
+CREATE VIEW request_field_detail AS
+SELECT
+    r.request_id,
+    r.request_type_id,
+    rtf.field_id,
+    rtf.field_name,
+    rtf.field_label,
+    rtf.field_type,
+    rtf.is_required,
+    rtf.display_order,
+    rfv.field_val,
+    rfv.value_date
+FROM request AS r
+JOIN request_field_value AS rfv
+    ON r.request_id = rfv.request_id
+JOIN request_type_field AS rtf
+    ON rfv.field_id = rtf.field_id
+    AND rtf.request_type_id = r.request_type_id;

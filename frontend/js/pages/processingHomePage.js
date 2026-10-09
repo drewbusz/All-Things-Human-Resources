@@ -3,6 +3,7 @@
 export async function loadProcessingHomePage() { 
      
     const contentArea = document.getElementById("contentArea"); 
+    contentArea.innerHTML = ``; 
     const card = document.createElement("div"); 
     card.classList.add("card"); 
 

@@ -1,5 +1,6 @@
 // request API for front end
 
+// Get request details 
 export async function getRequestById(requestId) { 
 
     try {
@@ -65,6 +66,42 @@ export async function getRequestHistory(request_id) {
     return historyResult.data; 
 }
 
+export async function getRequestFields(request_id) { 
+    const requestFieldsResponse = fetch(`/api/requests/${request_id}/fields`); 
+
+    if (!requestFieldsResponse.ok) { 
+        throw new Error("Unable to retrieve request fields."); 
+    }
+
+    const requestFieldsResult = await requestFieldsResponse.json(); 
+    return requestFieldsResult.data; 
+    
+}
+
+export async function getRequestNotesByRequestId(request_id) { 
+    const requestNotesResponse = fetch(`/api/requests/notes/${request_id}`); 
+
+    if (!requestNotesResponse.ok) { 
+        throw new Error("Unable to retrieve request notes."); 
+    }
+
+    const requestNotesResult = await requestNotesResponse.json(); 
+    return requestNotesResult.data; 
+}
+
+export async function getActiveRequestTypes() { 
+    const requestTypeResponse = fetch(`/api/requests/activeRequestTypes`);
+
+    if (!requestTypeResponse.ok) {
+        throw new Error("Unable to retrieve request types");
+        console.log("unable to retrieve request types");
+    }
+
+    const requestTypeResult = await requestTypeResponse.json();
+    return requestTypeResult.data;
+}
+
+// Save updates to the request details 
 export async function updateRequest(
         requestId,
         requestTypeId,
@@ -113,4 +150,62 @@ export async function updateRequest(
             message.textContent = error.message || "Unable to update request.";
 
         }
+}
+
+export async function saveRequestNote(note) { 
+    const response = await fetch(
+        `/api/requests/${note.request_id}/notes`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(note)
+        }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            result.message ||
+            result.error ||
+            "Unable to save request note."
+        );
+    }
+
+    return result.data;
+        
+}
+
+export async function saveRequestFieldValues(
+    fieldValues,
+    requestId,
+    actingEmployeeId
+) { 
+    const response = await fetch(
+        `/api/requests/${requestId}/fields`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                fieldValues,
+                actingEmployeeId
+            })
+        }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            result.message ||
+            result.error ||
+            "Unable to save request field values."
+        );
+    }
+
+    return result.data;
 }

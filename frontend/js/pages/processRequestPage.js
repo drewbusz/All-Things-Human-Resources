@@ -1,192 +1,186 @@
 // HR Staff process request page
 
-import { 
-    getRequestById, 
-    getWorkflowStepsByRequestType, 
-    getRequestHistory, 
-    updateRequest,
-} from "../api/requestApi.js"; 
-
+// import API's
 import {
-    formatDateForInput,
+    getRequestById,
+    getWorkflowStepsByRequestType,
+    getRequestHistory,
+    getRequestFields,
+    getRequestNotesByRequestId,
+    saveRequestFieldValues,
+    updateRequest,
+} from "../api/requestApi.js";
+
+// import request render helper
+import {
+    renderProcessRequestForm,
+    loadRequestHistory,
+    loadRequestNotes
+} from "../utils/requestRenderHelper.js";
+
+// import date formatting helpers
+import {
     formatDateForDisplay
 } from "../utils/dateHelper.js";
 
-import {
-    formatFieldName
-} from "../utils/textFormatHelper.js";
 
-export async function loadProcessRequestPage(requestId, actingEmployeeId) {
+export async function loadProcessRequestPage(
+    requestId,
+    actingEmployeeId
+) {
 
-try {
-    const contentArea = document.getElementById("contentArea");
+    const contentArea =
+        document.getElementById("contentArea");
 
-    
-    const request = await getRequestById(requestId); 
-        
+    try {
+
+        const request =
+            await getRequestById(requestId);
+
 
         // Retrieve the workflow steps for the request type
-        const workflowSteps = await getWorkflowStepsByRequestType(request.request_type_id); 
+        const workflowSteps =
+            await getWorkflowStepsByRequestType(
+                request.request_type_id
+            );
 
-        const statusOptions =
-            workflowSteps.map(step => {
-                const selected =
-                    Number(step.workflow_step_id) ===
-                        Number(request.current_step_id)
-                        ? "selected"
-                        : "";
-
-                return `
-                    <option
-                        value="${step.workflow_step_id}"
-                        ${selected}
-                    >
-                        ${step.step_name}
-                    </option>`;
-            })
-                .join("");
 
         // retrieve the request history to build the history card
-    const requestHistory = await getRequestHistory(requestId);
-    
-    const historyRows = requestHistory.map(history => `
-             <div class="history-item">
-                <span class="history-date">${formatDateForDisplay(history.date_modified)}</span>
-                <span class="history-user">${history.modified_by}</span> 
-                <span class="history-field">${formatFieldName(history.modified_field)}</span>
-                <span class="history-change">${history.previous_value ?? ""} > ${history.current_value ?? ""}</span>
-            </div>
-        `).join("");
+        const requestHistory =
+            await getRequestHistory(requestId);
+
+
+        // ==============================
+        // PENDING BACKEND IMPLEMENTATION
+        // ==============================
+
+        // retrieve request fields and values
+        // ===================================
+        // const requestFields =
+        //     await getRequestFields(requestId);
+
+        // const requestFields = await getRequestFields(requestId); 
+
+
+        // retrieve request notes
+        // ===========================
+        // const requestNotes =
+        //     await getRequestNotesByRequestId(requestId);
+
+        // const requestNotes = await getRequestNotesByRequestId(requestId); 
+
 
         // ----------------------------------------------------
         // Render Process Request Form
         // ----------------------------------------------------
 
         // Static details card
-        const staticCard = document.createElement("div");
+        const staticCard =
+            document.createElement("div");
+
         staticCard.classList.add("card");
 
         staticCard.innerHTML = `
             <h3>Request Information</h3>
             <hr>
+
             <div class="card-row">
-                <div class="info-item">
-                    <span class="info-label">Request Type</span>
-                    <span class="info-value">${request.request_type}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Submitted By</span>
-                    <span class="info-value">${request.submitted_by}</span>
-                </div>
 
                 <div class="info-item">
-                    <span class="info-label">Request Date</span>
-                    <span class="info-value">${formatDateForDisplay(request.submission_date)}</span>
+                    <span class="info-label">
+                        Request Type
+                    </span>
+
+                    <span class="info-value">
+                        ${request.request_type}
+                    </span>
                 </div>
-                
-            
-                
+
+
                 <div class="info-item">
-                    <span class="info-label">Current Owner</span>
-                    <span class="info-value">${request.assigned_to}</span>
+                    <span class="info-label">
+                        Submitted By
+                    </span>
+
+                    <span class="info-value">
+                        ${request.submitted_by}
+                    </span>
                 </div>
+
+
+                <div class="info-item">
+                    <span class="info-label">
+                        Request Date
+                    </span>
+
+                    <span class="info-value">
+                        ${formatDateForDisplay(
+            request.submission_date
+        )}
+                    </span>
+                </div>
+
+
+                <div class="info-item">
+                    <span class="info-label">
+                        Current Owner
+                    </span>
+
+                    <span class="info-value">
+                        ${request.assigned_to}
+                    </span>
+                </div>
+
             </div>
-            
         `;
+
 
         // process request card
-        const requestForm = document.createElement("form");
-        requestForm.id = "process-request-form";
+        const requestForm =
+            renderProcessRequestForm(
+                request,
+                workflowSteps,
+                requestFields
+            );
 
-        requestForm.innerHTML = `
-        <div class="card">
-            <h3>HR Request Processing | Request ID: ${request.request_id}</h3>
-            <hr>
-        <div class="process-form-layout">
-        
-        <div class="form-column">
-            <div class="form-field">
-                    <label for="expected-completion">Expected Completion</label>
 
-                    <input
-                        type="date"
-                        id="expected-completion"
-                        name="expected_completion"
-                        value="${formatDateForInput(request.expected_completion)}"
-                    >
-                </div>
-                <div class="form-field">
-                    <label for="current-status">
-                        Current Status
-                    </label>
+        // request activity card
+        const historyCard =
+            document.createElement("div");
 
-                    <select id="current-step-id" name="current-status" required>
-                        ${statusOptions}
-                    </select>
-                </div>
-            <div class="form-field">
-                <label for="request-priority">Priority Level</label>
-                <select id="request-priority" name="priority_level">
-                    <option value="" ${!request.priority_level ? "selected" : ""}></option>
-                    <option value="low" ${request.priority_level === "low" ? "selected" : ""}>Low</option>
-                    <option value="medium" ${request.priority_level === "medium" ? "selected" : ""}>Medium</option>
-                    <option value="high" ${request.priority_level === "high" ? "selected" : ""}>High</option>
-                </select>
-            </div>
-            <div class="form-field">
-                <label for="confidentiality-level">Confidentiality:</label>
-                <select id="confidentiality-level" name="confidentiality-level">
-                    <option value="" ${!request.confidentiality_level ? "selected" : ""}></option>
-                    <option value="Nonconfidential" ${request.confidentiality_level === "Nonconfidential" ? "selected" : ""}>Nonconfidential</option>
-                    <option value="Confidential" ${request.confidentiality_level === "Confidential" ? "selected" : ""}>Confidential</option>
-                    <option value="Highly Confidential" ${request.confidentiality_level === "Highly Confidential" ? "selected" : ""}>Highly Confidential</option>
-                </select>
-            </div>
-        </div> <!-- col end -->
-        
-                
-        <div class="form-column">
-            <div class="form-field summary-field">
-               <label for="request-summary">Summary</label>
-               <textarea id="request-summary" name="brief_summary">${request.brief_summary ?? ""}</textarea>
-            </div>
-        </div>   <!-- col end -->        
-
-        </div>
-        <hr>
-        
-        <button type="submit">Save Changes</button>
-        <p id="request-message"></p>    
-        
-            
-        </div>
-        `;
-
-        // request history card
-        const historyCard = document.createElement("div");
         historyCard.classList.add("card");
 
         historyCard.innerHTML = `
-            <h3>Request History</h3>
+            <div class="activity-tabs">
+
+                <button
+                    type="button"
+                    class="activity-tab active"
+                    data-tab="history"
+                >
+                    History
+                </button>
+
+                <button
+                    type="button"
+                    class="activity-tab"
+                    data-tab="notes"
+                >
+                    Notes
+                </button>
+
+            </div>
+
             <hr>
 
-            <div class="history-header">
-                <span>Date</span>
-                <span>Changed By</span>
-                <span>Field</span>
-                <span>Change</span>
-            </div>
+            <h3>Request Activity</h3>
 
-            <div class="history-list">
-                ${historyRows ||
-            `
-                    <p class="history-empty">
-                        No Request history is available.
-                    </p>
-                    `
-            }
+            <hr>
+
+            <div id="activity-content">
             </div>
         `;
+
 
         // Render the cards within the content area
         contentArea.appendChild(staticCard);
@@ -194,26 +188,150 @@ try {
         contentArea.appendChild(historyCard);
 
 
+        const activityContent =
+            historyCard.querySelector(
+                "#activity-content"
+            );
+
+
+        // Display request history by default
+        loadRequestHistory(
+            activityContent,
+            requestHistory
+        );
+
+
+        // ==============================
+        // Activity Tabs
+        // ==============================
+
+        historyCard.addEventListener(
+            "click",
+            event => {
+
+                const tab =
+                    event.target.closest(
+                        ".activity-tab"
+                    );
+
+                if (!tab) {
+                    return;
+                }
+
+
+                // Update the active tab
+                historyCard
+                    .querySelectorAll(
+                        ".activity-tab"
+                    )
+                    .forEach(tabButton => {
+
+                        tabButton.classList.remove(
+                            "active"
+                        );
+                    });
+
+
+                tab.classList.add("active");
+
+
+                // Display the selected content
+                if (
+                    tab.dataset.tab ===
+                    "history"
+                ) {
+
+                    loadRequestHistory(
+                        activityContent,
+                        requestHistory
+                    );
+
+                } else if (
+                    tab.dataset.tab ===
+                    "notes"
+                ) {
+
+                    loadRequestNotes(
+                        activityContent,
+                        requestNotes,
+                        requestId,
+                        actingEmployeeId
+                    );
+                }
+            }
+        );
+
 
         // ==============================
         // Single form submission
         // ==============================
-        const form = document.getElementById("process-request-form");
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
 
-            await updateRequest(
-                requestId,
-                request.request_type_id,
-                actingEmployeeId
+        const form =
+            document.getElementById(
+                "process-request-form"
             );
-        })
+
+
+        form.addEventListener(
+            "submit",
+            async event => {
+
+                event.preventDefault();
+
+                await submitRequestUpdates(
+                    requestForm,
+                    requestId,
+                    request.request_type_id,
+                    actingEmployeeId
+                );
+            }
+        );
 
 
     } catch (error) {
+
         console.error(error);
-        contentArea.innerHTML = ` 
-            <p>Unable to retrieve request.</p>
+
+        contentArea.innerHTML = `
+            <p>
+                Unable to retrieve request.
+            </p>
         `;
     }
+}
+
+
+// ==============================
+// Submit Request Updates
+// ==============================
+
+async function submitRequestUpdates(
+    requestForm,
+    requestId,
+    requestTypeId,
+    actingEmployeeId
+) {
+
+    const fieldValues = [
+        ...requestForm.querySelectorAll(
+            "[data-field-id]"
+        )
+    ].map(field => ({
+        field_id: field.dataset.fieldId,
+        field_val: field.value
+    }));
+
+
+    await updateRequest(
+        requestId,
+        requestTypeId,
+        actingEmployeeId
+    );
+
+
+    await saveRequestFieldValues(
+        fieldValues,
+        requestId,
+        actingEmployeeId
+    );
 }

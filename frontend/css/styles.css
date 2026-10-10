@@ -272,8 +272,6 @@ form > div {
     }
 
 
-/* HISTORY CARD */
-
 /* REQUEST HISTORY */
 
 .history-header,
@@ -417,4 +415,66 @@ form button[type="submit"] {
     margin-top: 16px;
     min-height: 20px;
     font-weight: bold;
+}
+
+/* REQUEST ITEM CARDS */
+.assigned-item-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+    .assigned-item-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+    }
+
+.assigned-item-content {
+    flex: 1;
+}
+
+.assigned-item-card h3 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+}
+
+.assigned-item-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.assigned-detail {
+    display: flex;
+    flex-direction: column;
+    min-width: 140px;
+}
+
+.detail-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 0.2rem;
+}
+
+.detail-value {
+    font-size: 0.95rem;
+}
+
+.assigned-item-action {
+    margin-left: 1rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #f5f5f5;
+    font-size: 0.85rem;
+    font-weight: 600;
+    pointer-events: none;
 }

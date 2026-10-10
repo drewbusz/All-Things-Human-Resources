@@ -19,7 +19,7 @@ const navigation = {
                 label: "My Requests"
             }, 
             {
-                page: "new-request", 
+                page: "submit-request", 
                 label: "Submit New Request"
             }, 
         ]
@@ -51,8 +51,8 @@ const navigation = {
                 label: "Authorized Staff Home"
             },
             {
-                page: "unassigned",
-                label: "Unassigned Requests"
+                page: "new-requests",
+                label: "New Requests"
             },
             {
                 page: "confidential",

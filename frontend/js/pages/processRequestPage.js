@@ -24,30 +24,22 @@ import {
 } from "../utils/dateHelper.js";
 
 
-export async function loadProcessRequestPage(
-    requestId,
-    actingEmployeeId
-) {
+export async function loadProcessRequestPage(requestId, actingEmployeeId) {
 
-    const contentArea =
-        document.getElementById("contentArea");
+    const contentArea = document.getElementById("contentArea");
 
     try {
 
-        const request =
-            await getRequestById(requestId);
+        const request = await getRequestById(requestId);
 
+        console.log("Request retrieved: ", request);
 
         // Retrieve the workflow steps for the request type
-        const workflowSteps =
-            await getWorkflowStepsByRequestType(
-                request.request_type_id
-            );
+        const workflowSteps = await getWorkflowStepsByRequestType(request.request_type_id);
 
 
         // retrieve the request history to build the history card
-        const requestHistory =
-            await getRequestHistory(requestId);
+        const requestHistory = await getRequestHistory(requestId);
 
 
         // ==============================
@@ -140,7 +132,7 @@ export async function loadProcessRequestPage(
             renderProcessRequestForm(
                 request,
                 workflowSteps,
-                requestFields
+                // requestFields
             );
 
 
@@ -250,13 +242,13 @@ export async function loadProcessRequestPage(
                     tab.dataset.tab ===
                     "notes"
                 ) {
-
-                    loadRequestNotes(
-                        activityContent,
-                        requestNotes,
-                        requestId,
-                        actingEmployeeId
-                    );
+                    activityContent.innerHTML = `Request notes pending backend implementation.`; 
+                   // loadRequestNotes(
+                   //      activityContent,
+                   //      requestNotes,
+                   //      requestId,
+                   //      actingEmployeeId
+                   //  );
                 }
             }
         );
@@ -266,15 +258,10 @@ export async function loadProcessRequestPage(
         // Single form submission
         // ==============================
 
-        const form =
-            document.getElementById(
-                "process-request-form"
-            );
+        const form = document.getElementById("process-request-form");
 
 
-        form.addEventListener(
-            "submit",
-            async event => {
+        form.addEventListener("submit", async event => {
 
                 event.preventDefault();
 
@@ -329,9 +316,9 @@ async function submitRequestUpdates(
     );
 
 
-    await saveRequestFieldValues(
-        fieldValues,
-        requestId,
-        actingEmployeeId
-    );
+   // await saveRequestFieldValues(
+    //     fieldValues,
+    //     requestId,
+    //     actingEmployeeId
+    // );
 }

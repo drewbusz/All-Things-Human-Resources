@@ -8,7 +8,8 @@ OUTLINE:
 
 
 ## Bugs
-- GET Request history is not properly retrieving and displaying the modified_by user for display 
+- GET Request history is not properly retrieving and displaying the modified_by user for display * Fixed
+- Content is building inside of contentArea instead of overwriting it
 
 ## Backend Needs
 - Employee backend needs to include getEmployeesByAuthType that retrieves a list of employees using an auth_type_id 
@@ -16,7 +17,7 @@ OUTLINE:
 
 - requestRepository Notes: 
 	- remove employeeId from getRequestById or add employeeId to requestRoutes.js
-	- GET getAssignedRequestsByEmpId 
+	
 	- GET fields > field values (I created the request_field_detail view to simplify this) > 
 			const requestFields = fetch(`/api/requests/${request_id}/fields`); 
 	- PATCH field values
@@ -26,10 +27,12 @@ OUTLINE:
 	- POST /api/requests/:requestId/fields
 
 ## 3 Front End Needs
+- Add back buttons 
 - processRequestPage: 
 	- Add fields to display the assigned employee and requesting employee once the GET method has been established 
 - unassignedRequestPage: 
-	- Needs to be edited to include the recent additions to the processRequestPage and should also use the imports from requestApi.js 
+	- Needs to be edited to include the recent additions to the processRequestPage and should also use the imports from requestApi.js
+	- Build or remove the static card (Should not include request.assigned_to or request.request_type  
 
 - Pages still needed 
 	- Processing home
@@ -50,3 +53,4 @@ OUTLINE:
 - requestRoutes Notes: 
 	- add update request patch to submit multiple changes 
 	- Add a "Request History" tab that retrieves and displays the associated history 
+- GET getAssignedRequestsByEmpId 

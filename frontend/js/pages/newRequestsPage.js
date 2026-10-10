@@ -1,5 +1,6 @@
 // New Request Page - Authorized HR Staff
 
+// Request APIs
 import {
     getRequestById,
     getWorkflowStepsByRequestType,
@@ -11,17 +12,25 @@ import {
     saveRequestFieldValues,
     updateRequest,
 } from "../api/requestApi.js";
+// import request render helper
+import {
+    renderProcessRequestForm,
+    loadRequestHistory,
+    loadRequestNotes
+} from "../utils/requestRenderHelper.js";
 
+// date formatting helpers
 import {
     formatDateForInput,
     formatDateForDisplay
 } from "../utils/dateHelper.js";
 
+// text formatting helper
 import {
     formatFieldName
 } from "../utils/textFormatHelper.js";
 
-export async function loadUnassignedRequestPage(requestId, actingEmployeeId) {
+export async function loadNewRequestsPage(requestId, actingEmployeeId) {
 
     const contentArea = document.getElementById("contentArea");
 
@@ -31,51 +40,23 @@ export async function loadUnassignedRequestPage(requestId, actingEmployeeId) {
 
         console.log("Request retrieved: ", request);
 
-        // =======================================================
-        // Retrieve the workflow steps for the request type
-        // =======================================================
+        // Retrieve the workflow steps for the request type   
         const workflowSteps = await getWorkflowStepsByRequestType(request.request_type_id);
 
-        const statusOptions =
-            workflowSteps.map(step => {
-                const selected =
-                    Number(step.workflow_step_id) ===
-                        Number(request.current_step_id)
-                        ? "selected"
-                        : "";
 
-                return `
-                    <option
-                        value="${step.workflow_step_id}"
-                        ${selected}
-                    >
-                        ${step.step_name}
-                    </option>`;
-            })
-                .join("");
-
-        // =======================================================
         // retrieve the request history to build the history card
-        // =======================================================
         const requestHistory = await getRequestHistory(requestId);
 
-        const historyRows = requestHistory.map(history => `
-             <div class="history-item">
-                <span class="history-date">${formatDateForDisplay(history.date_modified)}</span>
-                <span class="history-user">${history.modified_by}</span> 
-                <span class="history-field">${formatFieldName(history.modified_field)}</span>
-                <span class="history-change">${history.previous_value ?? ""} > ${history.current_value ?? ""}</span>
-            </div>
-        `).join("");
-
-        //==================================
+        
         // retrieve active request types 
-        // =================================
         const activeRequestTypes = await getActiveRequestTypes(); 
 
+
+        // ==============================
+        // PENDING BACKEND IMPLEMENTATION
+        // ==============================
         // ===============================================
-        // Request Type Options for select menu 
-        // Pending backend implementation
+        // Request Type Options for select menu
         // ================================================
         // typeOptions = activeRequestTypes.map(type => {
         //    const selected =
@@ -87,11 +68,28 @@ export async function loadUnassignedRequestPage(requestId, actingEmployeeId) {
         //      return `
         //          <option value="${type.request_type_id}"
         //          ${selected}
-        //      >            
+        //      >
         //          ${type.request_type_id}
-        //      </option>`; 
+        //      </option>`;
         //
-        //}).join(""); 
+        //}).join("");
+
+        // ===================================
+        // retrieve request fields and values
+        // ===================================
+        // const requestFields =
+        //     await getRequestFields(requestId);
+
+        // const requestFields = await getRequestFields(requestId);
+
+
+        // retrieve request notes
+        // ===========================
+        // const requestNotes =
+        //     await getRequestNotesByRequestId(requestId);
+
+        // const requestNotes = await getRequestNotesByRequestId(requestId);
+
 
         // ----------------------------------------------------
         // Render Process Request Form

@@ -101,6 +101,23 @@ export async function getActiveRequestTypes() {
     return requestTypeResult.data;
 }
 
+// Work Item list APIs
+export async function getAssignedRequestsByEmpId(employeeId) { 
+    const response = await fetch(`/api/requests/assigned/${employeeId}`); 
+
+    if (!response.ok) { 
+        throw new Error ("Unable to retrieve assigned requests."); 
+    }
+    const result = await response.json(); 
+    console.log("Status: ", response.status); 
+    console.log("Response: ", result); 
+    return result.data; 
+}
+
+export async function getNewRequests() { 
+
+}
+
 // Save updates to the request details 
 export async function updateRequest(
         requestId,

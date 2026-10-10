@@ -10,12 +10,15 @@ import { loadNavigation } from "./navigation.js";
 // importing specific pages 
 import { loadProcessingHomePage } from "./pages/processingHomePage.js"; 
 import { loadProcessRequestPage } from "./pages/processRequestPage.js"; 
-import { loadUnassignedRequestPage } from "./pages/unassignedRequestPage.js"; 
+import { loadNewRequestsPage } from "./pages/unassignedRequestPage.js";
+import { loadMyAssignedRequests } from "./pages/myAssignedRequestsPage.js";
 
 
 
 export function loadPage(page, requestId = null, actingEmployeeId = null) { 
-    console.log("Loading page: " + page + " For Request ID: " + requestId); 
+    
+    const contentArea = document.getElementById("contentArea"); 
+    contentArea.innerHTML = ``; 
     switch (page) {
 
         //=================//
@@ -28,7 +31,8 @@ export function loadPage(page, requestId = null, actingEmployeeId = null) {
         // Requests assigned to the user for processing
         case "assigned-requests":
             loadNavigation("processing");
-            // loadAssignedRequestsPage(); 
+            console.log("Load page: ", page); 
+            loadMyAssignedRequests(2); 
             break;
         
         // Load a specific request 
@@ -36,6 +40,11 @@ export function loadPage(page, requestId = null, actingEmployeeId = null) {
             loadNavigation("processing");
             loadProcessRequestPage(requestId, 2); 
             break; 
+
+        // Temporary to allow for testing and proof of concept 
+        case "authorized-view":
+            loadNavigation("authorized-staff"); 
+            // loadAuthorizedHome(); 
 
         // Authorized staff page placeholders // 
         case "authorized-home":

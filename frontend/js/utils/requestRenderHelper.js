@@ -19,10 +19,10 @@ import {
 export function renderProcessRequestForm(
     request,
     workflowSteps,
-    requestFields
+    //requestFields
 ) {
 
-    const fieldRows = renderFieldRows(requestFields);
+   // const fieldRows = renderFieldRows(requestFields);
 
     const statusOptions = renderStatusOptions(
         workflowSteps,
@@ -42,7 +42,8 @@ export function renderProcessRequestForm(
             <hr>
 
             <div class="request-fields">
-                ${fieldRows}
+               // Request Fields and Values     //<br>
+               // Pending backend implementation//
             </div>
 
             <hr>
@@ -357,6 +358,56 @@ export function loadRequestNotes(
     );
 }
 
+export function renderAssignedRequestRows(assignedRequests) { 
+
+    const assignedRequestRows = assignedRequests.map(request => `
+    <div class="assigned-item-card"
+         id="assigned-item-${request.request_id}"
+         data-request-id="${request.request_id}"
+    >
+
+        <div class="assigned-item-content">
+
+            <h3>${request.request_type}</h3>
+
+            <div class="assigned-item-details">
+
+                <div class="assigned-detail">
+                    <span class="detail-label">Submitted By</span>
+                    <span class="detail-value">${request.submitted_by}</span>
+                </div>
+
+                <div class="assigned-detail">
+                    <span class="detail-label">Submitted Date</span>
+                    <span class="detail-value">
+                        ${formatDateForDisplay(request.submission_date)}
+                    </span>
+                </div>
+
+                <div class="assigned-detail">
+                    <span class="detail-label">Priority</span>
+                    <span class="detail-value">${request.priority_level ?? ""}</span>
+                </div>
+
+                <div class="assigned-detail">
+                    <span class="detail-label">Status</span>
+                    <span class="detail-value">${request.status}</span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="assigned-item-action">
+            View Request →
+        </div>
+
+    </div>
+`).join("");
+
+    return assignedRequestRows; 
+
+}
 
 // FIELD ROWS
 

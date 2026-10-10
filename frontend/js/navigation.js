@@ -2,50 +2,47 @@
 // Defining navigation and Page titles
 // ====================================
 
-const navigation = { 
+const navigation = {
     employee: {
-        title: "All Things HR | Employees", 
-        links: [ 
+        title: "All Things HR | Employees",
+        links: [
             {
-                page: "employee-home", 
+                page: "employee-home",
                 label: "Employee Portal"
-            }, 
+            },
             {
-                page: "employee-history", 
+                page: "employee-history",
                 label: "Employee History"
-            }, 
+            },
             {
-                page: "my-requests", 
+                page: "my-requests",
                 label: "My Requests"
-            }, 
+            },
             {
-                page: "submit-request", 
+                page: "submit-request",
                 label: "Submit New Request"
-            }, 
+            },
         ]
-    }, 
+    },
     processing: {
-        title: "All Things HR | Processing", 
+        title: "All Things HR | Processing",
 
         links: [
             {
-                page: "processing-home", 
+                page: "processing-home",
                 label: "Processing Home"
             },
             {
-                page: "assigned-requests", 
+                page: "assigned-requests",
                 label: "My Assigned Requests"
             },
             {
                 page: "new-requests",
                 label: "New Requests"
             },
-            {
-                page: "authorized-view",
-                label: "Authorized Staff View"
-            },
+            
         ]
-    }, 
+    },
     authorized_staff: {
         title: "All Things HR | Authorized Staff",
 
@@ -63,13 +60,13 @@ const navigation = {
                 label: "Confidential Requests"
             },
             {
-                page: "all-active-requests", 
+                page: "all-active-requests",
                 label: "All Active Requests"
             }
         ]
-    }, 
-    manager: { 
-        title: "All Things HR | Management", 
+    },
+    manager: {
+        title: "All Things HR | Management",
 
         links: [
             {
@@ -86,23 +83,31 @@ const navigation = {
             },
         ]
     },
-}; 
+};
 // Function for dynamically loading page title and navigation links based on user type 
-export async function loadNavigation(section) { 
-    const config = navigation[section]; 
+export async function loadNavigation(section) {
+    const config = navigation[section];
 
-    if (!config) { 
-        console.error(`Navigation configuration not found: ${section}`); 
-        return; 
+    if (!config) {
+        console.error(`Navigation configuration not found: ${section}`);
+        return;
     }
 
-    const headerTitle = document.getElementById("page-title"); 
-    const hamburgerMenu = document.getElementById("hamburger-menu"); 
+    const headerTitle = document.getElementById("page-title");
+    const hamburgerMenu = document.getElementById("hamburger-menu");
 
-    headerTitle.textContent = config.title; 
+    headerTitle.textContent = config.title;
+    const workspaceSelect = document.getElementById("workspace-select");
+
+    if (workspaceSelect) {
+        workspaceSelect.value = section;
+    }
+
+
+
     hamburgerMenu.innerHTML = config.links.map(link => `
         <button type="button" class="menu-link" data-page="${link.page}">
             ${link.label}
         </button>
-    `).join(""); 
+    `).join("");
 } 

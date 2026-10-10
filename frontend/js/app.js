@@ -35,6 +35,32 @@ hamburgerMenu.addEventListener("click", (event) => {
     menuToggle.setAttribute("aria-expanded", "false"); 
 }); 
 
+// ---------------------------
+// Workspace Selection
+// ---------------------------
+const workspaceSelect = document.getElementById("workspace-select");
+
+const workspaceHomePages = {
+    processing: "processing-home",
+    authorized_staff: "authorized-home",
+    employee: "employee-home",
+    manager: "manager-home"
+};
+
+workspaceSelect.addEventListener("change", () => {
+    const selectedWorkspace = workspaceSelect.value;
+    const homePage = workspaceHomePages[selectedWorkspace];
+
+    if (!homePage) {
+        return;
+    }
+
+    loadPage(homePage);
+
+    // Close the hamburger menu when switching workspaces.
+    hamburgerMenu.classList.remove("active");
+    menuToggle.setAttribute("aria-expanded", "false");
+});
 
 // ------------------
 // Initial Page

@@ -358,9 +358,9 @@ export function loadRequestNotes(
     );
 }
 
-export function renderAssignedRequestRows(assignedRequests) { 
+export function renderRequestRows(requests) { 
 
-    const assignedRequestRows = assignedRequests.map(request => `
+    const requestRows = requests.map(request => `
     <div class="assigned-item-card"
          id="assigned-item-${request.request_id}"
          data-request-id="${request.request_id}"
@@ -405,7 +405,7 @@ export function renderAssignedRequestRows(assignedRequests) {
     </div>
 `).join("");
 
-    return assignedRequestRows; 
+    return requestRows; 
 
 }
 

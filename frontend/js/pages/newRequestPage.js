@@ -13,11 +13,11 @@ import {
     updateRequest,
 } from "../api/requestApi.js";
 // import request render helper
-import {
-    renderProcessRequestForm,
-    loadRequestHistory,
-    loadRequestNotes
-} from "../utils/requestRenderHelper.js";
+// import {
+//     renderProcessRequestForm,
+//     loadRequestHistory,
+//     loadRequestNotes
+// } from "../utils/requestRenderHelper.js";
 
 // date formatting helpers
 import {
@@ -30,7 +30,7 @@ import {
     formatFieldName
 } from "../utils/textFormatHelper.js";
 
-export async function loadNewRequestsPage(requestId, actingEmployeeId) {
+export async function loadNewRequestPage(requestId, actingEmployeeId) {
 
     const contentArea = document.getElementById("contentArea");
 

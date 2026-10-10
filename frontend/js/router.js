@@ -10,9 +10,9 @@ import { loadNavigation } from "./navigation.js";
 // importing specific pages 
 import { loadProcessingHomePage } from "./pages/processingHomePage.js"; 
 import { loadProcessRequestPage } from "./pages/processRequestPage.js"; 
-import { loadNewRequestsPage } from "./pages/unassignedRequestPage.js";
+import { loadNewRequestPage } from "./pages/newRequestPage.js";
 import { loadMyAssignedRequests } from "./pages/myAssignedRequestsPage.js";
-
+import { loadUnassignedRequests } from "./pages/unassignedRequestsPage.js"; 
 
 
 export function loadPage(page, requestId = null, actingEmployeeId = null) { 
@@ -43,22 +43,28 @@ export function loadPage(page, requestId = null, actingEmployeeId = null) {
 
         // Temporary to allow for testing and proof of concept 
         case "authorized-view":
-            loadNavigation("authorized-staff"); 
+            loadNavigation("authorized_staff");
             // loadAuthorizedHome(); 
 
         // Authorized staff page placeholders // 
         case "authorized-home":
-            loadNavigation("authorized-staff");
+            loadNavigation("authorized_staff");
             break; 
         // All new and unreviewed/unassigned requests
         case "unassigned-requests":
-            loadNavigation("authorized-staff");
+            loadNavigation("authorized_staff");
+            //loadUnassignedRequests(); 
             break;
         // open a new unreviewed request 
         case "new-request":
-            loadNavigation("authorized-staff");
+            loadNavigation("authorized_staff");
             loadNewRequestPage(requestId, 2);
             break; 
+        // Temporary to allow the user to get back to the processing view for testing
+        case "processing-view": 
+            loadNavigation("processing");
+            loadProcessingHomePage();
+            break;
 
         //=============================//
         // Employee page placeholders // 

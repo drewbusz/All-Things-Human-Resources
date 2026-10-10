@@ -25,6 +25,7 @@ OUTLINE:
 			const requestTypeResponse = await fetch(`/api/requests/activeRequestTypes`); 
 	- POST /api/requests/:requestId/notes
 	- POST /api/requests/:requestId/fields
+	- GET Unassigned Requests > const response = await fetch(`/api/requests/unassigned`);
 
 ## 3 Front End Needs
 - Add back buttons 

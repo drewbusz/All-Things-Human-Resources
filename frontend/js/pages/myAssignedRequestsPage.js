@@ -6,16 +6,16 @@ import {
 
 // Render Helper
 import {
-    renderAssignedRequestRows
+    renderRequestRows
 } from "../utils/requestRenderHelper.js"; 
 import {
-    loadProcessRequestPage
-} from "../pages/processRequestPage.js"; 
+    loadPage
+} from "../router.js"; 
 
 export async function loadMyAssignedRequests(actingEmployeeId) { 
 
     const assignedRequests = await getAssignedRequestsByEmpId(actingEmployeeId); 
-    const assignedRequestRows = await renderAssignedRequestRows(assignedRequests); 
+    const assignedRequestRows = await renderRequestRows(assignedRequests); 
 
     // build pipeline
     const contentArea = document.getElementById("contentArea"); 
@@ -40,7 +40,8 @@ export async function loadMyAssignedRequests(actingEmployeeId) {
             // clear the content area 
             contentArea.innerHTML = ``;
 
-            loadProcessRequestPage(
+            loadPage(
+                "process-request",
                 requestId,
                 actingEmployeeId
             ); 

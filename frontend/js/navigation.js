@@ -40,6 +40,10 @@ const navigation = {
                 page: "new-requests",
                 label: "New Requests"
             },
+            {
+                page: "authorized-view",
+                label: "Authorized Staff View"
+            },
         ]
     }, 
     authorized_staff: {
@@ -51,7 +55,7 @@ const navigation = {
                 label: "Authorized Staff Home"
             },
             {
-                page: "new-requests",
+                page: "unassigned-requests",
                 label: "New Requests"
             },
             {

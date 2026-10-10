@@ -113,10 +113,18 @@ export async function getAssignedRequestsByEmpId(employeeId) {
     console.log("Response: ", result); 
     return result.data; 
 }
+export async function getUnassignedRequests(actingEmployeeId) {
+    const response = await fetch(`/api/requests/unassigned`);
 
-export async function getNewRequests() { 
-
+    if (!response.ok) {
+        throw new Error("Unable to retrieve assigned requests.");
+    }
+    const result = await response.json();
+    console.log("Status: ", response.status);
+    console.log("Response: ", result);
+    return result.data;
 }
+
 
 // Save updates to the request details 
 export async function updateRequest(

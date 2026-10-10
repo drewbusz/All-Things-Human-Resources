@@ -1,6 +1,8 @@
 -- ============================================================
 -- CREATE THE all_things_hr DATABASE
 -- ============================================================
+DROP DATABASE IF EXISTS all_things_hr; 
+
 CREATE DATABASE all_things_hr
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;

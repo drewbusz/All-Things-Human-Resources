@@ -213,7 +213,7 @@ async function updateRequest(
             !validPriorities.includes(
                 requestData.priority_level
             )
-        ){
+        ) {
 
             throw createServiceError(
                 "Priority must be low, medium, high, or blank.",

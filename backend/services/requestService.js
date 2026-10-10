@@ -135,6 +135,15 @@ async function updateRequest(
             requestId
         );
 
+        /*
+     * Make sure the employee making the change
+     * is authorized to modify HR requests.
+     */
+    await employeeService
+        .getEmployeeByIdAndAuthType(
+            actingEmployeeId,
+            MODIFICATION_AUTH_TYPE_ID
+        );
 
     /*
      * Request type can't be changed here.

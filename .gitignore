@@ -13,5 +13,4 @@ node_modules/
 
 # Visual Studio files
 /.vs
-/backend/.env.example
 /backend/package-lock.json

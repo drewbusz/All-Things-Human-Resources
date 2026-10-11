@@ -36,38 +36,34 @@ const navigation = {
                 page: "assigned-requests",
                 label: "My Assigned Requests"
             },
-            {
-                page: "new-requests",
-                label: "New Requests"
-            },
-            
+
         ]
     },
     authorized_staff: {
         title: "All Things HR | Authorized Staff",
 
-links: [
-    {
-        page: "authorized-home",
-        label: "Authorized Staff Home"
-    },
-    {
-        page: "new-requests",
-        label: "New Requests"
-    },
-    {
-        page: "unassigned-requests",
-        label: "Unassigned Requests"
-    },
-    {
-        page: "confidential",
-        label: "Confidential Requests"
-    },
-    {
-        page: "all-active-requests",
-        label: "All Active Requests"
-    }
-]
+        links: [
+            {
+                page: "authorized-home",
+                label: "Authorized Staff Home"
+            },
+            {
+                page: "new-requests",
+                label: "New Requests"
+            },
+            {
+                page: "unassigned-requests",
+                label: "Unassigned Requests"
+            },
+            {
+                page: "confidential",
+                label: "Confidential Requests"
+            },
+            {
+                page: "all-active-requests",
+                label: "All Active Requests"
+            }
+        ]
     },
     manager: {
         title: "All Things HR | Management",
@@ -97,6 +93,8 @@ export async function loadNavigation(section) {
         return;
     }
 
+
+
     const headerTitle = document.getElementById("page-title");
     const hamburgerMenu = document.getElementById("hamburger-menu");
 
@@ -114,4 +112,4 @@ export async function loadNavigation(section) {
             ${link.label}
         </button>
     `).join("");
-} 
+}

@@ -10,7 +10,7 @@
 // Changes are saved through the existing PATCH request API.
 // ============================================================
 
-import { getRequestById } from "../api/requestApi.js";
+import { getRequestById, saveRequestAssignment } from "../api/requestApi.js";
 import { getEmployeesByAuthType } from "../api/employeeApi.js";
 import { formatDateForDisplay } from "../utils/dateHelper.js";
 import { loadPage } from "../router.js";
@@ -171,24 +171,8 @@ export async function loadAssignRequestPage(requestId) {
                 };
 
                 try {
-                    const response = await fetch(
-                        `/api/requests/${requestId}`,
-                        {
-                            method: "PATCH",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify(updateData)
-                        }
-                    );
-
-                    const result = await response.json();
-
-                    if (!response.ok || !result.success) {
-                        throw new Error(
-                            result.message || "Unable to save assignment."
-                        );
-                    }
+                    // Send assignment data through the frontend API module.
+                    await saveRequestAssignment(requestId, updateData);
 
                     // Save a confirmation for the destination page.
                     // The request has been successfully assigned.

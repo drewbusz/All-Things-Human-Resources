@@ -177,6 +177,29 @@ export async function updateRequest(
         }
 }
 
+// UC-3: Save assignment and prioritization changes.
+export async function saveRequestAssignment(requestId, requestData) {
+    const response = await fetch(`/api/requests/${requestId}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestData)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+        throw new Error(
+            result.message ||
+            result.error ||
+            "Unable to save assignment."
+        );
+    }
+
+    return result;
+}
+
 export async function saveRequestNote(note) { 
     const response = await fetch(
         `/api/requests/${note.request_id}/notes`,
@@ -234,3 +257,4 @@ export async function saveRequestFieldValues(
 
     return result.data;
 }
+

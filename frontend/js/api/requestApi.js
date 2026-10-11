@@ -126,7 +126,6 @@ export async function updateRequest(
             actingEmployeeId: actingEmployeeId,
             brief_summary: document.getElementById("request-summary").value,
             priority_level: priority === "" ? null : priority,
-            confidentiality_level: document.getElementById("confidentiality-level").value,
             expected_completion: expectedCompletion === "" ? null : expectedCompletion,
             current_step_id: Number(currentStepId)
         };

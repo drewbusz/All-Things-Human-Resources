@@ -35,7 +35,7 @@ export function renderProcessRequestForm(
         <div class="card">
 
             <h3>
-                HR Request Processing | Request ID: ${request.request_id}
+                HR Request Processing | Request ID: ${request.request_id} | Current Owner: ${formatFieldName(request.assigned_to)}
             </h3>
 
             <hr>
@@ -60,9 +60,7 @@ export function renderProcessRequestForm(
                             type="date"
                             id="expected-completion"
                             name="expected_completion"
-                            value="${formatDateForInput(
-        request.expected_completion
-    )}"
+                            value="${formatDateForInput(request.expected_completion)}"
                         >
                     </div>
 
@@ -94,16 +92,16 @@ export function renderProcessRequestForm(
                             <option
                                 value=""
                                 ${!request.priority_level
-            ? "selected"
-            : ""}
+                                ? "selected"
+                                : ""}
                             >
                             </option>
 
                             <option
                                 value="low"
                                 ${request.priority_level === "low"
-            ? "selected"
-            : ""}
+                                ? "selected"
+                                : ""}
                             >
                                 Low
                             </option>
@@ -111,8 +109,8 @@ export function renderProcessRequestForm(
                             <option
                                 value="medium"
                                 ${request.priority_level === "medium"
-            ? "selected"
-            : ""}
+                                ? "selected"
+                                : ""}
                             >
                                 Medium
                             </option>
@@ -120,63 +118,11 @@ export function renderProcessRequestForm(
                             <option
                                 value="high"
                                 ${request.priority_level === "high"
-            ? "selected"
-            : ""}
+                                ? "selected"
+                                : ""}
                             >
                                 High
                             </option>
-                        </select>
-                    </div>
-
-
-                    <div class="form-field">
-                        <label for="confidentiality-level">
-                            Confidentiality
-                        </label>
-
-                        <select
-                            id="confidentiality-level"
-                            name="confidentiality-level"
-                        >
-
-                            <option
-                                value=""
-                                ${!request.confidentiality_level
-            ? "selected"
-            : ""}
-                            >
-                            </option>
-
-                            <option
-                                value="Nonconfidential"
-                                ${request.confidentiality_level ===
-            "Nonconfidential"
-            ? "selected"
-            : ""}
-                            >
-                                Nonconfidential
-                            </option>
-
-                            <option
-                                value="Confidential"
-                                ${request.confidentiality_level ===
-            "Confidential"
-            ? "selected"
-            : ""}
-                            >
-                                Confidential
-                            </option>
-
-                            <option
-                                value="Highly Confidential"
-                                ${request.confidentiality_level ===
-            "Highly Confidential"
-            ? "selected"
-            : ""}
-                            >
-                                Highly Confidential
-                            </option>
-
                         </select>
                     </div>
 

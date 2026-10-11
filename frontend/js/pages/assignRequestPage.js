@@ -100,7 +100,6 @@ export async function loadAssignRequestPage(requestId) {
                         required
                     >
                 </div>
-
                 <div class="form-actions">
                     <button type="submit">Save Assignment</button>
                 </div>

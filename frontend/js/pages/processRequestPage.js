@@ -20,9 +20,14 @@ import {
 
 // import date formatting helpers
 import {
-    formatDateForDisplay
+    formatDateForDisplay, 
+    formatDateForInput
 } from "../utils/dateHelper.js";
 
+// text format
+import {
+    formatFieldName
+} from "../utils/textFormatHelper.js"; 
 
 export async function loadProcessRequestPage(requestId, actingEmployeeId) {
 
@@ -106,20 +111,18 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                     </span>
 
                     <span class="info-value">
-                        ${formatDateForDisplay(
-            request.submission_date
-        )}
+                        ${formatDateForDisplay(request.submission_date)}
                     </span>
                 </div>
 
 
                 <div class="info-item">
                     <span class="info-label">
-                        Current Owner
+                        Confidentiality Level
                     </span>
 
                     <span class="info-value">
-                        ${request.assigned_to}
+                        ${formatFieldName(request.confidentiality_level)}
                     </span>
                 </div>
 

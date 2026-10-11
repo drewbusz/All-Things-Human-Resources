@@ -67,7 +67,7 @@ export async function getRequestHistory(request_id) {
 }
 
 export async function getRequestFields(request_id) { 
-    const requestFieldsResponse = fetch(`/api/requests/${request_id}/fields`); 
+    const requestFieldsResponse = await fetch(`/api/requests/${request_id}/fields`);
 
     if (!requestFieldsResponse.ok) { 
         throw new Error("Unable to retrieve request fields."); 
@@ -79,7 +79,7 @@ export async function getRequestFields(request_id) {
 }
 
 export async function getRequestNotesByRequestId(request_id) { 
-    const requestNotesResponse = fetch(`/api/requests/notes/${request_id}`); 
+    const requestNotesResponse = await fetch(`/api/requests/${request_id}/notes`); 
 
     if (!requestNotesResponse.ok) { 
         throw new Error("Unable to retrieve request notes."); 
@@ -90,7 +90,7 @@ export async function getRequestNotesByRequestId(request_id) {
 }
 
 export async function getActiveRequestTypes() { 
-    const requestTypeResponse = fetch(`/api/requests/activeRequestTypes`);
+    const requestTypeResponse = await fetch(`/api/requests/activeRequestTypes`);
 
     if (!requestTypeResponse.ok) {
         throw new Error("Unable to retrieve request types");
@@ -113,11 +113,11 @@ export async function getAssignedRequestsByEmpId(employeeId) {
     console.log("Response: ", result); 
     return result.data; 
 }
-export async function getUnassignedRequests(actingEmployeeId) {
+export async function getUnassignedRequests() {
     const response = await fetch(`/api/requests/unassigned`);
 
     if (!response.ok) {
-        throw new Error("Unable to retrieve assigned requests.");
+        throw new Error("Unable to retrieve unassigned requests.");
     }
     const result = await response.json();
     console.log("Status: ", response.status);

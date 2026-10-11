@@ -12,25 +12,35 @@ This version of the project represents **Vertical Slice 1**. The documentation d
 **Course:** INFO-C451 Fall 2026
 
 ----------
-
 ## Version / Revision History
 
 | Date | Version | Note |
 |---|---|---|
 | 9/24/26 | 1.0.0 | Vertical Slice 1 |
-| 10/4/26 | 1.1.0 | Front-End structure added | 
-       
+| 10/11/26| 1.1.0 | Vertical Slice 2 |  
+
+----------
 ### Version 1.0.0 Summary
 
 Version 1.0.0 represents **Vertical Slice 1** of the All Things HR system. This release establishes the initial database schema, referential integrity constraints, demonstration data, and the application components required to support the use cases included in this vertical slice. 
 
+----------
+### Version 1.1.0 Summary
+
+Version 1.1.0 represents **Vertical Slice 2** of the All Things HR system. This revision expands the implementation documentation for UC-3 and UC-4, adds implementation progress summaries for Vertical Slices 1 and 2, and updates the key use case definitions to reflect the current assignment and request-processing workflows.
+
+The front-end documentation was also revised to better describe the application's reusable card, form, list, and history structures. The Front-End Structure section was expanded to document the current directory organization, page loading, workspace selection, shared navigation, shared utilities, and reusable API modules.
+
+The table of contents and version history were updated to reflect the revised section structure and newly added documentation.
 
 ----------
 ## Table of Contents
-1. [Introduction & Summary](#1-introduction--summary)
-   - [1.1 Project Structure](#11-project-structure)
-   - [1.2 Team Members](#12-team-members)
-   - [1.3 Project Scope](#13-project-scope)
+1. [Introduction & Summary](#1-introduction--summary)  
+   - [1.1 Project Structure](#11-project-structure)  
+   - [1.2 Team Members](#12-team-members)  
+   - [1.3 Implementation Progress](#13-implementation-progress)  
+     - [1.3.1 Vertical Slice 1](#131-vertical-slice-1)  
+     - [1.3.2 Vertical Slice 2](#132-vertical-slice-2)  
 2. [Installation and Setup](#2-installation-and-setup)
    - [2.1 Required Software](#21-required-software)
    - [2.2 Database Setup](#22-database-setup)
@@ -39,26 +49,26 @@ Version 1.0.0 represents **Vertical Slice 1** of the All Things HR system. This 
    - [2.5 Start the Back End](#25-start-the-back-end)
    - [2.6 Start the User Interface](#26-start-the-user-interface)
 3. [Entities, Attributes, and Relationships](#3-entities-attributes-and-relationships)
-4. [Key Use Cases & Queries](#4-key-use-cases--queries)
-   - [4.1 Use Case 1](#41-use-case-1)
-   - [4.2 Use Case 2](#42-use-case-2)
-   - [4.3 Use Case 3](#43-use-case-3)
-5. [Front-End Element ID Reference](#5-front-end-element-id-reference)
-    - [5.1 Page and Card Layout](#51-page-and-card-layout)
-    - [5.2 Form Layout](#52-form-layout) 
-    - [5.3 History Layout](#53-history-layout)
-    - [5.4 Class and ID Usage](#54-class-and-id-usage)
+4. [Key Use Cases](#4-key-use-cases)  
+   - [4.1 UC-4: Process and Update HR Request](#41-uc-4-process-and-update-hr-request)  
+   - [4.2 UC-3: Assign an HR Request](#42-uc-3-assign-an-hr-request)
+5. [Front-End Element and Styling Reference](#5-front-end-element-and-styling-reference)
+   - [5.1 Page and Card Layout](#51-page-and-card-layout)
+   - [5.2 Form Layout](#52-form-layout)
+   - [5.3 List and History Layout](#53-list-and-history-layout)
+   - [5.4 Responsive, Class, and ID Usage](#54-responsive-class-and-id-usage)
 6. [Front-End Structure](#6-front-end-structure)
-    - [6.1 Directory Structure](#61-directory-structure)
-    - [6.2 Front-End Components](#62-front-end-components)
-    - [6.3 Page Loading](#63-page-loading) 
-    - [6.4 Shared Navigation](#64-shared-navigation)
-    - [6.5 Shared Utilities](#65-shared-utilities)
-    - [6.6 Shared APIs](#66-shared-apis)
+   - [6.1 Directory Structure](#61-directory-structure)
+   - [6.2 Front-End Components](#62-front-end-components)
+   - [6.3 Page Loading](#63-page-loading)
+   - [6.4 Workspace Selection](#64-workspace-selection)
+   - [6.5 Shared Navigation](#65-shared-navigation)
+   - [6.6 Shared Utilities](#66-shared-utilities)
+   - [6.7 Shared APIs](#67-shared-apis)
 
 
 ----------
-## 1. Introduction & Summary 
+## 1 Introduction & Summary 
 
 ### 1.1 Project Structure
 
@@ -73,10 +83,35 @@ Version 1.0.0 represents **Vertical Slice 1** of the All Things HR system. This 
 - Drew Busz
 - Titus Duncan
 
-### 1.3 Project Scope: 
+### 1.3 Implementation Progress 
+
+#### 1.3.1 Vertical Slice 1 (Assignment 4)
+
+**Working End-to-End Functionality:**  
+Vertical Slice 1 established an end-to-end implementation of the selected UC-4 workflow. An HR staff member could retrieve an assigned request, update its workflow status through the user interface, and submit the change to the back end. The back end validated the submitted change, updated the request in MariaDB, recorded the modification in `request_history`, and returned the updated request. The updated workflow status remained persisted after the request was refreshed.
+
+**Partially Implemented Requirements and Use Cases:**  
+UC-4 was only partially implemented during Vertical Slice 1. The completed functionality supported viewing an assigned request and updating its workflow status. Additional UC-4 functionality, including request notes, requests for additional information, notifications, and final resolution, remained to be implemented in later vertical slices.
+
+The proposed authorization layer was also not yet implemented. As a temporary validation measure, the request retrieval and update logic restricted access using the assigned employee identifier. The SQL condition `AND assigned_emp_id = ?` was used to ensure that only the HR staff member assigned to the request could retrieve or modify it.
+
+Future iterations were planned to replace this temporary restriction with the project’s authorization layer, including role-based and request-specific permission checks.
 
 ----------
-## 2. Installation and Setup
+#### 1.3.2 Vertical Slice 2 (Assignment 5)
+
+**Major Functionality Completed:**  
+Vertical Slice 2 expands the application to support two primary HR request workflows. HR staff can retrieve requests assigned to them, review request information and history, update permitted request details, advance requests through valid workflow steps, and persist those changes in MariaDB.
+
+Within the HR Processing workflow, confidentiality level is displayed as read-only. Authorized HR Staff can also review unassigned requests and assign them to eligible HR staff members. Submitted changes are validated by the back end before being persisted, and modified request values are recorded in `request_history`.
+
+**Partially Implemented or Remaining Functionality:**  
+Several planned features remain incomplete, including request notes, additional request-specific field handling, approval workflows, notifications, Highly Confidential visibility controls, employee self-service request submission, and simulated email intake.
+
+The authorization model is also still being expanded to support the full set of role-specific permissions defined in the requirements. Remaining authorization work includes confidentiality management for Authorized HR Staff and additional Highly Confidential permissions for HR Managers.
+
+----------
+## 2 Installation and Setup
 
 ### 2.1 Required Software
 
@@ -97,7 +132,7 @@ The following software is required to configure and run the application:
 
 ### 2.3 Environment Configuration
 
-From the backend directory, copy `.env.example` to `.env`, then configure the local MariaDB environment variables with your local database host, port, username, and password.
+From the directory, copy `/backend/.env.example` to `backend/.env`, then configure the local MariaDB environment variables with your local database host, port, username, and password.
 
 Example:
 
@@ -144,7 +179,7 @@ http://localhost:3000
 The browser communicates with the Node.js/Express server, which handles communication with the MariaDB database.
 
 ----------
-## 3. Entities, Attributes and Relationships: 
+## 3 Entities, Attributes and Relationships: 
 
 ### Entities, Attributes, and Relationships
 ### Entity: Request
@@ -335,11 +370,8 @@ The browser communicates with the Node.js/Express server, which handles communic
 -------
 
 
-## 4 Key Use Cases & Queries
-
-### Use Case Objectives, Assumptions, Expected Output
-
-#### UC-4: Process and update HR request
+## 4 Key Use Cases
+### 4.1 UC-4: Process and update HR request
 
 **Objective:**
 Allow an HR staff member to retrieve an assigned HR request, review its information, record processing notes, update the request's workflow status, and maintain a history of changes made to the request. 
@@ -355,159 +387,42 @@ Allow an HR staff member to retrieve an assigned HR request, review its informat
 **Expected Output:** 
 The assigned request and its associated information are available to the HR staff member. As the request is processed, new notes are stored in 'request_notes', changes to the request are recorded in 'request_history', and 'current_step_id' is updated to reflect the request's current position in the workflow. When processing is complete, the request is moved to the workflow step identified by the 'complete' step code. 
 
-**Query 1 - Retrieve an assigned request.:**
-```sql
-SELECT
-            r.request_id,
-            r.submission_date,
-            r.employee_id,
-            r.request_type_id,
-            r.assigned_emp_id,
-            r.current_step_id,
-            r.priority_level,
-            r.confidentiality_level,
-            r.intake_source,
-            r.expected_completion,
-            r.brief_summary,
-
-            rt.name AS request_type,
-
-            ws.step_name AS status,
-            ws.step_code AS status_code,
-            ws.step_num AS current_step_num
-
-        FROM request r
-
-        INNER JOIN request_type rt
-            ON r.request_type_id = rt.request_type_id
-
-        LEFT JOIN workflow_step ws
-            ON r.current_step_id = ws.workflow_step_id
-
-        WHERE r.request_id = ?
-          AND r.assigned_emp_id = ?; 
-```
-
-The first parameter identifies the request being opened. The second identifies the logged-in HR employee. This prevents the query from returning the request unless it is assigned to that employee. 
-
-**Query 2 - Retrieve the request's configurable field values:**
-```sql
-SELECT 
-    rtf.field_label, 
-    rtf.field_type, 
-    rfv.field_val 
-FROM request_field_value rfv
-JOIN request_type_field rtf
-    ON rfv.field_id = rtf.field_id
-WHERE rfv.request_id = ?
-ORDER BY rtf.display_order;
-```
-
-**Query 3 - Identify the next workflow step:** 
-```sql
-SELECT
-    workflow_step_id, 
-    request_type_id, 
-    step_num, 
-    step_name, 
-    step_code, 
-    is_active
-FROM workflow_step
-WHERE request_type_id = ?
-    AND step_num = ?
-    AND is_active = TRUE 
-LIMIT 1; 
-```
-
-**Query 4 — Update the request's current workflow step:**
-
-```sql
-UPDATE request
-SET current_step_id = ?
-WHERE request_id = ?
-    AND assigned_emp_id = ?;
-```
-
-**Query 6 — Record the workflow step change in request history:**
-
-```sql
-INSERT INTO request_history (
-    request_id,
-    modified_by_employee_id,
-    type,
-    modified_field,
-    previous_value,
-    current_value, 
-    type
-)
-VALUES (
-    ?,
-    ?,
-    'updated',
-    ?,
-    ?,
-    'current_step_id',
-);
-```
 -------
 
-## 5 Front-End Element Class and ID Reference
+### 4.2 UC-3: Assign an HR Request
 
-The application uses reusable CSS classes to maintain consistent styling, layout, and responsive behavior across dynamically generated pages. Page modules should apply the following classes when creating interface elements.
+**Objective:**  
+Allow an Authorized HR Staff member to review unassigned HR requests, select a request, and assign it to an eligible HR staff member for processing.
 
-Element IDs documented in this section correspond to IDs that have styles defined in the application stylesheet. Other IDs may still be assigned to elements when required by JavaScript, even when those IDs do not have associated CSS rules.
+**Assumptions:**
+- The request already exists in the `request` table and is currently unassigned.
+- The acting employee exists in the `employee` table and has the authorization required to assign requests.
+- The selected assignee exists in the `employee` table and is authorized to process HR requests.
+- Eligible employees can be retrieved through the application data-access layer.
+- Assignment values are validated by the back end before database changes are performed.
 
-### 5.1 Application Header and Navigation
+**Expected Output:**  
+The Authorized HR Staff member can view unassigned requests, open a selected request, and choose an eligible HR staff member as the assignee. Priority and expected completion date may also be set as part of the assignment process.
 
-| Element Class | Typical Element | Purpose |
-|---|---|---|
-| `.site-header` | `<header>` | Styles the application header with the primary navigation background, text color, and spacing. |
-| `.navbar` | `<nav>` or `<div>` | Arranges navigation content horizontally and separates the application title from navigation controls. |
-| `.navbar-header` | `<h1>` | Styles the primary heading displayed within the navigation bar. |
-| `.menu-toggle` | `<button>` | Styles the hamburger-menu toggle button. |
-| `.hamburger-menu` | `<div>` or `<nav>` | Defines the dropdown navigation menu displayed below the application header. |
-| `.active` | Hamburger-menu modifier | Displays the hamburger menu when applied together with `.hamburger-menu`. |
+When **Save Assignment** is selected, the application sends the assignment information to the back end for validation. The acting employee and selected assignee are validated against the required authorization before the assignment is saved.
 
-The `.hamburger-menu` is hidden by default. Applying the `.active` class changes the menu to a vertically arranged flex container.
+After validation succeeds, the request is updated in MariaDB within a database transaction. The selected employee is stored in `assigned_emp_id`, and any additional changed request values are also persisted. Each modified field is recorded in `request_history`, including the employee responsible for the change, the previous value, and the updated value.
 
-Example:
+After the assignment is completed, the request is no longer returned as unassigned and becomes available in the selected employee's assigned-request list.
 
-```html
-<header class="site-header">
-    <nav class="navbar">
-        <h1 class="navbar-header">HR Request Management</h1>
+-------
 
-        <button class="menu-toggle">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </nav>
+## 5 Front-End Element and Styling Reference
 
-    <div class="hamburger-menu">
-        <button>Requests</button>
-        <button>Employees</button>
-    </div>
-</header>
-```
+The front end uses a small set of reusable CSS layout patterns so dynamically generated pages have a consistent structure. Rather than defining a separate layout for each page, page modules build their interfaces from shared cards, information rows, forms, list items, history records, navigation elements, and feedback messages.
 
----
+The classes described below define the general structure of those elements. Individual pages may use additional IDs or classes when JavaScript needs to identify a specific control or apply page-specific behavior.
 
-### 5.2 Page and Card Layout
+### 5.1 Page and Card Layout
 
-| Element Class / ID | Typical Element | Purpose |
-|---|---|---|
-| `.card` | `<div>` or `<section>` | Creates a visually grouped content card with a white background, border, spacing, and rounded corners. |
-| `.card-row` | `<div>` | Creates a responsive grid for displaying groups of static information. |
-| `.card-left` | `<div>` or other grid item | Aligns a card element to the left side of its grid area. |
-| `.card-right` | `<div>` or other grid item | Aligns a card element to the right side of its grid area. |
-| `.info-item` | `<div>` | Groups a related label and display value within a card row. |
-| `.info-label` | `<span>` | Formats the label associated with a static information value. |
-| `.info-value` | `<span>` | Formats a static value displayed to the user. |
-| `#contentArea` | Application content container | Ensures sections dynamically loaded into the application's content area use the full available width. |
-| `#card-header` | Card or page heading element | Styles a primary card heading with application colors, spacing, and a bottom border. |
+Cards provide the primary structure for grouping related content. A `.card` creates a bordered content section, while `.card-row` can be used inside a card to organize related information into a responsive grid. Individual values are commonly grouped with `.info-item`, `.info-label`, and `.info-value` so static information is displayed as consistent label-value pairs.
 
-A `.card-row` displays four columns on larger screens, two columns when the viewport is 900 pixels or less, and one column when the viewport is 650 pixels or less.
+The application header and navigation provide the persistent structure surrounding the page content. The header contains the application title, workspace controls, and hamburger navigation, while `#contentArea` serves as the container where page modules dynamically insert the current page.
 
 Example:
 
@@ -517,138 +432,61 @@ Example:
 
     <div class="card-row">
         <div class="info-item">
-            <span class="info-label">
-                Request ID
-            </span>
+            <span class="info-label">Request ID</span>
+            <span class="info-value">1001</span>
+        </div>
 
-            <span class="info-value">
-                1001
-            </span>
+        <div class="info-item">
+            <span class="info-label">Priority</span>
+            <span class="info-value">High</span>
         </div>
     </div>
 </div>
 ```
 
+The same card pattern is also used for request lists. Assigned and unassigned requests are presented as card-based items containing a request title, grouped details, and an action or assignment control.
+
 ---
 
-### 5.3 General Form Layout
+### 5.2 Form Layout
 
-| Element Class | Typical Element | Purpose |
-|---|---|---|
-| `.form-grid` | `<div>` | Creates a responsive grid for editable form fields. |
-| `.form-field` | `<div>` | Groups a form label with its associated input, select, or textarea. |
-| `.full-width` | `.form-field` modifier | Causes a form field to span all four columns of the standard form grid. |
+Forms use shared field and grid structures so editable content follows the same layout conventions as static cards. `.form-field` groups a label with its input, select, or textarea, while `.form-grid` arranges multiple fields in a responsive grid. Fields that require additional space can use the `.full-width` modifier.
 
-The `.form-grid` uses four columns on larger screens and changes to a single-column layout when the viewport is 650 pixels or less.
-
-Elements placed inside `.form-field` receive consistent label spacing and consistent styling for `<input>`, `<select>`, and `<textarea>` controls.
+Pages that require a more specialized form can use `.process-form-layout` and `.form-column` to divide the form into logical sections. `.form-actions` provides a consistent location for submit or update controls, and summary textareas can use `.summary-field` when additional vertical space is needed.
 
 Example:
 
 ```html
-<div class="card">
+<form class="card">
     <h3>Request Details</h3>
 
     <div class="form-grid">
-        <div class="form-field full-width">
-            <label for="request-summary">
-                Summary
-            </label>
-
-            <textarea id="request-summary"></textarea>
-        </div>
-
         <div class="form-field">
-            <label for="request-priority">
-                Priority
-            </label>
-
+            <label for="request-priority">Priority</label>
             <select id="request-priority">
                 ...
             </select>
         </div>
-    </div>
-</div>
-```
 
----
-
-### 5.4 Process Request Form Layout
-
-The Process Request page uses additional layout classes to support a two-column form design.
-
-| Element Class | Typical Element | Purpose |
-|---|---|---|
-| `.process-form-layout` | `<div>` | Creates the main two-column layout used by the Process Request form. |
-| `.form-column` | `<div>` | Arranges related form controls vertically within a Process Request form column. |
-| `.summary-field` | `.form-field` modifier or wrapper | Provides additional sizing behavior for the request summary textarea. |
-| `.form-actions` | `<div>` | Contains form action buttons and aligns them to the right side of the form. |
-
-The `.process-form-layout` uses two columns on larger screens, with approximately one-third of the available space assigned to the first column and two-thirds assigned to the second column.
-
-At viewport widths of 750 pixels or less, the layout changes to a single column. Form-action buttons also expand to the full available width.
-
-The textarea contained within `.summary-field` has a minimum height of 250 pixels on larger screens and 100 pixels on smaller screens.
-
-Example:
-
-```html
-<form>
-    <div class="process-form-layout">
-
-        <div class="form-column">
-            <div class="form-field">
-                <label for="request-priority">
-                    Priority
-                </label>
-
-                <select id="request-priority">
-                    ...
-                </select>
-            </div>
+        <div class="form-field full-width">
+            <label for="request-summary">Summary</label>
+            <textarea id="request-summary"></textarea>
         </div>
-
-        <div class="form-column">
-            <div class="form-field summary-field">
-                <label for="request-summary">
-                    Summary
-                </label>
-
-                <textarea id="request-summary"></textarea>
-            </div>
-        </div>
-
     </div>
 
     <div class="form-actions">
-        <button type="submit">
-            Update Request
-        </button>
+        <button type="submit">Save Request</button>
     </div>
 </form>
 ```
 
 ---
 
-### 5.5 History Layout
+### 5.3 List and History Layout
 
-| Element Class | Typical Element | Purpose |
-|---|---|---|
-| `.history-header` | `<div>` | Defines the column headings displayed above history records. |
-| `.history-item` | `<div>` | Represents an individual request-history record using the history grid layout. |
-| `.history-date` | `<span>` | Displays the date associated with a history record. |
-| `.history-field` | `<span>` | Identifies the request field that was changed. |
-| `.history-change` | `<span>` or `<div>` | Displays the value or description of the recorded change and allows long content to wrap. |
-| `.history-empty` | `<p>` | Styles the message displayed when no request-history records are available. |
+Request lists use card-based list items so each request can display a title, several related details, and an available action. Detail values are grouped as label-value pairs so assigned and unassigned request pages follow the same general visual structure as other application cards.
 
-The history layout normally uses four columns:
-
-1. Date
-2. Changed field
-3. Additional history information
-4. Change description
-
-At viewport widths of 750 pixels or less, `.history-header` is hidden and each `.history-item` changes to a single-column layout for easier viewing on smaller screens.
+Request history uses a separate grid structure. `.history-header` defines the column headings and each `.history-item` represents one history record. Supporting classes identify values such as the date, changed field, and change description. When no history exists, a simple empty-state message can be displayed instead.
 
 Example:
 
@@ -664,112 +502,38 @@ Example:
     </div>
 
     <div class="history-item">
-        <span class="history-date">
-            10/04/2026
-        </span>
-
-        <span class="history-field">
-            Priority
-        </span>
-
-        <span>
-            Employee 100
-        </span>
-
-        <span class="history-change">
-            Medium → High
-        </span>
+        <span class="history-date">10/04/2026</span>
+        <span class="history-field">Priority</span>
+        <span>Employee 100</span>
+        <span class="history-change">Medium → High</span>
     </div>
 </div>
 ```
 
-When no history exists, the `.history-empty` class may be used:
-
-```html
-<p class="history-empty">
-    No request history is available.
-</p>
-```
+Feedback elements, such as request messages and assignment confirmations, are displayed near the related form or list so success and error information remains associated with the action that produced it.
 
 ---
 
-### 5.6 Form Actions and Messages
+### 5.4 Responsive, Class, and ID Usage
 
-Form submit buttons receive common styling automatically through the `form button[type="submit"]` CSS selector. A separate button class is therefore not required for standard submit buttons.
+The stylesheet uses responsive breakpoints to progressively simplify these shared structures on smaller screens. Multi-column card and form grids collapse toward single-column layouts, process forms stack vertically, history rows become easier to read on narrow screens, and navigation and request-card controls adjust to the available width.
 
-Buttons contained within `.form-actions` receive similar styling and are positioned according to the Process Request layout.
+CSS classes should be used for reusable presentation, layout, component states, and responsive behavior. IDs should be reserved for elements that require unique styling or JavaScript interaction, such as the dynamically populated content area or individual form controls.
 
-The stylesheet also defines the following message element:
+In general, page modules should build new interfaces by reusing the existing card, form, list, history, navigation, and feedback structures before introducing page-specific styling.
 
-| Element ID | Typical Element | Purpose |
-|---|---|---|
-| `#request-message` | `<p>`, `<div>`, or `<span>` | Displays status, success, or error information associated with request form operations. |
-
-Example:
-
-```html
-<form>
-    ...
-
-    <button type="submit">
-        Save Request
-    </button>
-
-    <p id="request-message"></p>
-</form>
-```
-
----
-
-### 5.7 Responsive Behavior
-
-The application stylesheet defines several responsive breakpoints to ensure that pages remain usable on smaller screens.
-
-At **900 pixels or less**, `.card-row` changes from four columns to two columns.
-
-At **750 pixels or less**:
-
-- `.process-form-layout` changes from two columns to one column.
-- `.summary-field textarea` reduces its minimum height.
-- `.form-actions button` expands to the full available width.
-- `.history-header` is hidden.
-- `.history-item` changes to a single-column layout.
-
-At **650 pixels or less**:
-
-- The `<main>` content area expands to use the available screen width with reduced horizontal padding.
-- `.site-header` uses reduced padding.
-- `.hamburger-menu` expands to the full screen width and removes its rounded corners.
-- `.card-row` changes to a single-column layout.
-- `.form-grid` changes to a single-column layout.
-- `.history-item` remains in a single-column layout.
-
----
-
-### 5.8 Class and ID Usage
-
-CSS classes are used for reusable styling and layout. Multiple elements may use the same class across different application pages.
-
-Element IDs identify individual elements that require unique styling or JavaScript access. The stylesheet currently defines styles for the following application IDs:
-
-- `#contentArea` identifies the application's dynamically populated content container.
-- `#card-header` identifies a primary heading or header element used within application content.
-- `#request-message` identifies the message area used to display request form feedback.
-
-Additional IDs may be assigned to form controls, forms, navigation elements, or other components when JavaScript needs to uniquely identify them. An ID does not need to have a corresponding CSS rule in order to be used by JavaScript.
-
-In general, **classes define reusable presentation and layout behavior, while IDs identify individual elements that require unique styling or JavaScript interaction.**
 ## 6 Front-End Structure 
 
 The front end uses a modular JavaScript structure to separate applicaiton initialization, page routing, navigation configuration, page-specific functionality, shared utilities, and styling. 
 
 The application uses `index.html` as the persistent interface shell. Individual pages are generated dynamically with JavaScript and loaded into the content area without requiring a separate HTML file for each page. 
 
+This structure keeps front-end responsibilities separated in a manner consistent with the layered organization used by the back end.
+
 ### 6.1 Directory Structure 
 
 ```text
 frontend/
-├── README.md
 ├── index.html
 ├── css/
 │   └── styles.css
@@ -777,75 +541,125 @@ frontend/
     ├── app.js
     ├── navigation.js
     ├── router.js
+    ├── api/
+    │   ├── employeeApi.js
+    │   └── requestApi.js
     ├── pages/
+    │   ├── assignRequestPage.js
+    │   ├── myAssignedRequestsPage.js
+    │   ├── newRequestPage.js (Not implemented)
     │   ├── processingHomePage.js
     │   ├── processRequestPage.js
-    │   └── newRequestPage.js
+    │   └── unassignedRequestsPage.js
     └── utils/
         ├── dateHelper.js
+        ├── requestRenderHelper.js.js
         └── testFormatHelper.js
 ```
 ______
-### 6.2 Front-End Components 
+### 6.2 Front-End Components
 
 | Component | Responsibility |
 |---|---|
-| `index.html` | Defines the persistent application shell, including the header, hamburger menu, and main content area. |
-| `css/styles.css` | Contains shared application styling, responsive layouts, navigation styling, cards, forms, and other reusable presentation rules. |
-| `js/app.js` | Initializes the front end and manages application-level behavior, including navigation events. |
-| `js/navigation.js` | Defines and renders the header title and hamburger-menu options appropriate for each area of the application. |
-| `js/router.js` | Controls front-end page routing and determines which page module should be loaded based on the user's current workflow. |
-| `js/pages/` | Contains page-specific modules responsible for rendering individual application views and implementing page-specific behavior. |
-| `js/utils/` | Contains reusable helper functions that are shared by multiple page modules, such as date-formatting functions. |
-| `js/api/` | Contains reusable modules that allow the front end to interact with the back end API endpoints. | 
+| `index.html` | Defines the persistent application shell, including the header, navigation controls, and main content area. |
+| `css/styles.css` | Defines shared application styling, reusable cards and forms, navigation presentation, and responsive layouts. |
+| `js/app.js` | Initializes the front end and configures application-level behavior. |
+| `js/navigation.js` | Manages shared navigation and header configuration for different application workspaces. |
+| `js/router.js` | Controls page routing and determines which page module should be loaded for the requested application view. |
+| `js/pages/` | Contains page-specific modules responsible for rendering views and handling page-level user interaction. |
+| `js/api/` | Contains reusable functions for communicating with back-end API endpoints. |
+| `js/utils/` | Contains reusable formatting and rendering functions shared across multiple page modules. |
+
 ______
-### 6.3 Page Loading 
 
-The front end does not use a separate HTML document fo reach application page. Instead, `index.html` provides a persistent content container: 
+### 6.3 Page Loading
 
-```html 
-<main id="main_content">  
-    <div id="contentArea"></div> 
+The front end does not use a separate HTML document for each application page. Instead, `index.html` provides a persistent content container:
+
+```html
+<main id="main_content">
+    <div id="contentArea"></div>
 </main>
 ```
 
-When navigation or another user action requires a different page, the application calls the `loadPage()` function in `router.js`. The router selects the appropriate page module and passes any required contextual data, such as request ID. 
+When navigation or another user action requires a different view, the application calls the `loadPage()` function in `router.js`. The router identifies the appropriate page module and passes any contextual information required by that page.
 
-For example: 
+For example:
 
- ```javascript 
- loadPage(
-    "process-request", 
-    requestId, 
+```javascript
+loadPage(
+    "process-request",
+    requestId,
     actingEmployeeId
-); 
- ```
+);
+```
 
- The router then invokes the corresponding page-loading function: 
- ```javascript 
- case "process-request": 
-    loadNavigation("processing"); 
+The router then loads the appropriate navigation configuration and invokes the corresponding page function:
+
+```javascript
+case "process-request":
+    loadNavigation("processing");
 
     loadProcessRequestPage(
-        requestId, 
+        requestId,
         actingEmployeeId
     );
-    break; 
- ```
+    break;
+```
 
- The page module dynamically generates its interface and inserts it into `contentArea`. 
-______
-### 6.4 Shared Navigation 
-
-`navigation.js` manages the shared header and hamburger-menu configuaration for the different areas of the application. This allows employee, HR processing, and manager pages to display navigation options appropriate to their application context without duplicating navigation markup across individual page modules. 
+The page module generates the required interface and inserts it into `contentArea`, replacing the previously displayed page content.
 
 ______
-### 6.5 Shared Utilities 
 
-Reusable functiosn that are not specific to an individual page are stored in `js/utils/`. For example, date-formatting fucntions used by multiple pages are maintained in `dateHelper.js` and imported where required. 
+### 6.4 Workspace Selection
 
-This modular structure reduces duplicated code and separates shared application behavior from page-specific functionality. 
+The application includes a workspace selector in the persistent header to support testing across different application contexts.
+
+```html 
+<div class="workspace-control">
+    <label for="workspace-select">Workspace</label>
+
+    <select id="workspace-select" aria-label="Select workspace">
+        <option value="processing">HR Processing</option>
+        <option value="authorized_staff">Authorized Staff</option>
+        <option value="employee">Employee</option>
+        <option value="manager">Management</option>
+    </select>
+</div>
+```
+
+The workspace selector is a testing feature that allows the user to easily switch between HR Processing, Authorized Staff, Employee, and Management workspaces without requiring separate authentication or test accounts.
+
+Workspace selection is independent of page navigation. Changing the selected workspace updates the application context and corresponding navigation options, while page navigation determines which page is displayed within that workspace.
+
+This control is intended to simplify development and testing of workspace-specific functionality and does not represent the final authorization or user-role selection process.
 ______
-### 6.6 Shared APIs
 
-The `js/api/requestApi.js` module provides the client-side interface for communicating with the application's request-related API endpoints.
+### 6.5 Shared Navigation
+
+`navigation.js` manages the shared application header and hamburger-menu configuration.
+
+Navigation options are selected according to the current application workspace, allowing HR Processing, Authorized Staff, Employee, and Management views to use the same navigation structure without duplicating navigation markup within individual page modules.
+
+The workspace selector determines the active workspace context, while the navigation controls allow movement between pages available within that workspace. The router and navigation modules work together so that the displayed navigation remains consistent with the currently selected workspace and page.
+
+______
+
+### 6.6 Shared Utilities
+
+Reusable functions that are not specific to a single page are stored in `js/utils/`.
+
+For example, `dateHelper.js` provides shared date-formatting functions, while `requestRenderHelper.js` contains reusable rendering functions for request-related elements that appear on multiple pages.
+
+Keeping these functions separate from page modules reduces duplicated code and allows page modules to remain focused on page-specific behavior.
+
+______
+
+### 6.7 Shared APIs
+
+Modules in `js/api/` provide the client-side interface for communicating with the back-end API.
+
+`requestApi.js` contains reusable functions for request-related operations, while `employeeApi.js` contains reusable functions for retrieving employee-related information.
+`employeeApi.js` contains reusable functions for retrieving employee-related information.
+
+Page modules call these API functions rather than defining `fetch()` requests directly. This separates API communication from page rendering and provides a consistent pattern for accessing back-end functionality throughout the front end.

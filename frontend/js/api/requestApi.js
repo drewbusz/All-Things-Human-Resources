@@ -42,26 +42,7 @@ export async function getRequestHistory(request_id) {
 
     if (!historyResponse.ok) {
         throw new Error("unable to review request history");
-        console.Error(
-            historyResult.message ||
-            "Unable to retrieve request history. "
-        ); 
     }
-    console.log(
-        "History API result:",
-        historyResult
-    ); 
-    console.log(
-        "History data:",
-        historyResult.data
-    );
-
-    console.log(
-        "Is history data an array?",
-        Array.isArray(historyResult.data)
-    );
-
-
 
     return historyResult.data; 
 }
@@ -113,6 +94,8 @@ export async function getAssignedRequestsByEmpId(employeeId) {
     console.log("Response: ", result); 
     return result.data; 
 }
+
+// Get unassigned requests
 export async function getUnassignedRequests() {
     const response = await fetch(`/api/requests/unassigned`);
 
@@ -124,7 +107,6 @@ export async function getUnassignedRequests() {
     console.log("Response: ", result);
     return result.data;
 }
-
 
 // Save updates to the request details 
 export async function updateRequest(
@@ -200,6 +182,7 @@ export async function saveRequestAssignment(requestId, requestData) {
     return result;
 }
 
+// Save request notes (Pending backend)
 export async function saveRequestNote(note) { 
     const response = await fetch(
         `/api/requests/${note.request_id}/notes`,
@@ -226,6 +209,7 @@ export async function saveRequestNote(note) {
         
 }
 
+// Save request field values (Pending backend)
 export async function saveRequestFieldValues(
     fieldValues,
     requestId,

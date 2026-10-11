@@ -15,7 +15,6 @@ import {
 
 
 // PROCESS REQUEST FORM
-
 export function renderProcessRequestForm(
     request,
     workflowSteps,
@@ -217,9 +216,114 @@ export function renderProcessRequestForm(
     return requestForm;
 }
 
+// AUTHORIZED STAFF > ASSIGN & CLASSIFY FORM
+export function renderAuthorizedRequestProcessingForm(request, employeeOptions) {
+    // render the request type options for the drop-down 
+    //const typeOptions = renderRequestTypeOptions(activeRequestTypes, request); 
+
+    // render the assignable employees 
+    const assignableEmployees = renderAssignableEmployeeRows(employeeOptions);
+
+    const requestForm = document.createElement("form");
+    requestForm.id = "process-request-form";
+
+    requestForm.innerHTML = `
+
+        <div class="card">
+        <h3>New Request Information</h3>
+        <hr>
+        <div class="card-row">    
+            <div class="info-item">
+                <span class="info-label">Submitted By</span>
+                <span class="info-value">${request.submitted_by}</span>
+            </div>
+        <div class="info-item">
+            <span class="info-label">Request Date</span>
+            <span class="info-value">${formatDateForDisplay(request.submission_date)}</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">Intake Source</span>
+            <span class="info-value">${formatFieldName(request.intake_source)}</span>
+        </div>
+        </div>
+        
+        <hr>
+        <div class="process-form-layout">
+        
+        <div class="form-column">
+            
+            <div class="form-field">
+                    <label for="assigned-employee">
+                        Current Owner
+                    </label>
+
+                    <select id="assigned-employee" name="assigned-employee" required>
+                        ${assignableEmployees}
+                    </select>
+                </div>
+            <div class="form-field">
+                <label for="request-type-options">
+                    Request Type
+                </label>
+
+                <select id="request-type" name="request-type" required>
+                    <option>${request.request_type}</option>
+                </select>
+            </div>
+                
+            <div class="form-field">
+                <label for="expected-completion">Expected Completion</label>
+
+                <input
+                    type="date"
+                    id="expected-completion"
+                    name="expected_completion"
+                    value="${formatDateForInput(request.expected_completion)}"
+                >
+                </div>
+                
+            <div class="form-field">
+                <label for="request-priority">Priority Level</label>
+                <select id="request-priority" name="priority_level">
+                    <option value="" ${!request.priority_level ? "selected" : ""}></option>
+                    <option value="low" ${request.priority_level === "low" ? "selected" : ""}>Low</option>
+                    <option value="medium" ${request.priority_level === "medium" ? "selected" : ""}>Medium</option>
+                    <option value="high" ${request.priority_level === "high" ? "selected" : ""}>High</option>
+                </select>
+            </div>
+            <div class="form-field">
+                <label for="confidentiality-level">Confidentiality:</label>
+                <select id="confidentiality-level" name="confidentiality-level">
+                    <option value="" ${!request.confidentiality_level ? "selected" : ""}></option>
+                    <option value="Nonconfidential" ${request.confidentiality_level === "Nonconfidential" ? "selected" : ""}>Nonconfidential</option>
+                    <option value="Confidential" ${request.confidentiality_level === "Confidential" ? "selected" : ""}>Confidential</option>
+                    <option value="Highly Confidential" ${request.confidentiality_level === "Highly Confidential" ? "selected" : ""}>Highly Confidential</option>
+                </select>
+            </div>
+        </div> <!-- col end -->
+        
+                
+        <div class="form-column">          
+            <div class="form-field summary-field">
+               <label for="request-summary">Summary</label>
+               <textarea id="request-summary" name="brief_summary">${request.brief_summary ?? ""}</textarea>
+            </div>
+        </div>   <!-- col end -->        
+
+        </div>
+        <hr>
+        
+        <button type="submit">Save Changes</button>
+        <p id="request-message"></p>    
+        
+            
+        </div>
+        `;
+
+    return requestForm;
+}
 
 // REQUEST HISTORY
-
 export function loadRequestHistory(
     activityContent,
     requestHistory
@@ -248,9 +352,7 @@ export function loadRequestHistory(
     `;
 }
 
- 
 // REQUEST NOTES
-
 export function loadRequestNotes(
     activityContent,
     requestNotes,
@@ -358,6 +460,7 @@ export function loadRequestNotes(
     );
 }
 
+// REQUEST ROWS
 export function renderRequestRows(requests) { 
 
     const requestRows = requests.map(request => `
@@ -409,8 +512,47 @@ export function renderRequestRows(requests) {
 
 }
 
-// FIELD ROWS
+// REQUEST TYPE OPTIONS 
+function renderRequestTypeOptions(activeRequestTypes, request) {
 
+    // Request Type Options for select menu
+    typeOptions = activeRequestTypes.map(type => {
+        const selected =
+            Number(type.request_type_id) ===
+                Number(request.request_type_id)
+                ? "selected"
+                : "";
+
+        return `
+             <option value="${type.request_type_id}"
+             ${selected}
+         >
+             ${type.name}
+         </option>`;
+
+    }).join("");
+
+    return typeOptions;
+}
+
+// ASSIGNABLE EMPLOYEES 
+function renderAssignableEmployeeRows(employeeOptions) {
+    // Request Assignable Employee Options for select menu
+    const assignableEmployees = employeeOptions.map(employee => {
+
+        return `
+             <option value="${employee.employee_id}"
+           
+         >
+             ${employee.first_name} ${employee.last_name}
+         </option>`;
+
+    }).join("");
+
+    return assignableEmployees;
+}
+
+// FIELD ROWS
 function renderFieldRows(requestFields) {
 
     const fieldRows =
@@ -509,9 +651,7 @@ function renderFieldRows(requestFields) {
     return fieldRows;
 }
 
-
 // STATUS OPTIONS
-
 function renderStatusOptions(
     workflowSteps,
     currentStepId
@@ -542,9 +682,7 @@ function renderStatusOptions(
     return statusOptions;
 }
 
-
 // HISTORY ROWS
-
 function renderHistoryRows(requestHistory) {
 
     const historyRows =
@@ -582,9 +720,7 @@ function renderHistoryRows(requestHistory) {
     return historyRows;
 }
 
-
 // NOTE ROWS
-
 function renderNoteRows(requestNotes) {
 
     const noteRows =

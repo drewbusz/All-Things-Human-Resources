@@ -184,11 +184,33 @@ body {
     cursor: pointer;
 }
 
+/* ============================================================
+   NAVIGATION FEEDBACK
+   Hover previews a selection; selected identifies the
+   currently displayed page.
+   ============================================================ */
+
 .hamburger-menu button:hover {
-    text-decoration: underline;
     background-color: #354b63;
+    text-decoration: none;
 }
 
+.hamburger-menu button:focus-visible {
+    outline: 2px solid white;
+    outline-offset: -2px;
+}
+
+.hamburger-menu button.selected {
+    background-color: #405a75;
+    color: white;
+    font-weight: 700;
+    border-left: 4px solid #ffffff;
+    padding-left: 12px;
+}
+
+.hamburger-menu button.selected:hover {
+    background-color: #4c6886;
+}
 
 /* MAIN CONTENT */
 
@@ -518,4 +540,59 @@ form button[type="submit"]:hover {
     font-size: 0.85rem;
     font-weight: 600;
     pointer-events: none;
+}
+
+/* UC-3 Unassigned Request Cards */
+
+.unassigned-item-card {
+    cursor: default;
+}
+
+.unassigned-item-card:hover {
+    transform: none;
+}
+
+.assign-request-button {
+    margin-left: 1rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #f5f5f5;
+    color: #243447;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.assign-request-button:hover {
+    background: #e6ebf0;
+}
+
+@media (max-width: 650px) {
+    .unassigned-item-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .assign-request-button {
+        margin-left: 0;
+    }
+}
+
+/* ============================================================
+   UC-3: Assignment Success Confirmation
+   Displays feedback after returning to Unassigned Requests.
+   ============================================================ */
+
+.assignment-success {
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    border: 1px solid #b8d9c4;
+    border-left: 4px solid #287a4a;
+    border-radius: 6px;
+    background-color: #f2faf5;
+    color: #205b38;
+    font-size: 14px;
+    font-weight: 600;
 }

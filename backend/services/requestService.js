@@ -475,11 +475,15 @@ async function updateRequest(
     );
 }
 
+async function getUnassignedRequests() {
+    return await requestRepository.getUnassignedRequests();
+}
 
 module.exports = {
     getRequestById,
     getWorkflowStepsByRequestType,
     getRequestHistoryByRequestId,
     getAssignedRequestsByEmpId,
+    getUnassignedRequests,
     updateRequest
 };

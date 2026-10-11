@@ -329,11 +329,26 @@ async function updateRequest(
     }
 }
 
+async function getUnassignedRequests(req, res, next) {
+    try {
+        const requests =
+            await requestService.getUnassignedRequests();
+
+        return res.status(200).json({
+            success: true,
+            data: requests
+        });
+
+    } catch (error) {
+        return handleServiceError(error, res, next);
+    }
+}
 
 module.exports = {
     getRequestById,
     getWorkflowStepsByRequestType,
     getRequestHistoryByRequestId,
     getAssignedRequestsByEmpId,
+    getUnassignedRequests,
     updateRequest
 };

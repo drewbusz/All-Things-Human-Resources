@@ -24,6 +24,10 @@ router.get(
     requestController.getRequestHistoryByRequestId
 );
 
+router.get(
+    "/unassigned",
+    requestController.getUnassignedRequests
+);
 
 router.get(
     "/:id",

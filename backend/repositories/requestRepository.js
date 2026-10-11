@@ -303,11 +303,24 @@ async function updateRequest(
     }
 }
 
+async function getUnassignedRequests() {
+    const sql = `
+        SELECT *
+        FROM request_view
+        WHERE assigned_emp_id IS NULL
+        ORDER BY submission_date DESC
+    `;
+
+    const [rows] = await pool.execute(sql);
+
+    return rows;
+}
 
 module.exports = {
     getRequestById,
     getWorkflowStepsByRequestType,
     getRequestHistoryByRequestId,
     getAssignedRequestsByEmpId,
+    getUnassignedRequests,
     updateRequest
 };

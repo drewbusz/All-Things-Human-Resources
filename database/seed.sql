@@ -232,6 +232,15 @@ VALUES
         'Operations Administrator',
         '2012-02-12 08:00:00',
         'ava.patel@example.com'
+    ),
+    (
+        5, 
+        3, 
+        'Eleanor', 
+        'Acosta', 
+        'Finance Administrator',
+        '2020-05-05 08:00:00',
+        'eleanor.acosta@example.com'
     );
 
 
@@ -254,6 +263,17 @@ WHERE department_id = 3;
 UPDATE department
 SET manager_id = 6
 WHERE department_id = 4;
+
+-- ============================================================
+-- ASSIGN MANAGER TO OPERATIONS ADMINS
+-- ============================================================
+UPDATE employee
+SET manager_id = 8
+WHERE employee_id = 9; 
+
+UPDATE employee
+SET manager_id = 8
+WHERE employee_id = 10; 
 
 
 -- ============================================================
@@ -309,6 +329,90 @@ VALUES
         3,
         TRUE,
         'complete'
+    ),
+    (
+        3,
+        'HR Processing',
+        1,
+        TRUE,
+        'hr_process'
+    ),
+    (
+	    3, 
+	    'Manager Approval', 
+	    2, 
+	    TRUE, 
+	    'approval'
+    ),
+    (
+	    3, 
+	    'Complete',
+	    3, 
+	    TRUE, 
+	    'complete'
+    ),
+    (
+        4,
+        'HR Processing',
+        1,
+        TRUE,
+        'hr_process'
+    ),
+    (
+	    4, 
+	    'Manager Approval',
+	    2, 
+	    TRUE, 
+	    'approval'
+    ),
+    (
+	    4, 
+	    'Quality Control', 
+	    3, 
+	    TRUE, 
+	    'qc'
+    ),
+    (
+	    4, 
+	    'Complete', 
+	    4, 
+	    TRUE, 
+	    'complete'
+    ),
+    (
+        5,
+        'HR Processing',
+        1,
+        TRUE,
+        'hr_process'
+    ),
+    (
+	    5, 
+	    'Complete', 
+	    2, 
+	    TRUE, 
+	    'complete'
+    ),
+    (
+        6,
+        'HR Processing',
+        1,
+        TRUE,
+        'hr_process'
+    ),
+    (
+	    6, 
+	    'Quality Control', 
+	    2, 
+	    TRUE, 
+	    'qc'
+    ),
+    (
+	    6, 
+	    'Complete', 
+	    3, 
+	    TRUE, 
+	    'complete'
     );
 
 

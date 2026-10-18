@@ -11,17 +11,7 @@ function toHistoryValue(value) {
 }
 
 
-/*
- * Retrieve request details.
- *
- * Access checks are performed by the request service.
- * An optional connection allows this query to participate
- * in an existing database transaction.
- */
-async function getRequestById(
-    requestId,
-    connection = pool
-) {
+async function getRequestById(requestId) {
 
     const sql = `
         SELECT *
@@ -30,18 +20,19 @@ async function getRequestById(
         LIMIT 1
     `;
 
-    const [rows] = await connection.execute(
+    const [rows] = await pool.execute(
         sql,
         [requestId]
     );
 
-    return rows[0] || null;
+    if (rows.length === 0) {
+        return null;
+    }
+
+    return rows[0];
 }
 
 
-/*
- * Retrieve active workflow steps for a request type.
- */
 async function getWorkflowStepsByRequestType(
     requestTypeId,
     connection = pool
@@ -69,12 +60,6 @@ async function getWorkflowStepsByRequestType(
 }
 
 
-/*
- * Retrieve change history for a request.
- *
- * The request service must authorize the read before
- * returning these records.
- */
 async function getRequestHistoryByRequestId(
     requestId
 ) {
@@ -112,12 +97,6 @@ async function getRequestHistoryByRequestId(
 }
 
 
-/*
- * Retrieve requests assigned to an employee.
- *
- * The request service is responsible for applying
- * additional confidentiality restrictions.
- */
 async function getAssignedRequestsByEmpId(
     employeeId
 ) {
@@ -138,12 +117,6 @@ async function getAssignedRequestsByEmpId(
 }
 
 
-/*
- * Retrieve currently unassigned requests.
- *
- * The request service must filter the results based
- * on the acting employee's permissions.
- */
 async function getUnassignedRequests() {
 
     const sql = `
@@ -159,15 +132,6 @@ async function getUnassignedRequests() {
 }
 
 
-/*
- * Retrieve active request-specific authorizations.
- *
- * request_auth links an employee's authorization
- * record to an individual request.
- *
- * This is especially important for Highly Confidential
- * requests, which require explicitly permitted access.
- */
 async function getRequestAuthorizations(
     requestId,
     employeeId,
@@ -177,11 +141,7 @@ async function getRequestAuthorizations(
     const sql = `
         SELECT
             ra.request_auth_id,
-            ra.request_id,
-            ra.employee_id,
-            ra.auth_id,
             a.auth_type_id,
-            at.auth_type_name,
             at.can_view,
             at.can_update,
             at.can_approve
@@ -191,24 +151,21 @@ async function getRequestAuthorizations(
             AND ra.employee_id = a.employee_id
         INNER JOIN authorization_type at
             ON a.auth_type_id = at.auth_type_id
-        INNER JOIN employee e
-            ON ra.employee_id = e.employee_id
         WHERE ra.request_id = ?
           AND ra.employee_id = ?
           AND ra.is_active = TRUE
           AND ra.effective_date <= CURRENT_TIMESTAMP
           AND (
-                ra.expiration_date IS NULL
-                OR ra.expiration_date >= CURRENT_TIMESTAMP
-              )
+              ra.expiration_date IS NULL
+              OR ra.expiration_date >= CURRENT_TIMESTAMP
+          )
           AND a.is_active = TRUE
           AND a.effective_date <= CURRENT_TIMESTAMP
           AND (
-                a.expiration_date IS NULL
-                OR a.expiration_date >= CURRENT_DATE
-              )
+              a.expiration_date IS NULL
+              OR a.expiration_date >= CURRENT_DATE
+          )
           AND at.is_active = TRUE
-          AND e.status = 'active'
     `;
 
     const [rows] = await connection.execute(
@@ -220,158 +177,75 @@ async function getRequestAuthorizations(
 }
 
 
-/*
- * Update a request and record each changed field.
- *
- * The optional validateLockedRequest function is
- * executed after the current request row is locked.
- *
- * Signature:
- *
- * validateLockedRequest(
- *     currentRequest,
- *     requestData,
- *     connection
- * )
- *
- * The callback may throw an error to reject the update.
- * A rejected update is rolled back.
- *
- * Validation can also return normalized update data.
- *
- * IMPORTANT:
- * State-dependent validation belongs in this callback.
- * It must not rely on a previously retrieved request.
- */
 async function updateRequest(
     requestId,
     actingEmployeeId,
     requestData,
-    validateLockedRequest = null
+    validateUpdate
 ) {
+
+    if (typeof validateUpdate !== "function") {
+        throw new Error(
+            "Request update validation is required."
+        );
+    }
 
     const connection =
         await pool.getConnection();
-
-    let transactionStarted = false;
 
     try {
 
         await connection.beginTransaction();
 
-        transactionStarted = true;
-
-
-        /*
-         * Lock the current request before evaluating
-         * its assignment, type, confidentiality, or
-         * workflow position.
-         */
         const [rows] =
             await connection.execute(
                 `
                 SELECT
-                    r.request_id,
-                    r.request_type_id,
-                    r.employee_id,
-                    r.assigned_emp_id,
-                    r.current_step_id,
-                    ws.step_num AS current_step_num,
-                    ws.request_type_id AS
-                        current_step_request_type_id,
-                    r.priority_level,
+                    request_id,
+                    request_type_id,
+                    employee_id,
+                    assigned_emp_id,
+                    current_step_id,
+                    priority_level,
                     DATE_FORMAT(
-                        r.expected_completion,
+                        expected_completion,
                         '%Y-%m-%d'
                     ) AS expected_completion,
-                    r.brief_summary,
-                    r.confidentiality_level
-                FROM request r
-                LEFT JOIN workflow_step ws
-                    ON r.current_step_id =
-                        ws.workflow_step_id
-                WHERE r.request_id = ?
+                    brief_summary,
+                    confidentiality_level
+                FROM request
+                WHERE request_id = ?
                 FOR UPDATE
                 `,
                 [requestId]
             );
 
-
         if (rows.length === 0) {
 
             await connection.rollback();
 
-            transactionStarted = false;
-
             return false;
         }
 
-
         const currentRequest = rows[0];
 
+        // Validate using the current, locked request.
+        const validatedData = await validateUpdate(
+            currentRequest,
+            requestData,
+            connection
+        );
 
-        /*
-         * Validate the locked state.
-         *
-         * This is where the request service must check:
-         *
-         * - Acting employee authorization
-         * - Request assignment
-         * - Confidentiality restrictions
-         * - Request type
-         * - Workflow step membership
-         * - Forward-only workflow progression
-         *
-         * Running validation inside the transaction
-         * prevents a stale read from authorizing an
-         * update against a newer workflow state.
-         */
-        let validatedData = { ...requestData };
-
-        if (validateLockedRequest !== null) {
-
-            if (
-                typeof validateLockedRequest !== "function"
-            ) {
-
-                throw new TypeError(
-                    "The request validation callback must be a function."
-                );
-            }
-
-
-            const validationResult =
-                await validateLockedRequest(
-                    currentRequest,
-                    { ...validatedData },
-                    connection
-                );
-
-
-            if (validationResult !== undefined) {
-
-                if (
-                    validationResult === null ||
-                    typeof validationResult !== "object" ||
-                    Array.isArray(validationResult)
-                ) {
-
-                    throw new TypeError(
-                        "Request validation must return an object or undefined."
-                    );
-                }
-
-                validatedData = validationResult;
-            }
+        if (
+            !validatedData ||
+            typeof validatedData !== "object" ||
+            Array.isArray(validatedData)
+        ) {
+            throw new Error(
+                "Request validation must return update data."
+            );
         }
 
-
-        /*
-         * Only recognized database fields may be updated.
-         *
-         * Other submitted values cannot be spread into
-         * the database update operation.
-         */
         const trackedFields = [
             "assigned_emp_id",
             "current_step_id",
@@ -381,11 +255,9 @@ async function updateRequest(
             "confidentiality_level"
         ];
 
-
         const updatedRequest = {
             ...currentRequest
         };
-
 
         for (const field of trackedFields) {
 
@@ -395,15 +267,12 @@ async function updateRequest(
                     field
                 )
             ) {
-
                 updatedRequest[field] =
                     validatedData[field];
             }
         }
 
-
         const changes = [];
-
 
         for (const field of trackedFields) {
 
@@ -413,12 +282,10 @@ async function updateRequest(
             const newValue =
                 updatedRequest[field];
 
-
             if (
                 String(oldValue ?? "") !==
                 String(newValue ?? "")
             ) {
-
                 changes.push({
                     field,
                     oldValue,
@@ -427,26 +294,13 @@ async function updateRequest(
             }
         }
 
-
-        /*
-         * Nothing changed.
-         *
-         * Validation has still been performed against
-         * the locked request before returning success.
-         */
         if (changes.length === 0) {
 
             await connection.commit();
 
-            transactionStarted = false;
-
             return true;
         }
 
-
-        /*
-         * Persist the updated request.
-         */
         await connection.execute(
             `
             UPDATE request
@@ -470,14 +324,6 @@ async function updateRequest(
             ]
         );
 
-
-        /*
-         * Record each modified field in the same
-         * transaction as the request update.
-         *
-         * A failed history insert causes the request
-         * update to be rolled back as well.
-         */
         const historySql = `
             INSERT INTO request_history (
                 request_id,
@@ -489,7 +335,6 @@ async function updateRequest(
             )
             VALUES (?, ?, ?, ?, ?, ?)
         `;
-
 
         for (const change of changes) {
 
@@ -510,29 +355,13 @@ async function updateRequest(
             );
         }
 
-
         await connection.commit();
-
-        transactionStarted = false;
 
         return true;
 
     } catch (error) {
 
-        if (transactionStarted) {
-
-            try {
-
-                await connection.rollback();
-
-            } catch (rollbackError) {
-
-                console.error(
-                    "Request transaction rollback failed:",
-                    rollbackError
-                );
-            }
-        }
+        await connection.rollback();
 
         throw error;
 

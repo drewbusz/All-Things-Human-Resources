@@ -1,7 +1,7 @@
 const requestRepository = require("../repositories/requestRepository");
 const employeeService = require("./employeeService");
 
-const PROCESSOR_TYPES = [3, 5, 6];
+const HR_TYPES = [3, 5, 6];
 const ASSIGNMENT_TYPES = [3, 5];
 
 function createServiceError(message, code) {
@@ -18,15 +18,13 @@ function validId(value) {
         Number(value) > 0;
 }
 
-function isValidDate(dateValue) {
-    if (
-        typeof dateValue !== "string" ||
-        !/^\d{4}-\d{2}-\d{2}$/.test(dateValue)
-    ) {
+function isValidDate(value) {
+    if (typeof value !== "string" ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
         return false;
     }
 
-    const [year, month, day] = dateValue.split("-").map(Number);
+    const [year, month, day] = value.split("-").map(Number);
     const date = new Date(Date.UTC(year, month - 1, day));
 
     return date.getUTCFullYear() === year &&
@@ -45,30 +43,28 @@ async function checkAccess(request, employeeId, operation, connection) {
     const authorizations = await employeeService
         .getEmployeeAuthorizations(Number(employeeId), connection);
 
-    const types = authorizations.map(
-        auth => Number(auth.auth_type_id)
-    );
-
+    const types = authorizations.map(a => Number(a.auth_type_id));
     const assigned = Number(request.assigned_emp_id) === Number(employeeId);
     const submitted = Number(request.employee_id) === Number(employeeId);
 
-    const fullAccess = types.includes(5);
-    const generalAccess = types.includes(3) || fullAccess;
-    const assignedAccess = types.includes(6) && assigned;
+    const generalHR = types.includes(3) || types.includes(5);
+    const assignedHR = types.includes(6) && assigned;
+    const hrAccess = generalHR || assignedHR;
 
-    if (request.confidentiality_level === "Highly Confidential") {
+    const confidentiality = request.confidentiality_level;
+
+    if (confidentiality === "Highly Confidential") {
         if (!submitted) {
             const permissions = await requestRepository
                 .getRequestAuthorizations(
                     request.request_id,
-                    employeeId,
+                    Number(employeeId),
                     connection
                 );
 
-            const requiredPermission =
-                operation === "read" ? "can_view" : "can_update";
+            const field = operation === "read" ? "can_view" : "can_update";
 
-            if (!permissions.some(p => Boolean(p[requiredPermission]))) {
+            if (!permissions.some(p => Boolean(p[field]))) {
                 throw createServiceError(
                     "You are not authorized to access this Highly Confidential request.",
                     "REQUEST_ACCESS_DENIED"
@@ -80,13 +76,12 @@ async function checkAccess(request, employeeId, operation, connection) {
     let allowed = false;
 
     if (operation === "read") {
-        allowed = submitted || generalAccess || assignedAccess;
+        allowed = submitted || hrAccess;
     } else if (operation === "assign") {
-        allowed = types.some(type => ASSIGNMENT_TYPES.includes(type));
+        allowed = types.some(t => ASSIGNMENT_TYPES.includes(t));
     } else if (operation === "process") {
-        allowed = fullAccess || (
-            assigned && types.some(type => PROCESSOR_TYPES.includes(type))
-        );
+        allowed = types.includes(5) ||
+            (assigned && types.some(t => HR_TYPES.includes(t)));
     }
 
     if (!allowed) {
@@ -105,7 +100,7 @@ async function getRequestById(requestId, actingEmployeeId) {
         );
     }
 
-    const request = await requestRepository.getRequestById(requestId);
+    const request = await requestRepository.getRequestById(Number(requestId));
 
     if (!request) {
         throw createServiceError(
@@ -119,15 +114,24 @@ async function getRequestById(requestId, actingEmployeeId) {
 }
 
 async function getWorkflowStepsByRequestType(requestTypeId) {
-    return await requestRepository
-        .getWorkflowStepsByRequestType(requestTypeId);
+    if (!validId(requestTypeId)) {
+        throw createServiceError(
+            "A valid request type ID is required.",
+            "INVALID_REQUEST_TYPE"
+        );
+    }
+
+    return requestRepository.getWorkflowStepsByRequestType(
+        Number(requestTypeId)
+    );
 }
 
 async function getRequestHistoryByRequestId(requestId, actingEmployeeId) {
     await getRequestById(requestId, actingEmployeeId);
 
-    return await requestRepository
-        .getRequestHistoryByRequestId(requestId);
+    return requestRepository.getRequestHistoryByRequestId(
+        Number(requestId)
+    );
 }
 
 async function getAssignedRequestsByEmpId(employeeId, actingEmployeeId) {
@@ -146,7 +150,7 @@ async function getAssignedRequestsByEmpId(employeeId, actingEmployeeId) {
     }
 
     const requests = await requestRepository
-        .getAssignedRequestsByEmpId(employeeId);
+        .getAssignedRequestsByEmpId(Number(employeeId));
 
     const allowed = [];
 
@@ -175,8 +179,8 @@ async function getUnassignedRequests(actingEmployeeId) {
     const authorizations = await employeeService
         .getEmployeeAuthorizations(Number(actingEmployeeId));
 
-    if (!authorizations.some(
-        auth => ASSIGNMENT_TYPES.includes(Number(auth.auth_type_id))
+    if (!authorizations.some(a =>
+        ASSIGNMENT_TYPES.includes(Number(a.auth_type_id))
     )) {
         throw createServiceError(
             "You are not authorized to view unassigned requests.",
@@ -204,16 +208,13 @@ async function getUnassignedRequests(actingEmployeeId) {
 async function updateRequest(requestId, actingEmployeeId, requestData) {
     if (!validId(requestId) || !validId(actingEmployeeId)) {
         throw createServiceError(
-            "A valid request and acting employee ID are required.",
+            "Valid request and employee IDs are required.",
             "INVALID_EMPLOYEE"
         );
     }
 
-    if (
-        !requestData ||
-        typeof requestData !== "object" ||
-        Array.isArray(requestData)
-    ) {
+    if (!requestData || typeof requestData !== "object" ||
+        Array.isArray(requestData)) {
         throw createServiceError(
             "Valid request information is required.",
             "INVALID_REQUEST_DATA"
@@ -223,10 +224,8 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
     const data = { ...requestData };
 
     if (data.brief_summary !== undefined) {
-        if (
-            typeof data.brief_summary !== "string" ||
-            !data.brief_summary.trim()
-        ) {
+        if (typeof data.brief_summary !== "string" ||
+            !data.brief_summary.trim()) {
             throw createServiceError(
                 "A request summary is required.",
                 "INVALID_SUMMARY"
@@ -240,10 +239,8 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
         data.priority_level = null;
     }
 
-    if (
-        data.priority_level !== undefined &&
-        ![null, "low", "medium", "high"].includes(data.priority_level)
-    ) {
+    if (data.priority_level !== undefined &&
+        ![null, "low", "medium", "high"].includes(data.priority_level)) {
         throw createServiceError(
             "Priority must be low, medium, high, or blank.",
             "INVALID_PRIORITY"
@@ -254,34 +251,45 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
         data.expected_completion = null;
     }
 
-    if (
-        data.expected_completion !== undefined &&
+    if (data.expected_completion !== undefined &&
         data.expected_completion !== null &&
-        !isValidDate(data.expected_completion)
-    ) {
+        !isValidDate(data.expected_completion)) {
         throw createServiceError(
             "Expected completion must be a valid date in YYYY-MM-DD format.",
             "INVALID_DATE"
         );
     }
 
-    if (
-        data.assigned_emp_id !== undefined &&
-        !validId(data.assigned_emp_id)
-    ) {
+    if (data.assigned_emp_id !== undefined &&
+        !validId(data.assigned_emp_id)) {
         throw createServiceError(
             "The assigned employee ID is invalid.",
             "INVALID_EMPLOYEE"
         );
     }
 
-    if (
-        data.current_step_id !== undefined &&
-        !validId(data.current_step_id)
-    ) {
+    if (data.current_step_id !== undefined &&
+        !validId(data.current_step_id)) {
         throw createServiceError(
             "The selected workflow status is invalid.",
             "INVALID_STATUS"
+        );
+    }
+
+    const allowedFields = [
+        "request_type_id",
+        "assigned_emp_id",
+        "current_step_id",
+        "priority_level",
+        "expected_completion",
+        "brief_summary",
+        "confidentiality_level"
+    ];
+
+    if (Object.keys(data).some(field => !allowedFields.includes(field))) {
+        throw createServiceError(
+            "The request contains an unsupported field.",
+            "INVALID_REQUEST_DATA"
         );
     }
 
@@ -290,23 +298,18 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
         Number(actingEmployeeId),
         data,
         async (currentRequest, submittedData, connection) => {
-            if (
-                submittedData.request_type_id !== undefined &&
+            if (submittedData.request_type_id !== undefined &&
                 Number(submittedData.request_type_id) !==
-                Number(currentRequest.request_type_id)
-            ) {
+                Number(currentRequest.request_type_id)) {
                 throw createServiceError(
-                    "The request type does not match this HR request.",
+                    "The request type cannot be changed here.",
                     "INVALID_REQUEST_TYPE"
                 );
             }
 
-            // Regular processing cannot change confidentiality.
-            if (
-                submittedData.confidentiality_level !== undefined &&
+            if (submittedData.confidentiality_level !== undefined &&
                 submittedData.confidentiality_level !==
-                currentRequest.confidentiality_level
-            ) {
+                currentRequest.confidentiality_level) {
                 throw createServiceError(
                     "Confidentiality cannot be changed through this form.",
                     "REQUEST_ACCESS_DENIED"
@@ -328,6 +331,14 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
             );
 
             if (assignmentChanging) {
+                if (submittedData.brief_summary !== undefined ||
+                    submittedData.current_step_id !== undefined) {
+                    throw createServiceError(
+                        "Assignment cannot modify processing fields.",
+                        "REQUEST_ACCESS_DENIED"
+                    );
+                }
+
                 const eligible = await employeeService
                     .isEligibleHRAssignee(
                         Number(submittedData.assigned_emp_id),
@@ -336,9 +347,26 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
 
                 if (!eligible) {
                     throw createServiceError(
-                        "The selected employee is not authorized to process HR requests.",
+                        "The selected employee is not eligible for HR assignment.",
                         "EMPLOYEE_NOT_AUTHORIZED"
                     );
+                }
+
+                if (currentRequest.confidentiality_level ===
+                    "Highly Confidential") {
+                    const permissions = await requestRepository
+                        .getRequestAuthorizations(
+                            currentRequest.request_id,
+                            Number(submittedData.assigned_emp_id),
+                            connection
+                        );
+
+                    if (!permissions.some(p => Boolean(p.can_update))) {
+                        throw createServiceError(
+                            "The assignee requires explicit access to this Highly Confidential request.",
+                            "REQUEST_ACCESS_DENIED"
+                        );
+                    }
                 }
             }
 
@@ -348,9 +376,9 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
                     connection
                 );
 
-            const currentStep = steps.find(
-                step => Number(step.workflow_step_id) ===
-                    Number(currentRequest.current_step_id)
+            const currentStep = steps.find(step =>
+                Number(step.workflow_step_id) ===
+                Number(currentRequest.current_step_id)
             );
 
             if (!currentStep) {
@@ -361,26 +389,29 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
             }
 
             if (submittedData.current_step_id !== undefined) {
-                const nextStep = steps.find(
-                    step => Number(step.workflow_step_id) ===
-                        Number(submittedData.current_step_id)
+                const nextStep = steps.find(step =>
+                    Number(step.workflow_step_id) ===
+                    Number(submittedData.current_step_id)
                 );
 
                 if (!nextStep) {
                     throw createServiceError(
-                        "The selected status does not belong to this request workflow.",
+                        "The selected status does not belong to this workflow.",
                         "INVALID_STATUS"
                     );
                 }
 
-                if (nextStep.step_num < currentStep.step_num) {
+                const currentNum = Number(currentStep.step_num);
+                const nextNum = Number(nextStep.step_num);
+
+                if (nextNum < currentNum) {
                     throw createServiceError(
                         "A request cannot move backward in its workflow.",
                         "INVALID_STATUS"
                     );
                 }
 
-                if (nextStep.step_num > currentStep.step_num + 1) {
+                if (nextNum > currentNum + 1) {
                     throw createServiceError(
                         "A request cannot skip workflow steps.",
                         "INVALID_STATUS"
@@ -415,7 +446,8 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
         );
     }
 
-    return await getRequestById(requestId, actingEmployeeId);
+    // The acting employee was authorized before the update committed.
+    return requestRepository.getRequestById(Number(requestId));
 }
 
 module.exports = {

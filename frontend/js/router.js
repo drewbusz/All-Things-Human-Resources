@@ -48,7 +48,7 @@ export function loadPage(page, requestId = null, actingEmployeeId = null, confir
         case "assigned-requests":
             loadNavigation("processing");
             console.log("Load page: ", page);
-            loadMyAssignedRequests(2);
+            loadMyAssignedRequests(2, 2);
             break;
 
         // Load a specific request 
@@ -84,12 +84,12 @@ export function loadPage(page, requestId = null, actingEmployeeId = null, confir
         // All new and unreviewed/unassigned requests
         case "unassigned-requests":
             loadNavigation("authorized_staff");
-            loadUnassignedRequests(confirmation);
+            loadUnassignedRequests(2, confirmation);
             break;
         // UC-3: Assign and prioritize a selected HR request.
         case "assign-request":
             loadNavigation("authorized_staff");
-            loadAssignRequestPage(requestId);
+            loadAssignRequestPage(requestId, actingEmployeeId);
             break;
         // open a new unreviewed request 
         case "new-request":

@@ -616,6 +616,7 @@ INSERT INTO request (
 )
 VALUES
     -- Assigned requests
+    -- Request 1
     (
         1,
         5,
@@ -627,6 +628,7 @@ VALUES
         'Nonconfidential',
         'self_service'
     ),
+    -- Request 2
     (
         2,
         6,
@@ -638,6 +640,7 @@ VALUES
         'Confidential',
         'email_service'
     ),
+    -- Request 3
     (
         1,
         7,
@@ -649,6 +652,7 @@ VALUES
         'Nonconfidential',
         'self_service'
     ),
+    -- Request 4
     (
         2,
         8,
@@ -660,6 +664,7 @@ VALUES
         'Confidential',
         'self_service'
     ),
+    -- Request 5
     (
         1,
         9,
@@ -671,6 +676,7 @@ VALUES
         'Nonconfidential',
         'email_service'
     ),
+    -- Request 6
     (
         2,
         10,
@@ -682,6 +688,7 @@ VALUES
         'Confidential',
         'email_service'
     ),
+    -- Request 7
     (
         1,
         5,
@@ -695,6 +702,7 @@ VALUES
     ),
 
     -- Unassigned requests
+    -- Request 8
     (
         2,
         6,
@@ -706,6 +714,7 @@ VALUES
         'Confidential',
         'email_service'
     ),
+    -- Request 9
     (
         1,
         7,
@@ -717,6 +726,7 @@ VALUES
         'Nonconfidential',
         'self_service'
     ),
+    -- Request 10
     (
         2,
         8,
@@ -728,6 +738,7 @@ VALUES
         'Confidential',
         'self_service'
     ),
+    -- Request 11
     (
         1,
         9,
@@ -739,6 +750,7 @@ VALUES
         'Nonconfidential',
         'email_service'
     ),
+    -- Request 12
     (
         2,
         10,
@@ -752,44 +764,48 @@ VALUES
     ),
 
     -- Additional request types
+    -- Request 13
     (
         3,
         5,
         NULL,
-        1,
+        7,
         'low',
         '2026-10-24',
         'Employee requested information about available dental and vision benefits.',
         'Nonconfidential',
         'self_service'
     ),
+    -- Request 14
     (
         4,
         6,
         2,
-        1,
+        10,
         'high',
         '2026-10-19',
         'Employee reported an incorrect overtime amount on their most recent paycheck.',
         'Confidential',
         'email_service'
     ),
+    -- Request 15
     (
         5,
         9,
         NULL,
-        1,
+        14,
         'low',
         '2026-10-25',
         'Employee requested an employment verification letter for a housing application.',
         'Nonconfidential',
         'self_service'
     ),
+    -- Request 16
     (
         6,
         10,
         1,
-        1,
+        16,
         'medium',
         '2026-10-23',
         'Employee requested an adjusted work schedule as a workplace accommodation.',

@@ -20,14 +20,14 @@ import { loadPage } from "../router.js";
 // LOAD UNASSIGNED REQUESTS
 // ============================================================
 
-export async function loadUnassignedRequests(confirmation = null) {
+export async function loadUnassignedRequests(actingEmployeeId, confirmation = null) {
 
     const contentArea = document.getElementById("contentArea");
 
     try {
 
         // Retrieve unassigned requests from the backend API.
-        const requests = await getUnassignedRequests();
+        const requests = await getUnassignedRequests(actingEmployeeId);
 
 
         // Create the page container and request list.
@@ -131,7 +131,8 @@ export async function loadUnassignedRequests(confirmation = null) {
 
                     loadPage(
                         "assign-request",
-                        request.request_id
+                        request.request_id, 
+                        actingEmployeeId
                     );
 
                 });

@@ -11,7 +11,7 @@
 // ============================================================
 
 import { getRequestById, saveRequestAssignment } from "../api/requestApi.js";
-import { getEmployeesByAuthType } from "../api/employeeApi.js";
+import { getAssignableEmployees } from "../api/employeeApi.js";
 import { formatDateForDisplay } from "../utils/dateHelper.js";
 import { loadPage } from "../router.js";
 
@@ -22,15 +22,15 @@ const ACTING_EMPLOYEE_ID = 2;
 const HR_MODIFICATION_AUTH_TYPE = 3;
 
 
-export async function loadAssignRequestPage(requestId) {
+export async function loadAssignRequestPage(requestId, actingEmployeeId) {
 
     const contentArea = document.getElementById("contentArea");
 
     try {
         // Load the request and eligible HR employees.
         const [request, employees] = await Promise.all([
-            getRequestById(requestId),
-            getEmployeesByAuthType(HR_MODIFICATION_AUTH_TYPE)
+            getRequestById(requestId, actingEmployeeId),
+            getAssignableEmployees()
         ]);
 
         if (!request || typeof request !== "object") {

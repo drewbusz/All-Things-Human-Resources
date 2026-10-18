@@ -596,3 +596,27 @@ form button[type="submit"]:hover {
     font-size: 14px;
     font-weight: 600;
 }
+
+.feedback {
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+    .feedback.success {
+        background-color: #e8f5e9;
+        border-color: #81c784;
+        color: #2e7d32;
+    }
+
+    .feedback.error {
+        background-color: #ffebee;
+        border-color: #e57373;
+        color: #c62828;
+    }
+
+.form-field select.invalid {
+    border: 2px solid #d32f2f;
+    background-color: #ffebee;
+}

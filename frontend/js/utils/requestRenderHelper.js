@@ -41,8 +41,7 @@ export function renderProcessRequestForm(
             <hr>
 
             <div class="request-fields">
-               // Request Fields and Values     //<br>
-               // Pending backend implementation//
+               
             </div>
 
             <hr>
@@ -72,7 +71,7 @@ export function renderProcessRequestForm(
 
                         <select
                             id="current-step-id"
-                            name="current-status"
+                            name="current_step_id"
                             required
                         >
                             ${statusOptions}
@@ -154,7 +153,7 @@ export function renderProcessRequestForm(
                 Save Changes
             </button>
 
-            <p id="request-message"></p>
+            <p class="feedback"></p>
 
         </div>
     `;
@@ -274,28 +273,43 @@ export function loadRequestHistory(
     activityContent,
     requestHistory
 ) {
+    activityContent.innerHTML = ``; 
+
+    const header =
+        document.createElement("div"); 
+
+    header.classList.add("history-header"); 
+
+    header.innerHTML = `
+        <span>Date</span>
+        <span>Changed By</span>
+        <span>Field</span>
+        <span>Change</span>
+    `;
+
+    activityContent.appendChild(header); 
+
+    const historyList = document.createElement("div"); 
+    historyList.classList.add("history-list"); 
 
     const historyRows =
-        renderHistoryRows(requestHistory);
+        renderHistoryRows(requestHistory); 
 
-    activityContent.innerHTML = `
-        <div class="history-header">
-            <span>Date</span>
-            <span>Changed By</span>
-            <span>Field</span>
-            <span>Change</span>
-        </div>
+    if (historyRows.length === 0) {
+        const empty = document.createElement("p");
 
-        <div class="history-list">
+        empty.classList.add("history-empty");
 
-            ${historyRows || `
-                <p class="history-empty">
-                    No request history is available.
-                </p>
-            `}
+        empty.textContent =
+            "No request history is available.";
 
-        </div>
-    `;
+        historyList.appendChild(empty);
+    } else { 
+        historyRows.forEach(row => { 
+            historyList.appendChild(row); 
+        }); 
+    }
+    activityContent.appendChild(historyList); 
 }
 
 // REQUEST NOTES
@@ -631,40 +645,59 @@ function renderStatusOptions(
 // HISTORY ROWS
 function renderHistoryRows(requestHistory) {
 
-    const historyRows =
-        requestHistory.map(history => `
+    return requestHistory.map(history => {
 
-            <div class="history-item">
+        const row = document.createElement("div"); 
 
-                <span class="history-date">
-                    ${formatDateForDisplay(
-            history.date_modified
-        )}
-                </span>
+        row.classList.add("history-item"); 
 
-                <span class="history-user">
-                    ${history.changed_by}
-                </span>
+        const date =
+            document.createElement("span"); 
 
-                <span class="history-field">
-                    ${formatFieldName(
-            history.modified_field
-        )}
-                </span>
+        date.classList.add("history-date");
 
-                <span class="history-change">
-                    ${history.previous_value ?? ""}
-                    >
-                    ${history.current_value ?? ""}
-                </span>
+        date.textContent =
+            formatDateForDisplay(
+                history.date_modified
+            ); 
 
-            </div>
+        const changedBy =
+            document.createElement("span"); 
 
-        `).join("");
+        changedBy.classList.add("history-user");  
 
+        changedBy.textContent =
+            formatFieldName(
+                history.changed_by
+            ); 
 
-    return historyRows;
-}
+        const field = 
+            document.createElement("span");
+
+        field.classList.add("history-field");
+
+        field.textContent =
+            formatFieldName(
+                history.modified_field
+            );
+
+        const change =
+            document.createElement("span"); 
+
+        change.classList.add("history-change");
+
+        change.textContent =
+            `${history.previous_value ?? ""}  >  ${history.current_value ?? ""}`; 
+
+        row.appendChild(date);
+        row.appendChild(changedBy);
+        row.appendChild(field);
+        row.appendChild(change);
+
+        return row; 
+
+    });
+} 
 
 // NOTE ROWS
 function renderNoteRows(requestNotes) {

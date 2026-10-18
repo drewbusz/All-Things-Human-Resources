@@ -34,17 +34,22 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
     const contentArea = document.getElementById("contentArea");
 
     try {
-
-        const request = await getRequestById(requestId);
+        // Retrieve the request and requestHistory together 
+        const [request, requestHistory] = await Promise.all([
+            getRequestById(requestId, actingEmployeeId),
+            getRequestHistory(requestId, actingEmployeeId)
+        ]);
 
         console.log("Request retrieved: ", request);
 
         // Retrieve the workflow steps for the request type
-        const workflowSteps = await getWorkflowStepsByRequestType(request.request_type_id);
+        const workflowSteps =
+            await getWorkflowStepsByRequestType(
+                request.request_type_id
+            );
 
 
         // retrieve the request history to build the history card
-        const requestHistory = await getRequestHistory(requestId);
 
 
         // ==============================
@@ -245,7 +250,8 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                     tab.dataset.tab ===
                     "notes"
                 ) {
-                    activityContent.innerHTML = `Request notes pending backend implementation.`; 
+                    activityContent.textContent =
+                        `Request notes pending backend implementation.`; 
                    // loadRequestNotes(
                    //      activityContent,
                    //      requestNotes,
@@ -261,19 +267,85 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
         // Single form submission
         // ==============================
 
-        const form = document.getElementById("process-request-form");
+        const form =
+            document.getElementById("process-request-form");
 
+        if (!form) { 
+            throw new Error (
+                "Unable to locate the process request form."
+            );
+        }
+        // Clear Status validation when user changes it
+        const status =
+            form.querySelector(
+                '[name="current_step_id"]'
+            );
 
-        form.addEventListener("submit", async event => {
+        if (status) {
+            status.addEventListener("change", () => {
+
+                status.classList.remove("invalid");
+                status.removeAttribute("aria-invalid");
+
+                const message =
+                    form.querySelector(".feedback");
+
+                if (message) {
+                    message.textContent = "";
+                    message.classList.remove("error");
+                }
+            });
+        }
+
+        form.addEventListener(
+            "submit",
+            async event => {
 
                 event.preventDefault();
 
-                await submitRequestUpdates(
-                    requestForm,
-                    requestId,
-                    request.request_type_id,
-                    actingEmployeeId
-                );
+                try { 
+                    await submitRequestUpdates(
+                        form,
+                        requestId, 
+                        actingEmployeeId
+                    ); 
+
+                    await loadProcessRequestPage(
+                        requestId, 
+                        actingEmployeeId
+                    ); 
+                    const message =
+                        form.querySelector(".feedback"); 
+                    if (message) { 
+                        message.textContent =
+                            "Requested updated successfully.";
+                        message.classList.add("success"); 
+                    }
+
+                } catch (error) {
+                    console.error(error);
+
+                    const message =
+                        form.querySelector(".feedback");
+
+                    if (
+                        error.message === "A request cannot move backward in its workflow."
+                    ) {
+                        const status =
+                            form.querySelector(
+                                '[name="current_step_id"]'
+                            );
+
+                        status.classList.add("invalid"); 
+                    }
+                        
+                    if (message) { 
+                        message.textContent = 
+                            error.message ||
+                            "Unable to update request.";
+                        message.classList.add("error"); 
+                    }
+                } 
             }
         );
 
@@ -283,10 +355,15 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
         console.error(error);
 
         contentArea.innerHTML = `
-            <p>
-                Unable to retrieve request.
-            </p>
-        `;
+        <div class="card">
+            <p id="request-error-message"></p>
+        </div>
+    `;
+
+        contentArea
+            .querySelector("#request-error-message")
+            .textContent =
+            error.message || "Unable to load request information.";
     }
 }
 
@@ -296,32 +373,65 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
 // ==============================
 
 async function submitRequestUpdates(
-    requestForm,
+    form,
     requestId,
-    requestTypeId,
     actingEmployeeId
 ) {
 
-    const fieldValues = [
-        ...requestForm.querySelectorAll(
-            "[data-field-id]"
-        )
-    ].map(field => ({
-        field_id: field.dataset.fieldId,
-        field_val: field.value
-    }));
+    // const fieldValues = [
+    //     ...requestForm.querySelectorAll(
+    //         "[data-field-id]"
+    //     )
+    // ].map(field => ({
+    //     field_id: field.dataset.fieldId,
+    //     field_val: field.value
+    // }));
 
+    // Read the form values 
+    const requestData = {
+        brief_summary:
+            form.querySelector(
+                '[name="brief_summary"]'
+            )?.value,
 
-    await updateRequest(
+        priority_level:
+            form.querySelector(
+                '[name="priority_level"]'
+            )?.value,
+
+        expected_completion:
+            form.querySelector(
+                '[name="expected_completion"]'
+            )?.value,
+
+        current_step_id:
+            form.querySelector(
+                '[name="current_step_id"]'
+            )?.value,
+
+        actingEmployeeId: actingEmployeeId
+    };
+
+    console.log(
+        "Submitting request:",
         requestId,
-        requestTypeId,
-        actingEmployeeId
+        requestData
     );
 
+    const updatedRequest =
+        await updateRequest(
+            requestId,
+            requestData
+        );
 
-   // await saveRequestFieldValues(
-    //     fieldValues,
+    // await saveRequestFieldValues(
     //     requestId,
+    //      fieldValues,
     //     actingEmployeeId
     // );
+
+    return updatedRequest;
 }
+
+
+

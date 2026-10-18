@@ -1,81 +1,101 @@
 // request API for front end
 
 // Get request details 
-export async function getRequestById(requestId) { 
+export async function getRequestById(
+    requestId,
+    actingEmployeeId
+) { 
 
-    try {
-        // Retrieve the existing request from the Express backend
-        const response = await fetch(`/api/requests/${requestId}`);
+    // Retrieve the existing request from the Express backend
+    const response = await fetch(`/api/requests/${requestId}?actingEmployeeId=${actingEmployeeId}`);
 
-        if (!response.ok) {
-            throw new Error("Unable to retrieve request.");
+    const result = await response.json();
 
-        }
-        const result = await response.json();
-        return result.data;
-    } catch (error) { 
-        return error.message; 
+
+    if (!response.ok) {
+        throw new Error(
+            result.message ||
+            result.error ||
+            "Unable to retrieve request.");
     }
+
+    return result.data; 
 } 
 
+// Get workflow steps by request type 
 export async function getWorkflowStepsByRequestType(request_type_id) {
    
         const workflowResponse = await fetch(`/api/requests/workflow-steps/${request_type_id}`);
 
         if (!workflowResponse.ok) {
             throw new Error("Unable to retrieve workflow steps.");
-            return null; 
         }
         const workflowResult = await workflowResponse.json(); 
         return workflowResult.data; 
     
 }
 
-export async function getRequestHistory(request_id) { 
+// get Request History 
+export async function getRequestHistory(request_id, actingEmployeeId) { 
 
-    const historyResponse = await fetch(
-        `/api/requests/${request_id}/history`
+    const historyResponse =
+        await fetch(
+        `/api/requests/${request_id}/history?actingEmployeeId=${actingEmployeeId}`
     );
 
-    const historyResult = await historyResponse.json();
+    const historyResult =
+        await historyResponse.json();
 
 
     if (!historyResponse.ok) {
-        throw new Error("unable to review request history");
+        throw new Error(
+            historyResult.message || 
+            historyResult.error || 
+            "Unable to review request history"
+        );
     }
 
     return historyResult.data; 
 }
 
+// get request fields and values 
 export async function getRequestFields(request_id) { 
-    const requestFieldsResponse = await fetch(`/api/requests/${request_id}/fields`);
+    const requestFieldResponse = await fetch(`/api/requests/${request_id}/fields`);
+    const requestFieldResult = await requestFieldResponse.json(); 
 
-    if (!requestFieldsResponse.ok) { 
-        throw new Error("Unable to retrieve request fields."); 
+    if (!requestFieldResponse.ok) { 
+        throw new Error(
+            requestFieldResult.message ||
+            requestFieldResult.error || 
+            "Unable to retrieve request fields."
+        ); 
     }
 
-    const requestFieldsResult = await requestFieldsResponse.json(); 
-    return requestFieldsResult.data; 
+    return requestFieldResult.data; 
     
 }
 
+// Get request notes with the request id 
 export async function getRequestNotesByRequestId(request_id) { 
-    const requestNotesResponse = await fetch(`/api/requests/${request_id}/notes`); 
+    const requestNoteResponse = await fetch(`/api/requests/${request_id}/notes`); 
+    const requestNoteResult = await requestNoteResponse.json(); 
 
     if (!requestNotesResponse.ok) { 
-        throw new Error("Unable to retrieve request notes."); 
+        throw new Error(
+            requestNoteResult.message || 
+            requestNoteResult.error || 
+            "Unable to retrieve request notes."); 
     }
 
-    const requestNotesResult = await requestNotesResponse.json(); 
-    return requestNotesResult.data; 
+    return requestNoteResult.data; 
 }
 
+// Get all active request types 
 export async function getActiveRequestTypes() { 
     const requestTypeResponse = await fetch(`/api/requests/activeRequestTypes`);
 
     if (!requestTypeResponse.ok) {
-        throw new Error("Unable to retrieve request types");
-        console.log("unable to retrieve request types");
+        throw new Error( result.message || "Unable to retrieve request types");
     }
 
     const requestTypeResult = await requestTypeResponse.json();
@@ -83,89 +103,94 @@ export async function getActiveRequestTypes() {
 }
 
 // Work Item list APIs
-export async function getAssignedRequestsByEmpId(employeeId) { 
-    const response = await fetch(`/api/requests/assigned/${employeeId}`); 
+export async function getAssignedRequestsByEmpId(employeeId, actingEmployeeId) { 
+    const response =
+        await fetch(`/api/requests/assigned/${employeeId}?actingEmployeeId=${actingEmployeeId}`); 
+
+    const result = await response.json(); 
 
     if (!response.ok) { 
-        throw new Error ("Unable to retrieve assigned requests."); 
+        throw new Error(
+            result.message ||
+            result.error || 
+            "Unable to retrieve assigned requests."); 
     }
-    const result = await response.json(); 
-    console.log("Status: ", response.status); 
-    console.log("Response: ", result); 
+
     return result.data; 
 }
 
 // Get unassigned requests
-export async function getUnassignedRequests() {
-    const response = await fetch(`/api/requests/unassigned`);
+export async function getUnassignedRequests(actingEmployeeId) {
+    const response =
+        await fetch(
+            `/api/requests/unassigned?actingEmployeeId=${actingEmployeeId}`
+        );
+
+    const result
+        = await response.json();
 
     if (!response.ok) {
-        throw new Error("Unable to retrieve unassigned requests.");
+        throw new Error(
+            result.message ||
+            result.error || 
+            "Unable to retrieve unassigned requests."
+        );
+
+        error.code = result.code; 
+        throw error;
     }
-    const result = await response.json();
-    console.log("Status: ", response.status);
-    console.log("Response: ", result);
+
     return result.data;
 }
 
 // Save updates to the request details 
 export async function updateRequest(
-        requestId,
-        requestTypeId,
-        actingEmployeeId
+    requestId,
+    requestData,
 ) {
-        const message = document.getElementById("request-message");
-
-        // Read the form values 
-        const priority = document.getElementById("request-priority").value;
-        const expectedCompletion = document.getElementById("expected-completion").value;
-        const currentStepId = document.getElementById("current-step-id").value;
-
-        const requestData = {
-            request_type_id: requestTypeId,
-            actingEmployeeId: actingEmployeeId,
-            brief_summary: document.getElementById("request-summary").value,
-            priority_level: priority === "" ? null : priority,
-            expected_completion: expectedCompletion === "" ? null : expectedCompletion,
-            current_step_id: Number(currentStepId)
-        };
-
-        // Submit one update request 
-        try {
-            const response = await fetch(`/api/requests/${requestId}`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-                    body:
-                        JSON.stringify(requestData)
-                }
-            );
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.message || result.error || "Unable to update request.");
-            }
-
-            message.textContent = "Request updated successfully.";
-        } catch (error) {
-            console.error(error);
-
-            message.textContent = error.message || "Unable to update request.";
-
+    console.log("requestId:", requestId);
+    console.log("requestData:", requestData);
+    // Submit one update request
+    const response
+        = await fetch(
+            `/api/requests/${requestId}`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type":
+                    "application/json"
+            },
+            body:
+                JSON.stringify(requestData)
         }
+    );
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            result.message ||
+            result.error || 
+            "Unable to update request."
+        );
+    }
+    return result.data; 
 }
 
 // UC-3: Save assignment and prioritization changes.
-export async function saveRequestAssignment(requestId, requestData) {
-    const response = await fetch(`/api/requests/${requestId}`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(requestData)
+export async function saveRequestAssignment(
+    requestId,
+    requestData,
+    actingEmployeeId
+) {
+    const response
+        = await fetch(
+            `/api/requests/${requestId}?actingEmployeeId=${actingEmployeeId}`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestData)
     });
 
     const result = await response.json();

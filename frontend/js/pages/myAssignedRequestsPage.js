@@ -12,39 +12,46 @@ import {
     loadPage
 } from "../router.js"; 
 
-export async function loadMyAssignedRequests(actingEmployeeId) { 
+export async function loadMyAssignedRequests(employeeId, actingEmployeeId) { 
 
-    const assignedRequests = await getAssignedRequestsByEmpId(actingEmployeeId); 
-    const assignedRequestRows = await renderRequestRows(assignedRequests); 
-
-    // build pipeline
     const contentArea = document.getElementById("contentArea"); 
-    const pipeline = document.createElement("div"); 
 
-    pipeline.innerHTML = ` 
-        <h3>My Assigned Requests</h3>
-        <hr><br>
-        ${assignedRequestRows}
-    `; 
+    try { 
+        const assignedRequests = await getAssignedRequestsByEmpId(employeeId, actingEmployeeId);
+        const assignedRequestRows = await renderRequestRows(assignedRequests);
 
-    contentArea.appendChild(pipeline); 
+        // build pipeline
+        const pipeline = document.createElement("div");
 
-    const workItemCards = contentArea.querySelectorAll(".assigned-item-card"); 
+        pipeline.innerHTML = ` 
+            <h3>My Assigned Requests</h3>
+            <hr><br>
+            ${assignedRequestRows}
+        `;
 
-    workItemCards.forEach(card => {
-        card.addEventListener("click", () => {
-            const requestId = card.dataset.requestId;
+        contentArea.appendChild(pipeline);
 
-            console.log("Selected request: ", requestId);
+        const workItemCards = contentArea.querySelectorAll(".assigned-item-card");
 
-            // clear the content area 
-            contentArea.innerHTML = ``;
+        workItemCards.forEach(card => {
+            card.addEventListener("click", () => {
+                const requestId = card.dataset.requestId;
 
-            loadPage(
-                "process-request",
-                requestId,
-                actingEmployeeId
-            ); 
-        });
-    }); 
+                console.log("Selected request: ", requestId);
+
+                // clear the content area 
+                // contentArea.innerHTML = ``;
+
+                loadPage(
+                    "process-request",
+                    requestId,
+                    actingEmployeeId
+                );
+            });
+        }); 
+
+    } catch (error) { 
+        contentArea.textContent =
+            error.message || "Unable to load assigned requests.";
+    }
 }

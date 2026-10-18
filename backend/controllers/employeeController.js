@@ -39,7 +39,7 @@ function handleServiceError(
     }
 
 
-    next(error);
+    return next(error);
 }
 
 
@@ -80,6 +80,44 @@ async function getEmployeesByAuthType(
 }
 
 
+/*
+ * Return all active employees eligible to process
+ * HR requests, including authorization types 3, 5,
+ * and 6.
+ *
+ * Request-specific assignment and confidentiality
+ * restrictions are enforced separately.
+ */
+async function getEligibleHRAssignees(
+    req,
+    res,
+    next
+) {
+
+    try {
+
+        const employees =
+            await employeeService
+                .getEligibleHRAssignees();
+
+
+        return res.status(200).json({
+            success: true,
+            data: employees
+        });
+
+    } catch (error) {
+
+        return handleServiceError(
+            error,
+            res,
+            next
+        );
+    }
+}
+
+
 module.exports = {
-    getEmployeesByAuthType
+    getEmployeesByAuthType,
+    getEligibleHRAssignees
 };

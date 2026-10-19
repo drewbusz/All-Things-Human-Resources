@@ -80,7 +80,7 @@ export async function getRequestNotesByRequestId(request_id) {
     const requestNoteResponse = await fetch(`/api/requests/${request_id}/notes`); 
     const requestNoteResult = await requestNoteResponse.json(); 
 
-    if (!requestNotesResponse.ok) { 
+    if (!requestNoteResponse.ok) { 
         throw new Error(
             requestNoteResult.message || 
             requestNoteResult.error || 
@@ -95,7 +95,7 @@ export async function getActiveRequestTypes() {
     const requestTypeResponse = await fetch(`/api/requests/activeRequestTypes`);
 
     if (!requestTypeResponse.ok) {
-        throw new Error( result.message || "Unable to retrieve request types");
+        throw new Error(requestTypeResult.message || "Unable to retrieve request types");
     }
 
     const requestTypeResult = await requestTypeResponse.json();

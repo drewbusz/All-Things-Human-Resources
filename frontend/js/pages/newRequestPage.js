@@ -40,7 +40,7 @@ export async function loadNewRequestPage(requestId, actingEmployeeId) {
 
     try {
         // Retrieve the existing request from the Express backend
-        const request = await getRequestById(requestId);
+        const request = await getRequestById(requestId, actingEmployeeId);
 
         console.log("Request retrieved: ", request);
 
@@ -49,7 +49,7 @@ export async function loadNewRequestPage(requestId, actingEmployeeId) {
 
 
         // retrieve the request history to build the history card
-        const requestHistory = await getRequestHistory(requestId);
+        const requestHistory = await getRequestHistory(requestId, actingEmployeeId);
 
         // retrieve active request types 
         //const activeRequestTypes = await getActiveRequestTypes(); 

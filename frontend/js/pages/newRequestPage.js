@@ -14,7 +14,7 @@ import {
 } from "../api/requestApi.js";
 // Employee API
 import {
-    getEmployeesByAuthType
+    getAssignableEmployees
 } from "../api/employeeApi.js";
 // import request render helper
 import {
@@ -55,7 +55,7 @@ export async function loadNewRequestPage(requestId, actingEmployeeId) {
         //const activeRequestTypes = await getActiveRequestTypes(); 
 
         // retrieve assignable employees 
-        const employeeOptions = await getEmployeesByAuthType(3);
+        const employeeOptions = await getAssignableEmployees();
 
 
         // ===================================

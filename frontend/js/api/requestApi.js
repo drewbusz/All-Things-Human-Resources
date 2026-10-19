@@ -179,12 +179,11 @@ export async function updateRequest(
 // UC-3: Save assignment and prioritization changes.
 export async function saveRequestAssignment(
     requestId,
-    requestData,
-    actingEmployeeId
+    requestData
 ) {
     const response
         = await fetch(
-            `/api/requests/${requestId}?actingEmployeeId=${actingEmployeeId}`,
+            `/api/requests/${requestId}`,
         {
             method: "PATCH",
             headers: {

@@ -137,9 +137,7 @@ export async function getUnassignedRequests(actingEmployeeId) {
             result.error || 
             "Unable to retrieve unassigned requests."
         );
-
-        error.code = result.code; 
-        throw error;
+        
     }
 
     return result.data;

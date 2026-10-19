@@ -91,14 +91,16 @@ export async function getRequestNotesByRequestId(request_id) {
 }
 
 // Get all active request types 
-export async function getActiveRequestTypes() { 
-    const requestTypeResponse = await fetch(`/api/requests/activeRequestTypes`);
+export async function getActiveRequestTypes() {
+    const requestTypeResponse = await fetch("/api/requests/activeRequestTypes");
+    const requestTypeResult = await requestTypeResponse.json();
 
     if (!requestTypeResponse.ok) {
-        throw new Error(requestTypeResult.message || "Unable to retrieve request types");
+        throw new Error(
+            requestTypeResult.message || "Unable to retrieve request types"
+        );
     }
 
-    const requestTypeResult = await requestTypeResponse.json();
     return requestTypeResult.data;
 }
 

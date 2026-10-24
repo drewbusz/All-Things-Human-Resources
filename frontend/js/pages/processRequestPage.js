@@ -183,9 +183,11 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
 
 
         // Render the cards within the content area
-        contentArea.appendChild(staticCard);
-        contentArea.appendChild(requestForm);
-        contentArea.appendChild(historyCard);
+        contentArea.replaceChildren(
+            staticCard,
+            requestForm,
+            historyCard
+        );
 
 
         const activityContent =
@@ -275,6 +277,7 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                 "Unable to locate the process request form."
             );
         }
+
         // Clear Status validation when user changes it
         const status =
             form.querySelector(
@@ -293,6 +296,7 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                 if (message) {
                     message.textContent = "";
                     message.classList.remove("error");
+                    message.classList.remove("success"); 
                 }
             });
         }
@@ -303,6 +307,16 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
 
                 event.preventDefault();
 
+                const submitButton =
+                    form.querySelector('[type="submit"]'); 
+
+                if (submitButton) { 
+                    submitButton.disabled = true; 
+                }
+
+                const message =
+                    form.querySelector(".feedback"); 
+
                 try { 
                     await submitRequestUpdates(
                         form,
@@ -310,12 +324,7 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                         actingEmployeeId
                     ); 
 
-                    await loadProcessRequestPage(
-                        requestId, 
-                        actingEmployeeId
-                    ); 
-                    const message =
-                        form.querySelector(".feedback"); 
+                    // Display the message on the existing form instead of reloading
                     if (message) { 
                         message.textContent =
                             "Requested updated successfully.";
@@ -325,25 +334,35 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                 } catch (error) {
                     console.error(error);
 
-                    const message =
-                        form.querySelector(".feedback");
-
                     if (
-                        error.message === "A request cannot move backward in its workflow."
+                        error.message ===
+                        "A request cannot move backward in its workflow."
                     ) {
                         const status =
                             form.querySelector(
                                 '[name="current_step_id"]'
                             );
-
-                        status.classList.add("invalid"); 
+                            
+                        if (status) { 
+                            status.classList.add("invalid"); 
+                            status.setAttribute(
+                                "aria-invalid", 
+                                "true"
+                            ); 
+                        }
                     }
                         
                     if (message) { 
                         message.textContent = 
                             error.message ||
                             "Unable to update request.";
+
+                        message.classList.remove("success");
                         message.classList.add("error"); 
+                    }
+                } finally { 
+                    if (submitButton) { 
+                        submitButton.disabled = false; 
                     }
                 } 
             }

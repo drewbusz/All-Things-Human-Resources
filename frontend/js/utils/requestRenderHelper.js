@@ -139,7 +139,7 @@ export function renderProcessRequestForm(
                         <textarea
                             id="request-summary"
                             name="brief_summary"
-                        >${request.brief_summary ?? ""}</textarea>
+                        ></textarea>
 
                     </div>
 
@@ -157,6 +157,12 @@ export function renderProcessRequestForm(
 
         </div>
     `;
+    // Safely populate the request summary as text 
+    const summaryInput =
+        requestForm.querySelector("#request-summary"); 
+
+    summaryInput.value =
+        request.brief_summary ?? "";
 
     return requestForm;
 }

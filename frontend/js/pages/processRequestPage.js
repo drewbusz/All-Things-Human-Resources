@@ -324,10 +324,29 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                         actingEmployeeId
                     ); 
 
+                    // Refresh request history after successful submission 
+                    const updatedHistory = await getRequestHistory(
+                        requestId, 
+                        actingEmployeeId
+                    ); 
+
+                    // Display the refreshed history if the history tab is active 
+                    const activeTab = historyCard.querySelector(
+                        ".activity-tab.active"
+                    ); 
+
+                    if (activeTab?.dataset.tab === "history") { 
+                        loadRequestHistory(
+                            activityContent,
+                            updatedHistory
+                        ); 
+                    }
+
                     // Display the message on the existing form instead of reloading
                     if (message) { 
                         message.textContent =
                             "Requested updated successfully.";
+                        message.classList.remove("error"); 
                         message.classList.add("success"); 
                     }
 

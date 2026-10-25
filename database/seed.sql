@@ -429,6 +429,7 @@ INSERT INTO request_type_field (
     display_order
 )
 VALUES
+    -- REQ TYPE 1: EMPLOYEE INFORMATION CHANGE 
     (
         1,
         'information_to_change',
@@ -445,6 +446,8 @@ VALUES
         TRUE,
         2
     ),
+
+    -- REQ TYPE 2: LEAVE REQUEST 
     (
         2,
         'leave_start_date',
@@ -470,7 +473,7 @@ VALUES
         3
     ),
 
-    -- 3 - Benefits Inquiry
+    -- REQ TYPE 3:  BENEFITS INQUIRY 
     (
         3,
         'benefit_type',
@@ -496,7 +499,7 @@ VALUES
         3
     ),
 
-    -- 4 - Payroll Correction
+    -- REQ TYPE 4: PAYROLL CORRECTION 
     (
         4,
         'pay_period',
@@ -530,7 +533,7 @@ VALUES
         4
     ),
 
-    -- 5 - Employment Verification
+    -- REQ TYPE 5: EMPLOYMENT VERIFICATION 
     (
         5,
         'verification_purpose',
@@ -564,7 +567,7 @@ VALUES
         4
     ),
 
-    -- 6 - Workplace Accommodation
+    -- REQ TYPE 6: WORKPLACE ACCOMODATION 
     (
         6,
         'accommodation_requested',

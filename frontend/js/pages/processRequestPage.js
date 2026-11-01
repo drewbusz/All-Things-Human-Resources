@@ -345,7 +345,7 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                     // Display the message on the existing form instead of reloading
                     if (message) { 
                         message.textContent =
-                            "Requested updated successfully.";
+                            "Request updated successfully.";
                         message.classList.remove("error"); 
                         message.classList.add("success"); 
                     }

@@ -9,10 +9,6 @@ import {
     formatFieldName
 } from "../utils/textFormatHelper.js";
 
-import {
-    saveRequestNote
-} from "../api/requestApi.js";
-
 
 // PROCESS REQUEST FORM
 export function renderProcessRequestForm(
@@ -40,7 +36,7 @@ export function renderProcessRequestForm(
 
             <hr>
 
-            <div class="request-fields">
+            <div id="request-fields">
                
             </div>
 
@@ -168,108 +164,149 @@ export function renderProcessRequestForm(
 }
 
 // AUTHORIZED STAFF > ASSIGN & CLASSIFY FORM
-export function renderAuthorizedRequestProcessingForm(request, employeeOptions) {
-    // render the request type options for the drop-down 
-    //const typeOptions = renderRequestTypeOptions(activeRequestTypes, request); 
-
-    // render the assignable employees 
-    const assignableEmployees = renderAssignableEmployeeRows(employeeOptions);
-
+export function renderAuthorizedRequestProcessingForm(
+    request,
+    employeeOptions, 
+    activeRequestTypes
+) {
+    
     const requestForm = document.createElement("form");
-    requestForm.id = "process-request-form";
+    requestForm.id = "assignment-form";
 
     requestForm.innerHTML = `
-
         <div class="card">
-        <h3>New Request Information</h3>
-        <hr>
-        <div class="card-row">    
-            <div class="info-item">
-                <span class="info-label">Submitted By</span>
-                <span class="info-value">${request.submitted_by}</span>
-            </div>
-        <div class="info-item">
-            <span class="info-label">Request Date</span>
-            <span class="info-value">${formatDateForDisplay(request.submission_date)}</span>
-        </div>
-        <div class="info-item">
-            <span class="info-label">Intake Source</span>
-            <span class="info-value">${formatFieldName(request.intake_source)}</span>
-        </div>
-        </div>
-        
-        <hr>
-        <div class="process-form-layout">
-        
-        <div class="form-column">
-            
-            <div class="form-field">
-                    <label for="assigned-employee">
-                        Current Owner
-                    </label>
+            <h3>Request Fields</h3>
+            <div id="request-fields"></div>
 
-                    <select id="assigned-employee" name="assigned-employee" required>
-                        ${assignableEmployees}
-                    </select>
-                </div>
-            <div class="form-field">
-                <label for="request-type-options">
-                    Request Type
-                </label>
+            <hr>
 
-                <select id="request-type" name="request-type" required>
-                    <option>${request.request_type}</option>
+            <div class="form-field">
+                <label for="assigned-employee">Assigned To</label>
+                <select id="assigned-employee" required>
+                    <option value="">Select HR Employee</option>
                 </select>
             </div>
-                
-            <div class="form-field">
-                <label for="expected-completion">Expected Completion</label>
 
+            <div class="form-field">
+                <label for="request-type">Request Type</label>
+                <select id="request-type" required>
+                    <option value="">Select a Request Type</option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="assignment-priority">Priority Level</label>
+                <select id="assignment-priority" required>
+                    <option value="">Select Priority</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="assignment-completion">
+                    Expected Completion
+                </label>
                 <input
                     type="date"
-                    id="expected-completion"
-                    name="expected_completion"
-                    value="${formatDateForInput(request.expected_completion)}"
+                    id="assignment-completion"
+                    required
                 >
-                </div>
-                
-            <div class="form-field">
-                <label for="request-priority">Priority Level</label>
-                <select id="request-priority" name="priority_level">
-                    <option value="" ${!request.priority_level ? "selected" : ""}></option>
-                    <option value="low" ${request.priority_level === "low" ? "selected" : ""}>Low</option>
-                    <option value="medium" ${request.priority_level === "medium" ? "selected" : ""}>Medium</option>
-                    <option value="high" ${request.priority_level === "high" ? "selected" : ""}>High</option>
-                </select>
             </div>
-            <div class="form-field">
-                <label for="confidentiality-level">Confidentiality:</label>
-                <select id="confidentiality-level" name="confidentiality-level">
-                    <option value="" ${!request.confidentiality_level ? "selected" : ""}></option>
-                    <option value="Nonconfidential" ${request.confidentiality_level === "Nonconfidential" ? "selected" : ""}>Nonconfidential</option>
-                    <option value="Confidential" ${request.confidentiality_level === "Confidential" ? "selected" : ""}>Confidential</option>
-                    <option value="Highly Confidential" ${request.confidentiality_level === "Highly Confidential" ? "selected" : ""}>Highly Confidential</option>
-                </select>
+
+            <div class="form-actions">
+                <button type="submit">Save Assignment</button>
             </div>
-        </div> <!-- col end -->
-        
-                
-        <div class="form-column">          
-            <div class="form-field summary-field">
-               <label for="request-summary">Summary</label>
-               <textarea id="request-summary" name="brief_summary">${request.brief_summary ?? ""}</textarea>
-            </div>
-        </div>   <!-- col end -->        
+
+            <p id="assignment-message" class="feedback" role="status"></p>
+
+            <button type="button" id="back-to-unassigned">
+                Back to Unassigned Requests
+            </button>
 
         </div>
-        <hr>
-        
-        <button type="submit">Save Changes</button>
-        <p id="request-message"></p>    
-        
-            
-        </div>
-        `;
+    `;
+    // Populate assignable employees
+    const employeeSelect =
+        requestForm.querySelector("#assigned-employee");
+
+    if (employeeOptions.length === 0) {
+        const option = document.createElement("option"); 
+
+        option.value = ""; 
+        option.textContent =
+            "No assignable employees available."; 
+
+        employeeSelect.appendChild(option); 
+        employeeSelect.disabled = true; 
+
+    } else { 
+        employeeOptions.forEach(employee => {
+
+            const option = document.createElement("option");
+
+            option.value = employee.employee_id;
+            option.textContent =
+                `${employee.first_name} ${employee.last_name}`;
+
+            employeeSelect.appendChild(option);
+        });
+
+        // Select existing assigned employee
+        employeeSelect.value =
+            String(request.assigned_emp_id ?? "");
+    }
+
+    // Populate active request types
+    const requestTypeSelect =
+        requestForm.querySelector("#request-type");
+
+    if (activeRequestTypes.length === 0) {
+        const option = document.createElement("option");
+
+        option.value = "";
+        option.textContent = "No active request types available.";
+
+        requestTypeSelect.appendChild(option);
+        requestTypeSelect.disabled = true;
+    } else { 
+        activeRequestTypes.forEach(type => {
+
+            const option =
+                document.createElement("option");
+
+            option.value =
+                Number(type.request_type_id);
+
+            option.textContent =
+                formatFieldName(type.name); 
+
+            requestTypeSelect.appendChild(option);
+        });
+        // Select existing request type
+        requestTypeSelect.value =
+            String(Number(request.request_type_id ?? ""));
+    }
+
+    // If both are empty, allow the page to load but disable form submission
+
+    if (
+        employeeOptions.length === 0 ||
+        activeRequestTypes.length === 0
+    ) {
+        requestForm.querySelector(
+            'button[type="submit"]'
+        ).disabled = true;
+    }
+
+    // Populate existing priority
+    requestForm.querySelector("#assignment-priority").value =
+        request.priority_level ?? "";
+
+    // Populate existing completion date
+    requestForm.querySelector("#assignment-completion").value =
+        formatDateForInput(request.expected_completion) ?? "";
 
     return requestForm;
 }
@@ -321,18 +358,15 @@ export function loadRequestHistory(
 // REQUEST NOTES
 export function loadRequestNotes(
     activityContent,
-    requestNotes,
-    requestId,
-    actingEmployeeId
+    requestNotes
 ) {
+    activityContent.innerHTML = ""; 
 
-    const noteRows =
-        renderNoteRows(requestNotes);
+    const addNote = document.createElement("div"); 
+    addNote.classList.add("add-note"); 
 
-    activityContent.innerHTML = `
-        <div class="add-note">
-
-            <label for="new-note">
+    addNote.innerHTML = `
+            <label for= "new-note">
                 Add Note
             </label>
 
@@ -340,90 +374,57 @@ export function loadRequestNotes(
                 id="new-note"
                 name="new-note"
                 rows="4"
-                placeholder="Enter a note..."
+                placeHolder="Enter a note..."
             ></textarea>
 
             <button
                 type="button"
                 id="add-note-button"
-            >
+             >
                 Add Note
             </button>
-
             <p id="note-message"></p>
+        `;
 
-        </div>
+    activityContent.appendChild(addNote); 
 
-        <hr>
+    const divider = document.createElement("hr"); 
+    activityContent.appendChild(divider); 
 
-        <div class="notes-header">
-            <span>Date</span>
-            <span>Created By</span>
-            <span>Note</span>
-        </div>
+    const header = document.createElement("div"); 
+    header.classList.add("notes-header"); 
 
-        <div class="notes-list">
+    header.innerHTML = `
+        <span>Date</span>
+        <span>Created By</span>
+        <span>Note</span>
+    `; 
 
-            ${noteRows || `
-                <p class="notes-empty">
-                    No request notes are available.
-                </p>
-            `}
+    activityContent.appendChild(header); 
 
-        </div>
-    `;
+    const notesList = document.createElement("div"); 
+    notesList.classList.add("notes-list"); 
 
+    const noteRows = renderNoteRows(requestNotes); 
 
-    const addNoteButton =
-        activityContent.querySelector(
-            "#add-note-button"
-        );
+    if (noteRows.length === 0) { 
+        const empty = document.createElement("p"); 
+        empty.classList.add("notes-empty"); 
 
-    addNoteButton.addEventListener(
-        "click",
-        async () => {
+        empty.textContent =
+            "No request notes are available."; 
 
-            const noteText =
-                activityContent
-                    .querySelector("#new-note")
-                    .value
-                    .trim();
+        notesList.appendChild(empty); 
+    } else { 
+        noteRows.forEach(row => { 
+            notesList.appendChild(row); 
+        }); 
+    }
 
-            const noteMessage =
-                activityContent
-                    .querySelector("#note-message");
+    activityContent.appendChild(notesList); 
 
-
-            if (!noteText) {
-
-                noteMessage.textContent =
-                    "Enter a note before submitting.";
-
-                return;
-            }
-
-
-            try {
-
-                await saveRequestNote(
-                    noteText,
-                    requestId,
-                    actingEmployeeId
-                );
-
-                noteMessage.textContent =
-                    "Note added successfully.";
-
-            } catch (error) {
-
-                console.error(error);
-
-                noteMessage.textContent =
-                    error.message ||
-                    "Unable to save note.";
-            }
-        }
-    );
+     
+        
 }
 
 // REQUEST ROWS
@@ -476,46 +477,6 @@ export function renderRequestRows(requests) {
 
     return requestRows; 
 
-}
-
-// REQUEST TYPE OPTIONS 
-function renderRequestTypeOptions(activeRequestTypes, request) {
-
-    // Request Type Options for select menu
-    typeOptions = activeRequestTypes.map(type => {
-        const selected =
-            Number(type.request_type_id) ===
-                Number(request.request_type_id)
-                ? "selected"
-                : "";
-
-        return `
-             <option value="${type.request_type_id}"
-             ${selected}
-         >
-             ${type.name}
-         </option>`;
-
-    }).join("");
-
-    return typeOptions;
-}
-
-// ASSIGNABLE EMPLOYEES 
-function renderAssignableEmployeeRows(employeeOptions) {
-    // Request Assignable Employee Options for select menu
-    const assignableEmployees = employeeOptions.map(employee => {
-
-        return `
-             <option value="${employee.employee_id}"
-           
-         >
-             ${employee.first_name} ${employee.last_name}
-         </option>`;
-
-    }).join("");
-
-    return assignableEmployees;
 }
 
 // FIELD ROWS
@@ -708,29 +669,38 @@ function renderHistoryRows(requestHistory) {
 // NOTE ROWS
 function renderNoteRows(requestNotes) {
 
-    const noteRows =
-        requestNotes.map(note => `
+    return requestNotes.map(note => { 
 
-            <div class="note-item">
+        const row = document.createElement("div"); 
+                row.classList.add("note-item"); 
 
-                <span class="note-date">
-                    ${formatDateForDisplay(
-            note.note_date
-        )}
-                </span>
+        const date = document.createElement("span"); 
+        date.classList.add("note-date"); 
 
-                <span class="note-user">
-                    ${note.created_by}
-                </span>
+        date.textContent = 
+            formatDateForDisplay(
+                note.note_date
+            ); 
 
-                <span class="note-text">
-                    ${note.note}
-                </span>
+        const createdBy =
+            document.createElement("span"); 
 
-            </div>
+        createdBy.textContent = 
+        formatFieldName( 
+                note.created_by
+            ); 
 
-        `).join("");
+        const noteText = 
+            document.createElement("span"); 
 
+        noteText.classList.add("note-text"); 
 
-    return noteRows;
+        noteText.textContent = note.note; 
+
+        row.appendChild(date); 
+        row.appendChild(createdBy); 
+        row.appendChild(noteText); 
+
+        return row; 
+    }); 
 }

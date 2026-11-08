@@ -10,16 +10,17 @@
 // Changes are saved through the existing PATCH request API.
 // ============================================================
 
-import { getRequestById, saveRequestAssignment } from "../api/requestApi.js";
+import {
+    getRequestById,
+    saveRequestAssignment,
+    getActiveRequestTypes
+} from "../api/requestApi.js";
+import {
+    renderAuthorizedRequestProcessingForm
+} from "../utils/requestRenderHelper.js"; 
 import { getAssignableEmployees } from "../api/employeeApi.js";
 import { formatDateForDisplay } from "../utils/dateHelper.js";
 import { loadPage } from "../router.js";
-
-
-// Temporary acting employee for the class prototype.
-// Backend authorization must be reviewed before production use.
-const ACTING_EMPLOYEE_ID = 2;
-const HR_MODIFICATION_AUTH_TYPE = 3;
 
 
 export async function loadAssignRequestPage(requestId, actingEmployeeId) {
@@ -28,26 +29,39 @@ export async function loadAssignRequestPage(requestId, actingEmployeeId) {
 
     try {
         // Load the request and eligible HR employees.
-        const [request, employees] = await Promise.all([
-            getRequestById(requestId, actingEmployeeId),
-            getAssignableEmployees()
-        ]);
+       
+        const [request, employees, activeRequestTypes] =
+            await Promise.all([
+                getRequestById(requestId, actingEmployeeId),
+                getAssignableEmployees(), 
+                getActiveRequestTypes(),
+            ]);
 
         if (!request || typeof request !== "object") {
             throw new Error("Unable to retrieve the selected request.");
         }
+        if (!Array.isArray(employees)) {
+            throw new Error(
+                "Unable to retrieve assignable employees."
+            );
+        }
+        if (!Array.isArray(activeRequestTypes)) {
+            throw new Error(
+                "Unable to retrieve active request types."
+            );
+        }
 
         // Create the page using existing application styles.
-        const page = document.createElement("div");
-        page.className = "card";
+        const staticCard = document.createElement("div");
+        staticCard.classList.add("card"); 
 
-        page.innerHTML = `
+        staticCard.innerHTML = `
             <h3>Assign & Prioritize | Request #${request.request_id}</h3>
             <hr>
 
             <div class="card-row">
                 <div class="info-item">
-                    <span class="info-label">Request Type</span>
+                    <span class="info-label">Current Request Type</span>
                     <span class="info-value" id="assignment-type"></span>
                 </div>
 
@@ -68,89 +82,48 @@ export async function loadAssignRequestPage(requestId, actingEmployeeId) {
                 <span class="info-label">Request Summary</span>
                 <span class="info-value" id="assignment-summary"></span>
             </div>
-
-            <hr>
-
-            <form id="assignment-form">
-
-                <div class="form-field">
-                    <label for="assigned-employee">Assigned To</label>
-                    <select id="assigned-employee" required>
-                        <option value="">Select HR Employee</option>
-                    </select>
-                </div>
-
-                <div class="form-field">
-                    <label for="assignment-priority">Priority Level</label>
-                    <select id="assignment-priority" required>
-                        <option value="">Select Priority</option>
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                    </select>
-                </div>
-
-                <div class="form-field">
-                    <label for="assignment-completion">
-                        Expected Completion
-                    </label>
-                    <input
-                        type="date"
-                        id="assignment-completion"
-                        required
-                    >
-                </div>
-                <div class="form-actions">
-                    <button type="submit">Save Assignment</button>
-                </div>
-
-                <p id="assignment-message" role="status"></p>
-            </form>
-
-            <button type="button" id="back-to-unassigned">
-                Back to Unassigned Requests
-            </button>
         `;
 
-        // Populate read-only request information safely.
-        page.querySelector("#assignment-type").textContent =
-            request.request_type;
+        // Populate static request information
+        staticCard.querySelector("#assignment-type").textContent =
+            request.request_type ?? "";
 
-        page.querySelector("#assignment-submitter").textContent =
-            request.submitted_by;
+        staticCard.querySelector("#assignment-submitter").textContent =
+            request.submitted_by ?? "";
 
-        page.querySelector("#assignment-date").textContent =
+        staticCard.querySelector("#assignment-date").textContent =
             formatDateForDisplay(request.submission_date);
 
-        page.querySelector("#assignment-summary").textContent =
-            request.brief_summary;
+        staticCard.querySelector("#assignment-summary").textContent =
+            request.brief_summary ?? "";
 
-        // Populate the assignment dropdown.
-        const employeeSelect =
-            page.querySelector("#assigned-employee");
+        // Render the authorized request processing form
+        const requestForm =
+            renderAuthorizedRequestProcessingForm(
+                request, 
+                employees, 
+                activeRequestTypes
+            ); 
 
-        employees.forEach(employee => {
-            const option = document.createElement("option");
-            option.value = employee.employee_id;
-            option.textContent =
-                `${employee.first_name} ${employee.last_name}`;
-
-            employeeSelect.appendChild(option);
-        });
-
+        // Display both cards 
+        contentArea.replaceChildren(
+            staticCard, 
+            requestForm
+        ); 
         // Return to the unassigned request queue.
-        page.querySelector("#back-to-unassigned")
+        requestForm.querySelector("#back-to-unassigned")
             .addEventListener("click", () => {
                 loadPage("unassigned-requests");
             });
 
         // Submit assignment values through the existing backend.
-        page.querySelector("#assignment-form")
-            .addEventListener("submit", async event => {
+        requestForm.addEventListener(
+            "submit",
+            async event => {
                 event.preventDefault();
 
                 const message =
-                    page.querySelector("#assignment-message");
+                    requestForm.querySelector("#assignment-message");
 
                 const saveButton =
                     event.currentTarget.querySelector(
@@ -160,13 +133,20 @@ export async function loadAssignRequestPage(requestId, actingEmployeeId) {
                 saveButton.disabled = true;
                 message.textContent = "Saving assignment...";
 
+                const employeeSelect =
+                    requestForm.querySelector("#assigned-employee");
+
                 const updateData = {
-                    actingEmployeeId: ACTING_EMPLOYEE_ID,
+                    actingEmployeeId: actingEmployeeId,
                     assigned_emp_id: Number(employeeSelect.value),
+                    request_type_id:
+                        Number(
+                            requestForm.querySelector("#request-type").value
+                        ),
                     priority_level:
-                        page.querySelector("#assignment-priority").value,
+                        requestForm.querySelector("#assignment-priority").value,
                     expected_completion:
-                        page.querySelector("#assignment-completion").value
+                        requestForm.querySelector("#assignment-completion").value
                 };
 
                 try {
@@ -186,15 +166,31 @@ export async function loadAssignRequestPage(requestId, actingEmployeeId) {
                     loadPage("unassigned-requests", null, null, confirmation);
 
                 } catch (error) {
-                    message.textContent = error.message;
-                    saveButton.disabled = false;
+                    console.error(error);
+
+                    message.textContent =
+                        error.message ||
+                        "Unable to save assignment.";
+
+                    message.classList.remove("success");
+                    message.classList.add("error");
+                } finally {
+                    saveButton.disabled = false; 
                 }
             });
-
-        contentArea.appendChild(page);
-
     } catch (error) {
-        contentArea.textContent =
-            error.message || "Unable to load assignment page.";
+        console.error(error); 
+
+        contentArea.innerHTML = `
+        <div class="card">
+            <p id="request-error-message"></p>
+        </div>
+    `;
+
+        contentArea
+            .querySelector("#request-error-message")
+            .textContent =
+            error.message ||
+            "Unable to load assignment page.";
     }
 }

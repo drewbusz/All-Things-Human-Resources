@@ -92,16 +92,20 @@ export async function getRequestNotesByRequestId(request_id) {
 
 // Get all active request types 
 export async function getActiveRequestTypes() {
-    const requestTypeResponse = await fetch("/api/requests/activeRequestTypes");
-    const requestTypeResult = await requestTypeResponse.json();
 
-    if (!requestTypeResponse.ok) {
-        throw new Error(
-            requestTypeResult.message || "Unable to retrieve request types"
-        );
+    const requestTypeResponse = await fetch(
+        "/api/request-types/active"
+    ); 
+
+    const requestTypeResult = await requestTypeResponse.json(); 
+
+    if (!requestTypeResponse.ok) { 
+        throw new Error( 
+            requestTypeResult.message || 
+            "Unable to retrieve active request types."
+        ); 
     }
-
-    return requestTypeResult.data;
+    return requestTypeResult.data; 
 }
 
 // Work Item list APIs
@@ -142,6 +146,29 @@ export async function getUnassignedRequests(actingEmployeeId) {
 
     return result.data;
 }
+
+// Get all active requests
+export async function getActiveRequests(actingEmployeeId) { 
+    const response =
+        await fetch(
+            `/api/requests/active?actingEmployeeId=${actingEmployeeId}`
+        ); 
+
+    const result = await response.json(); 
+
+    if (!response.ok) { 
+        throw new Error( 
+            result.message || 
+            result.error || 
+            "Unable to retrieve active requests"
+        ); 
+    }
+    return result.data; 
+}
+
+// ===================================
+// PATCH API CALLS
+// ===================================
 
 // Save updates to the request details 
 export async function updateRequest(
@@ -202,13 +229,13 @@ export async function saveRequestAssignment(
         );
     }
 
-    return result;
+    return result.data;
 }
 
 // Save request notes (Pending backend)
-export async function saveRequestNote(note) { 
+export async function saveRequestNote(note, requestId, actingEmployeeId) { 
     const response = await fetch(
-        `/api/requests/${note.request_id}/notes`,
+        `/api/requests/${requestId}/notes?actingEmployeeId=${actingEmployeeId}`,
         {
             method: "POST",
             headers: {

@@ -5,10 +5,11 @@ import {
     getRequestById,
     getWorkflowStepsByRequestType,
     getRequestHistory,
-    getRequestFields,
+    //getRequestFields,
     getRequestNotesByRequestId,
-    saveRequestFieldValues,
+    //saveRequestFieldValues,
     updateRequest,
+    saveRequestNote
 } from "../api/requestApi.js";
 
 // import request render helper
@@ -35,6 +36,7 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
 
     try {
         // Retrieve the request and requestHistory together 
+        // update this to include request note and request field API calls once implemented on the backend 
         const [request, requestHistory] = await Promise.all([
             getRequestById(requestId, actingEmployeeId),
             getRequestHistory(requestId, actingEmployeeId)
@@ -52,26 +54,7 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
         // retrieve the request history to build the history card
 
 
-        // ==============================
-        // PENDING BACKEND IMPLEMENTATION
-        // ==============================
-
-        // retrieve request fields and values
-        // ===================================
-        // const requestFields =
-        //     await getRequestFields(requestId);
-
-        // const requestFields = await getRequestFields(requestId); 
-
-
-        // retrieve request notes
-        // ===========================
-        // const requestNotes =
-        //     await getRequestNotesByRequestId(requestId);
-
-        // const requestNotes = await getRequestNotesByRequestId(requestId); 
-
-
+              
         // ----------------------------------------------------
         // Render Process Request Form
         // ----------------------------------------------------
@@ -253,13 +236,72 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                     "notes"
                 ) {
                     activityContent.textContent =
-                        `Request notes pending backend implementation.`; 
+                        ``; 
                    // loadRequestNotes(
                    //      activityContent,
                    //      requestNotes,
                    //      requestId,
                    //      actingEmployeeId
-                   //  );
+                    //  );
+
+                    const addNoteButton =
+                        actvityContent.querySelector(
+                            "#add-note-button"
+                        ); 
+
+                    addNoteButton.addEventListener(
+                        "click",
+                        async () => {
+
+                            const noteText =
+                                activityContent
+                                    .querySelector("#new-note")
+                                    .value.trim(); 
+
+                            const noteMessage =
+                                activityContent.querySelector(
+                                    "#note-message"
+                                ); 
+
+                            if (!noteText) { 
+                                noteMessage.textContent =
+                                    "Enter a note before submitting."; 
+
+                                return; 
+                            }
+
+                            // Prevent duplicate submissions 
+                            addNoteButton.disabled = true; 
+
+                            try { 
+                                await saveRequestNote( 
+                                    noteText, 
+                                    requestId, 
+                                    actingEmployeeId
+                                ); 
+
+                                noteMessage.textContent =
+                                    "Note added successfully."; 
+
+                                const updatedNotes =
+                                    await getRequestNotesByRequestId(
+                                        requestId
+                                    ); 
+
+                                loadRequestNotes(
+                                    activityContent, 
+                                    updatedNotes
+                                ); 
+                            } catch (error) { 
+                                console.error(error); 
+
+                                noteMessage.textContent =
+                                    error.message ||
+                                    "Unable to save note."; 
+                            } finally { 
+                                addNoteButton.disabled = false; 
+                            }
+                        });
                 }
             }
         );

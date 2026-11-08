@@ -60,7 +60,7 @@ const navigation = {
                 label: "Confidential Requests"
             },
             {
-                page: "all-active-requests",
+                page: "active-requests",
                 label: "All Active Requests"
             }
         ]

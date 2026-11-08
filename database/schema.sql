@@ -523,3 +523,102 @@ JOIN request_field_value AS rfv
 JOIN request_type_field AS rtf
     ON rfv.field_id = rtf.field_id
     AND rtf.request_type_id = r.request_type_id;
+-- ============================================================
+-- EMPLOYEE VIEW 
+-- ============================================================
+CREATE VIEW employee_view AS
+SELECT
+    e.employee_id,
+    e.first_name,
+    e.last_name,
+    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
+    e.title,
+    e.email_address,
+    e.start_date,
+    e.status,
+
+    e.department_id,
+    d.dept_name,
+
+    e.manager_id,
+    CONCAT(m.first_name, ' ', m.last_name) AS manager_name
+
+FROM employee e
+
+JOIN department d
+    ON e.department_id = d.department_id
+
+LEFT JOIN employee m
+    ON e.manager_id = m.employee_id;
+
+-- ============================================================
+-- REQUEST NOTE VIEW 
+-- ============================================================
+CREATE VIEW request_note_view AS
+SELECT
+    rn.request_note_id,
+    rn.request_id,
+    rn.created_by_emp_id,
+    CONCAT(e.first_name, ' ', e.last_name) AS created_by,
+    rn.note,
+    rn.note_date
+
+FROM request_notes rn
+
+JOIN employee e
+    ON rn.created_by_emp_id = e.employee_id;
+-- ============================================================
+-- APPROVAL VIEW 
+-- ============================================================
+CREATE VIEW approval_view AS
+SELECT
+    a.approval_id,
+    a.request_id,
+    a.approving_emp_id,
+    CONCAT(e.first_name, ' ', e.last_name) AS approved_by,
+    a.submission_date,
+    a.summary,
+    a.decision,
+    a.decision_date,
+
+    rv.request_type,
+    rv.submitted_by,
+    rv.status,
+    rv.priority_level
+
+FROM approval a
+
+JOIN employee e
+    ON a.approving_emp_id = e.employee_id
+
+JOIN request_view rv
+    ON a.request_id = rv.request_id;
+
+--- =============================================================
+--- REQUEST AUTHORIZATION VIEW 
+--- =============================================================
+CREATE VIEW request_authorization_view AS
+SELECT
+    ra.request_auth_id,
+    ra.request_id,
+    ra.employee_id,
+
+    a.auth_id,
+    a.auth_type_id,
+
+    at.auth_type_name,
+    at.can_view,
+    at.can_update,
+    at.can_approve,
+
+    ra.effective_date,
+    ra.expiration_date,
+    ra.is_active
+
+FROM request_auth ra
+
+JOIN authorization a
+    ON ra.auth_id = a.auth_id
+
+JOIN authorization_type at
+    ON a.auth_type_id = at.auth_type_id;

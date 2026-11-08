@@ -15,6 +15,7 @@ import { loadNewRequestPage } from "./pages/newRequestPage.js";
 import { loadMyAssignedRequests } from "./pages/myAssignedRequestsPage.js";
 import { loadUnassignedRequests } from "./pages/unassignedRequestsPage.js";
 import { loadAssignRequestPage } from "./pages/assignRequestPage.js";
+import { loadActiveRequests } from "./pages/activeRequestsPage.js"; 
 
 // Display a consistent placeholder for unfinished pages.
 function showPagePlaceholder(title, description) {
@@ -30,9 +31,12 @@ function showPagePlaceholder(title, description) {
     `;
 }
 
-
-export function loadPage(page, requestId = null, actingEmployeeId = null, confirmation = null) {
-
+export function loadPage(
+    page,
+    requestId = null,
+    actingEmployeeId = null,
+    confirmation = null
+) {
     const contentArea = document.getElementById("contentArea");
     contentArea.innerHTML = ``;
     switch (page) {
@@ -57,28 +61,12 @@ export function loadPage(page, requestId = null, actingEmployeeId = null, confir
             loadProcessRequestPage(requestId, 2);
             break;
 
-        // Temporary to allow for testing and proof of concept 
-        case "authorized-view":
-            loadNavigation("authorized_staff");
-            // loadAuthorizedHome(); 
-            break;
-
         // Authorized staff page placeholders // 
         case "authorized-home":
             loadNavigation("authorized_staff");
             showPagePlaceholder(
                 "Authorized Staff Home",
                 "Navigation and overview for authorized HR functions."
-            );
-            break;
-
-        // UC-2: New requests awaiting review and classification.
-        // Request queue implementation is pending.
-        case "new-requests":
-            loadNavigation("authorized_staff");
-            showPagePlaceholder(
-                "New Requests",
-                "Incoming requests awaiting review and classification (UC-2)."
             );
             break;
         // All new and unreviewed/unassigned requests
@@ -91,31 +79,16 @@ export function loadPage(page, requestId = null, actingEmployeeId = null, confir
             loadNavigation("authorized_staff");
             loadAssignRequestPage(requestId, actingEmployeeId);
             break;
-        // open a new unreviewed request 
-        case "new-request":
+        // AUTHORIZED HR STAFF VIEW OF ALL ACTIVE REQUESTS 
+        case "active-requests":
             loadNavigation("authorized_staff");
-            loadNewRequestPage(requestId, 2);
-            break;
-        // Temporary to allow the user to get back to the processing view for testing
-        case "processing-view":
-            loadNavigation("processing");
-            loadProcessingHomePage();
-            break;
-
-
+            loadActiveRequests(actingEmployeeId);
+            break; 
         case "confidential":
             loadNavigation("authorized_staff");
             showPagePlaceholder(
                 "Confidential Requests",
                 "Review and manage confidential requests within authorized permissions."
-            );
-            break;
-
-        case "all-active-requests":
-            loadNavigation("authorized_staff");
-            showPagePlaceholder(
-                "All Active Requests",
-                "View and manage active HR requests across the system."
             );
             break;
 

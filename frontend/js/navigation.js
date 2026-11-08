@@ -98,6 +98,24 @@ export async function loadNavigation(section) {
     const headerTitle = document.getElementById("page-title");
     const hamburgerMenu = document.getElementById("hamburger-menu");
 
+    const identityBanner = document.getElementById("workspace-identity");
+
+    if (identityBanner) {
+        if (section === "employee") {
+            identityBanner.innerHTML = `
+            <div class="workspace-identity-content">
+                <h2>Hi, Riley</h2>
+                <span>Riley Davis · Employee ID 7</span>
+            </div>
+        `;
+            identityBanner.hidden = false;
+        } else {
+            identityBanner.hidden = true;
+            identityBanner.innerHTML = "";
+        }
+    }
+
+
     headerTitle.textContent = config.title;
     const workspaceSelect = document.getElementById("workspace-select");
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,24 +20,20 @@
             </h1>
 
             <!-- Workspace selection, independent of page navigation -->
-<div class="workspace-control">
-    <label for="workspace-select">Workspace</label>
+            <div class="workspace-control">
+                <label for="workspace-select">Workspace</label>
 
-    <select id="workspace-select" aria-label="Select workspace">
-        <option value="processing">HR Processing</option>
-        <option value="authorized_staff">Authorized Staff</option>
-        <option value="employee">Employee</option>
-        <option value="manager">Management</option>
-    </select>
-</div>
+                <select id="workspace-select" aria-label="Select workspace">
+                    <option value="processing">HR Processing</option>
+                    <option value="authorized_staff">Authorized Staff</option>
+                    <option value="employee">Employee</option>
+                    <option value="manager">Management</option>
+                </select>
+            </div>
 
             <!-- Hamburger Button -->
-            <button id="menu-toggle"
-                    class="menu-toggle"
-                    type="button"
-                    aria-label="Open navigation menu"
-                    aria-expanded="false"
-                    aria-controls="hamburger-menu">
+            <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Open navigation menu"
+                aria-expanded="false" aria-controls="hamburger-menu">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -44,15 +41,15 @@
         </div>
 
         <!-- Navigation Menu -->
-        <nav id="hamburger-menu"
-             class="hamburger-menu"
-             aria-label="Main navigation">
+        <nav id="hamburger-menu" class="hamburger-menu" aria-label="Main navigation">
         </nav>
     </header>
 
     <main id="main_content">
-        <div id="contentArea">
+        <section id="workspace-identity" class="workspace-identity" aria-label="Current workspace identity" hidden>
+        </section>
 
+        <div id="contentArea">
         </div>
     </main>
     <!-- Handles frontend behavior and communication with the backend -->
@@ -60,4 +57,5 @@
 
 
 </body>
+
 </html>

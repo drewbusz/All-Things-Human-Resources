@@ -15,6 +15,7 @@ import { loadNewRequestPage } from "./pages/newRequestPage.js";
 import { loadMyAssignedRequests } from "./pages/myAssignedRequestsPage.js";
 import { loadUnassignedRequests } from "./pages/unassignedRequestsPage.js";
 import { loadAssignRequestPage } from "./pages/assignRequestPage.js";
+import { loadSubmitRequestPage } from "./pages/submitRequestPage.js";
 
 // Display a consistent placeholder for unfinished pages.
 function showPagePlaceholder(title, description) {
@@ -129,6 +130,7 @@ export function loadPage(page, requestId = null, actingEmployeeId = null, confir
                 "Access employee HR services and requests."
             );
             break;
+
         case "my-requests":
             loadNavigation("employee");
             // loadMyRequestsPage(data.employeeId); 
@@ -137,10 +139,12 @@ export function loadPage(page, requestId = null, actingEmployeeId = null, confir
                 "Track submitted HR requests and their progress."
             );
             break;
+
         case "view-request":
             loadNavigation("employee");
             // loadViewRequestPage(data.employeeId); 
             break;
+
         case "employee-history":
             loadNavigation("employee");
             // loadEmployeeHistoryPage(data.employeeId); 
@@ -148,8 +152,15 @@ export function loadPage(page, requestId = null, actingEmployeeId = null, confir
                 "Employee History",
                 "Review available employee history information."
             );
-
             break;
+
+            // UC-1: Employee submits a new HR request.
+        case "submit-request":
+            loadNavigation("employee");
+            loadSubmitRequestPage(7);
+            break;
+
+
         //===============//
         //]Manager Pages//
         case "manager-home":
@@ -182,14 +193,7 @@ export function loadPage(page, requestId = null, actingEmployeeId = null, confir
             break;
 
         //===============//
-        // Shared by all//
-        // placeholder for the new request form
-        case "submit-request":
-            showPagePlaceholder(
-                "Submit New Request",
-                "Request submission functionality is pending implementation."
-            );
-            break;
+        
 
         // Default page not found
         default:

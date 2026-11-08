@@ -94,6 +94,35 @@ body {
     font-size: 24px;
 }
 
+/* WORKSPACE GREETING */
+
+.workspace-identity {
+    margin-bottom: 20px;
+}
+
+.workspace-identity[hidden] {
+    display: none;
+}
+
+.workspace-identity-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.workspace-identity-content h2 {
+    margin: 0;
+    font-size: 22px;
+    color: #243447;
+}
+
+.workspace-identity-content span {
+    color: #596775;
+    font-size: 14px;
+}
+
 /* WORKSPACE SELECTOR */
 
 .workspace-control {
@@ -436,6 +465,7 @@ form>div {
 .form-actions {
     display: flex;
     justify-content: flex-end;
+    gap: 12px;
     margin-top: 24px;
     padding-top: 20px;
     border-top: 1px solid #d9dee3;

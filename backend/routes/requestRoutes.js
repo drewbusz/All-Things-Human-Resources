@@ -76,21 +76,23 @@ router.get(
     requestController.getRequestById
 );
 
-// Use the new logic for assignment and classification
-router.patch(
-    "/:id",
-    (req, res, next) => {
-        if (
-            Object.prototype.hasOwnProperty.call(
-                req.body ?? {},
-                "request_type_id"
-            )
-        ) {
-            return managementController.manageRequest(req, res, next);
-        }
+// Route assignment and classification changes through management
+router.patch("/:id", (req, res, next) => {
+    const managementFields = [
+        "request_type_id",
+        "assigned_emp_id",
+        "confidentiality_level"
+    ];
 
-        return requestController.updateRequest(req, res, next);
+    const isManagementUpdate = managementFields.some(field =>
+        Object.prototype.hasOwnProperty.call(req.body ?? {}, field)
+    );
+
+    if (isManagementUpdate) {
+        return managementController.manageRequest(req, res, next);
     }
-);
+
+    return requestController.updateRequest(req, res, next);
+});
 
 module.exports = router;

@@ -49,16 +49,9 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
             await getWorkflowStepsByRequestType(
                 request.request_type_id
             );
-
-
-        // retrieve the request history to build the history card
-
-
-              
-        // ----------------------------------------------------
+        // -----------------------------------------------
         // Render Process Request Form
-        // ----------------------------------------------------
-
+        //------------------------------------------------
         // Static details card
         const staticCard =
             document.createElement("div");

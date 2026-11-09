@@ -54,12 +54,13 @@ export async function loadAssignRequestPage(requestId, actingEmployeeId) {
         // Create the page using existing application styles.
         const staticCard = document.createElement("div");
         staticCard.classList.add("card"); 
+        
 
         staticCard.innerHTML = `
             <h3>Assign & Prioritize | Request #${request.request_id}</h3>
             <hr>
 
-            <div class="card-row">
+            <div class="card-row-assign">
                 <div class="info-item">
                     <span class="info-label">Current Request Type</span>
                     <span class="info-value" id="assignment-type"></span>

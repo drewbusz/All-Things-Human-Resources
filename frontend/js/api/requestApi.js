@@ -23,7 +23,9 @@ export async function getRequestById(
 } 
 
 // Get workflow steps by request type 
-export async function getWorkflowStepsByRequestType(request_type_id) {
+export async function getWorkflowStepsByRequestType(
+    request_type_id
+) {
    
         const workflowResponse = await fetch(`/api/requests/workflow-steps/${request_type_id}`);
 
@@ -36,7 +38,10 @@ export async function getWorkflowStepsByRequestType(request_type_id) {
 }
 
 // get Request History 
-export async function getRequestHistory(request_id, actingEmployeeId) { 
+export async function getRequestHistory(
+    request_id,
+    actingEmployeeId
+) { 
 
     const historyResponse =
         await fetch(
@@ -59,9 +64,15 @@ export async function getRequestHistory(request_id, actingEmployeeId) {
 }
 
 // get request fields and values 
-export async function getRequestFields(request_id) { 
-    const requestFieldResponse = await fetch(`/api/requests/${request_id}/fields`);
-    const requestFieldResult = await requestFieldResponse.json(); 
+export async function getRequestFields(
+    request_id
+) { 
+    const requestFieldResponse =
+        await fetch(
+            `/api/requests/${request_id}/fields`
+        );
+    const requestFieldResult =
+        await requestFieldResponse.json(); 
 
     if (!requestFieldResponse.ok) { 
         throw new Error(
@@ -76,7 +87,9 @@ export async function getRequestFields(request_id) {
 }
 
 // Get request notes with the request id 
-export async function getRequestNotesByRequestId(request_id) { 
+export async function getRequestNotesByRequestId(
+    request_id
+) { 
     const requestNoteResponse = await fetch(`/api/requests/${request_id}/notes`); 
     const requestNoteResult = await requestNoteResponse.json(); 
 
@@ -94,13 +107,14 @@ export async function getRequestNotesByRequestId(request_id) {
 export async function getActiveRequestTypes() {
 
     const requestTypeResponse = await fetch(
-        "/api/request-types/active"
+        "/api/requests/activeRequestTypes"
     ); 
 
     const requestTypeResult = await requestTypeResponse.json(); 
 
     if (!requestTypeResponse.ok) { 
         throw new Error( 
+            requestTypeResult.error || 
             requestTypeResult.message || 
             "Unable to retrieve active request types."
         ); 
@@ -109,7 +123,10 @@ export async function getActiveRequestTypes() {
 }
 
 // Work Item list APIs
-export async function getAssignedRequestsByEmpId(employeeId, actingEmployeeId) { 
+export async function getAssignedRequestsByEmpId(
+    employeeId,
+    actingEmployeeId
+) { 
     const response =
         await fetch(`/api/requests/assigned/${employeeId}?actingEmployeeId=${actingEmployeeId}`); 
 
@@ -126,7 +143,9 @@ export async function getAssignedRequestsByEmpId(employeeId, actingEmployeeId) {
 }
 
 // Get unassigned requests
-export async function getUnassignedRequests(actingEmployeeId) {
+export async function getUnassignedRequests(
+    actingEmployeeId
+) {
     const response =
         await fetch(
             `/api/requests/unassigned?actingEmployeeId=${actingEmployeeId}`
@@ -148,7 +167,9 @@ export async function getUnassignedRequests(actingEmployeeId) {
 }
 
 // Get all active requests
-export async function getActiveRequests(actingEmployeeId) { 
+export async function getActiveRequests(
+    actingEmployeeId
+) { 
     const response =
         await fetch(
             `/api/requests/active?actingEmployeeId=${actingEmployeeId}`

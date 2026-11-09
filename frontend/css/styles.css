@@ -307,6 +307,11 @@ h3 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 24px;
 }
+.card-row-assign {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+}
 
 .info-item {
     display: flex;
@@ -339,11 +344,12 @@ form>div {
 
 .form-field {
     display: flex;
+    margin-bottom: 8px;
     flex-direction: column;
 }
 
 .form-field label {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     font-weight: bold;
 }
 

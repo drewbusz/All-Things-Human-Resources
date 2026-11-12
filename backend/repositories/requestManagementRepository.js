@@ -13,6 +13,29 @@ function historyValue(value) {
     return String(value ?? "").slice(0, 255);
 }
 
+// Keep new submissions in intake, but preserve the older seeded requests.
+async function needsIntakeReview(requestId, connection = pool) {
+    const [rows] = await connection.execute(`
+        SELECT
+            EXISTS (
+                SELECT 1
+                FROM request_history
+                WHERE request_id = ?
+                  AND modified_field = 'request_created'
+                  AND type = 'created'
+            ) AS created_in_app,
+            EXISTS (
+                SELECT 1
+                FROM request_history
+                WHERE request_id = ?
+                  AND modified_field = 'intake_verification'
+                  AND current_value = 'verified'
+            ) AS reviewed
+    `, [requestId, requestId]);
+
+    return Boolean(rows[0].created_in_app) && !Boolean(rows[0].reviewed);
+}
+
 // Get requests that haven't been completed
 async function getActiveRequests() {
     const [rows] = await pool.execute(`
@@ -108,6 +131,17 @@ async function manageRequest(requestId, actorId, changes) {
             throw repositoryError(
                 "Completed requests cannot be reassigned or reclassified.",
                 "REQUEST_COMPLETED"
+            );
+        }
+
+        // Don't assign a new request until its intake review is complete.
+        if (
+            Object.prototype.hasOwnProperty.call(changes, "assigned_emp_id") &&
+            await needsIntakeReview(requestId, connection)
+        ) {
+            throw repositoryError(
+                "HR must complete intake review before assignment.",
+                "INTAKE_REVIEW_REQUIRED"
             );
         }
 
@@ -258,7 +292,7 @@ async function manageRequest(requestId, actorId, changes) {
                 requestId
             ]);
 
-            // Record each changed field
+            // Keep a history entry for each changed field
             for (const field of updates) {
                 await connection.execute(`
                     INSERT INTO request_history (
@@ -306,5 +340,6 @@ async function manageRequest(requestId, actorId, changes) {
 
 module.exports = {
     getActiveRequests,
-    manageRequest
+    manageRequest,
+    needsIntakeReview
 };

@@ -1,5 +1,7 @@
+
 const requestRepository = require("../repositories/requestRepository");
 const employeeService = require("./employeeService");
+const managementRepository = require("../repositories/requestManagementRepository");
 
 const HR_TYPES = [3, 5, 6];
 const ASSIGNMENT_TYPES = [3, 5];
@@ -192,6 +194,11 @@ async function getUnassignedRequests(actingEmployeeId) {
     const allowed = [];
 
     for (const request of requests) {
+        // New submissions stay in intake until HR reviews them.
+        if (await managementRepository.needsIntakeReview(request.request_id)) {
+            continue;
+        }
+
         try {
             await checkAccess(request, actingEmployeeId, "read");
             allowed.push(request);
@@ -331,6 +338,16 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
             );
 
             if (assignmentChanging) {
+                if (await managementRepository.needsIntakeReview(
+                    currentRequest.request_id,
+                    connection
+                )) {
+                    throw createServiceError(
+                        "HR must complete intake review before assignment.",
+                        "INVALID_STATUS"
+                    );
+                }
+
                 if (submittedData.brief_summary !== undefined ||
                     submittedData.current_step_id !== undefined) {
                     throw createServiceError(
@@ -384,6 +401,22 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
             if (!currentStep) {
                 throw createServiceError(
                     "The request has an invalid current workflow step.",
+                    "INVALID_STATUS"
+                );
+            }
+
+            // Completed requests are read-only.
+            if (currentStep.step_code === "complete") {
+                throw createServiceError(
+                    "Completed requests cannot be updated.",
+                    "INVALID_STATUS"
+                );
+            }
+
+            // Processing begins after assignment.
+            if (!assignmentChanging && currentRequest.assigned_emp_id === null) {
+                throw createServiceError(
+                    "The request must be assigned before processing.",
                     "INVALID_STATUS"
                 );
             }

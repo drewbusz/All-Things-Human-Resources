@@ -256,7 +256,7 @@ CREATE TABLE request_history (
     request_id BIGINT UNSIGNED NOT NULL,
     created_by_emp_id BIGINT UNSIGNED NOT NULL,
     modified_field VARCHAR(255) NOT NULL, 
-    previous_value VARCHAR(255) NOT NULL, 
+    previous_value VARCHAR(255) NULL, 
     current_value VARCHAR(255) NOT NULL, 
     date_modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, 
     type ENUM(

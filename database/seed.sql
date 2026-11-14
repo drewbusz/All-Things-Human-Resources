@@ -711,10 +711,10 @@ VALUES
         6,
         NULL,
         4,
-        'high',
-        '2026-10-13',
+        NULL, 
+        NULL,
         'Employee submitted an urgent leave request that requires HR review.',
-        'Confidential',
+        'Highly Confidential',
         'email_service'
     ),
     -- Request 9
@@ -723,10 +723,10 @@ VALUES
         7,
         NULL,
         1,
-        'medium',
-        '2026-10-16',
+        NULL, 
+        NULL,
         'Employee requested a correction to their supervisor information.',
-        'Nonconfidential',
+        'Highly Confidential',
         'self_service'
     ),
     -- Request 10
@@ -735,8 +735,8 @@ VALUES
         8,
         NULL,
         4,
-        'low',
-        '2026-10-22',
+        NULL, 
+        NULL,
         'Employee requested information about available personal leave.',
         'Confidential',
         'self_service'
@@ -747,8 +747,8 @@ VALUES
         9,
         NULL,
         1,
-        'medium',
-        '2026-10-17',
+        NULL, 
+        NULL,
         'Employee reported an incorrect work phone number in their profile.',
         'Nonconfidential',
         'email_service'
@@ -759,10 +759,10 @@ VALUES
         10,
         NULL,
         4,
-        'high',
-        '2026-10-15',
+        NULL, 
+        NULL,
         'Employee submitted a time-sensitive leave request for HR processing.',
-        'Confidential',
+        'Highly Confidential',
         'email_service'
     ),
 
@@ -773,8 +773,8 @@ VALUES
         5,
         NULL,
         7,
-        'low',
-        '2026-10-24',
+        NULL, 
+        NULL,
         'Employee requested information about available dental and vision benefits.',
         'Nonconfidential',
         'self_service'
@@ -797,8 +797,8 @@ VALUES
         9,
         NULL,
         14,
-        'low',
-        '2026-10-25',
+        NULL, 
+        NULL,
         'Employee requested an employment verification letter for a housing application.',
         'Nonconfidential',
         'self_service'
@@ -1333,136 +1333,119 @@ INSERT INTO request_history (
     request_id, 
     created_by_emp_id, 
     modified_field, 
-    previous_value, 
-    current_value, 
+    current_value,
     type
 ) VALUES 
 ( 
     8, 
     6, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created", 
+    "new request",
     "created"
 ), 
 ( 
     9, 
     7, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",   
+    "new request",
     "created"
 ), 
 ( 
     10, 
     8, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",   
+    "new request",
     "created"
 ), 
 ( 
     11, 
     9, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",   
+    "new request",
     "created"
 ), 
 ( 
     12, 
     10, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",   
+    "new request",
     "created"
 ), 
 ( 
     13, 
     5, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",   
+    "new request",
     "created"
 ), 
 ( 
     15, 
     9, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",   
+    "new request",
     "created"
 ), 
 ( 
     1, 
     5, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",   
+    "new request",
     "created"
 ),
 ( 
     3, 
     7, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",   
+    "new request",
     "created"
 ),
 ( 
     5, 
     9, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",   
+    "new request",
     "created"
 ),
 ( 
     7, 
     5, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",   
+    "new request",
     "created"
 ),
 ( 
     2, 
     6, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",   
+    "new request",
     "created"
 ),
 ( 
     4, 
     8, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",   
+    "new request",
     "created"
 ),
 ( 
     6, 
     10, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",   
+    "new request",
     "created"
 ),
 ( 
     14, 
     6, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",   
+    "new request",
     "created"
 ),
 ( 
     16, 
     10, 
-    "intake_verification", 
-    "",
-    "pending",
+    "request_created",
+    "new request",
     "created"
 );
 -- ============================================================

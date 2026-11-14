@@ -10,9 +10,11 @@
 //
 // ============================================================
 import { getActiveRequests } from "../api/requestApi.js";
+import { renderRequestRows } from "../utils/requestRenderHelper.js"; 
 import { formatDateForDisplay } from "../utils/dateHelper.js";
 import { formatFieldName } from "../utils/textFormatHelper.js";
 import { loadPage } from "../router.js";
+
 
 // ============================================================
 // LOAD ACTIVE REQUESTS
@@ -25,11 +27,11 @@ export async function loadActiveRequests(actingEmployeeId) {
 
     try {
 
-        // Retrieve active requests from the backend API
+        // Retrieve active requests from the backend API.
         const requests =
             await getActiveRequests(actingEmployeeId);
 
-        // Create the page container and request list
+        // Create the page container and request list.
         const pipeline = document.createElement("div");
 
         pipeline.innerHTML = `
@@ -43,13 +45,14 @@ export async function loadActiveRequests(actingEmployeeId) {
             <div id="active-request-list"></div>
         `;
 
-        // Display the page
+        // Display the page.
         contentArea.replaceChildren(pipeline);
 
+        // Reference the request list.
         const requestList =
             pipeline.querySelector("#active-request-list");
 
-        // Display a message if no active requests exist
+        // Display a message if no active requests exist.
         if (requests.length === 0) {
 
             requestList.textContent =
@@ -58,111 +61,40 @@ export async function loadActiveRequests(actingEmployeeId) {
             return;
         }
 
-        // Create a separate card for each active request
-        requests.forEach(request => {
+        // Render request cards using the shared rendering helper.
+        const requestRows =
+            renderRequestRows(requests);
 
-            const card = document.createElement("div");
+        requestList.innerHTML = requestRows;
 
-            // Reuse existing request card styles
-            card.className = "assigned-item-card";
+        // Retrieve the rendered request cards.
+        const workItemCards =
+            requestList.querySelectorAll(".item-card");
 
-            card.innerHTML = `
-                <div class="assigned-item-content">
+        // Attach click events to each request card.
+        workItemCards.forEach(card => {
 
-                    <h3 class="request-title"></h3>
+            card.addEventListener("click", () => {
 
-                    <div class="assigned-item-details">
+                const requestId =
+                    card.dataset.requestId;
 
-                        <div class="assigned-detail">
-                            <span class="detail-label">
-                                Submitted By
-                            </span>
+                console.log("Selected request: ", requestId);
 
-                            <span class="detail-value submitted-by"></span>
-                        </div>
+                // Store this page for the Back button.
+                sessionStorage.setItem(
+                    "requestReturnPage",
+                    "active-requests"
+                );
 
-                        <div class="assigned-detail">
-                            <span class="detail-label">
-                                Submitted Date
-                            </span>
+                // Navigate to the assignment page.
+                loadPage(
+                    "assign-request",
+                    requestId,
+                    actingEmployeeId
+                );
 
-                            <span class="detail-value submitted-date"></span>
-                        </div>
-
-                        <div class="assigned-detail">
-                            <span class="detail-label">
-                                Assigned To
-                            </span>
-
-                            <span class="detail-value assigned-to"></span>
-                        </div>
-
-                        <div class="assigned-detail">
-                            <span class="detail-label">
-                                Priority
-                            </span>
-
-                            <span class="detail-value priority"></span>
-                        </div>
-
-                        <div class="assigned-detail">
-                            <span class="detail-label">
-                                Status
-                            </span>
-
-                            <span class="detail-value request-status"></span>
-                        </div>
-
-                    </div>
-                </div>
-
-                <button
-                    type="button"
-                    class="view-request-button"
-                >
-                    View Request →
-                </button>
-            `;
-
-            // Populate card information safely
-            card.querySelector(".request-title").textContent =
-                `#${request.request_id} — ${request.request_type}`;
-
-            card.querySelector(".submitted-by").textContent =
-                request.submitted_by ?? "";
-
-            card.querySelector(".submitted-date").textContent =
-                formatDateForDisplay(request.submission_date);
-
-            card.querySelector(".assigned-to").textContent =
-                request.assigned_to
-                    ? formatFieldName(request.assigned_to)
-                    : "Unassigned";
-
-            card.querySelector(".priority").textContent =
-                request.priority_level
-                    ? formatFieldName(request.priority_level)
-                    : "Not Set";
-
-            card.querySelector(".request-status").textContent =
-                request.status
-                    ? formatFieldName(request.status)
-                    : "";
-
-            // Navigate to the selected request
-            card.querySelector(".view-request-button")
-                .addEventListener("click", () => {
-
-                    loadPage(
-                        "assign-request",
-                        request.request_id,
-                        actingEmployeeId
-                    );
-
-                });
-
-            // Add completed card to the list
-            requestList.appendChild(card);
+            });
 
         });
 

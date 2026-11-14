@@ -23,24 +23,25 @@ export async function loadMyAssignedRequests(employeeId, actingEmployeeId) {
         // build pipeline
         const pipeline = document.createElement("div");
 
-        pipeline.innerHTML = ` 
+        pipeline.innerHTML = `
             <h3>My Assigned Requests</h3>
             <hr><br>
             ${assignedRequestRows}
-        `;
+        `
+        contentArea.replaceChildren(pipeline);
 
-        contentArea.appendChild(pipeline);
-
-        const workItemCards = contentArea.querySelectorAll(".assigned-item-card");
+        const workItemCards = contentArea.querySelectorAll(".item-card");
 
         workItemCards.forEach(card => {
+
             card.addEventListener("click", () => {
+
                 const requestId = card.dataset.requestId;
 
-                console.log("Selected request: ", requestId);
-
-                // clear the content area 
-                // contentArea.innerHTML = ``;
+                sessionStorage.setItem(
+                    "requestReturnPage",
+                    "assigned-requests"
+                );
 
                 loadPage(
                     "process-request",
@@ -48,7 +49,7 @@ export async function loadMyAssignedRequests(employeeId, actingEmployeeId) {
                     actingEmployeeId
                 );
             });
-        }); 
+        });
 
     } catch (error) { 
         contentArea.textContent =

@@ -17,6 +17,7 @@ import { loadUnassignedRequests } from "./pages/unassignedRequestsPage.js";
 import { loadAssignRequestPage } from "./pages/assignRequestPage.js";
 import { loadSubmitRequestPage } from "./pages/submitRequestPage.js";
 import { loadActiveRequests } from "./pages/activeRequestsPage.js"; 
+import { loadPendingRequests } from "./pages/pendingRequestPage.js"; 
 
 // Display a consistent placeholder for unfinished pages.
 function showPagePlaceholder(title, description) {
@@ -70,6 +71,10 @@ export function loadPage(
                 "Navigation and overview for authorized HR functions."
             );
             break;
+        case "new-requests":
+            loadNavigation("authorized_staff");
+            loadPendingRequests(2);
+            break;
         // All new and unreviewed/unassigned requests
         case "unassigned-requests":
             loadNavigation("authorized_staff");
@@ -83,7 +88,7 @@ export function loadPage(
         // AUTHORIZED HR STAFF VIEW OF ALL ACTIVE REQUESTS 
         case "active-requests":
             loadNavigation("authorized_staff");
-            loadActiveRequests(actingEmployeeId);
+            loadActiveRequests(2);
             break; 
         case "confidential":
             loadNavigation("authorized_staff");
@@ -92,7 +97,10 @@ export function loadPage(
                 "Review and manage confidential requests within authorized permissions."
             );
             break;
-
+        case "request-intake":
+            loadNaviation("authorized_staff");
+            // loadNewRequest(); 
+            break;
         //=============================//
         // Employee page placeholders // 
         case "employee-home":

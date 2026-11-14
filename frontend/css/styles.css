@@ -466,10 +466,13 @@ form>div {
 }
 
 
-/* FORM ACTIONS */
+/* ============ 
+   FORM ACTIONS
+   ============ */
 
 .form-actions {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
     gap: 12px;
     margin-top: 24px;
@@ -477,36 +480,38 @@ form>div {
     border-top: 1px solid #d9dee3;
 }
 
-.form-actions button {
-    padding: 11px 24px;
-    border: none;
-    border-radius: 4px;
-    background-color: #243447;
-    color: white;
-    font-size: 15px;
-    cursor: pointer;
-}
+    /* Shared form button styling */
+    .form-actions button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 42px;
+        min-height: 42px;
+        padding: 0 18px;
+        border: none;
+        border-radius: 4px;
+        background-color: #243447;
+        color: white;
+        font-family: inherit;
+        font-size: 15px;
+        line-height: 20px;
+        cursor: pointer;
+        box-sizing: border-box;
+    }
 
-.form-actions button:hover {
-    background-color: #354b63;
-}
+        .form-actions button:hover {
+            background-color: #354b63;
+        }
 
-/* FORM BUTTONS */
+        .form-actions button:disabled {
+            opacity: 0.65;
+            cursor: wait;
+        }
 
-form button[type="submit"] {
-    padding: 11px 18px;
-    border: none;
-    border-radius: 4px;
-    background-color: #243447;
-    color: white;
-    font-size: 15px;
-    cursor: pointer;
-}
-
-form button[type="submit"]:hover {
-    background-color: #354b63;
-}
-
+    /* Back button floats to the left */
+    .form-actions #back-button {
+        margin-right: auto;
+    }
 
 /* FORM MESSAGES */
 
@@ -517,7 +522,7 @@ form button[type="submit"]:hover {
 }
 
 /* REQUEST ITEM CARDS */
-.assigned-item-card {
+.item-card {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -567,14 +572,20 @@ form button[type="submit"]:hover {
     font-size: 0.95rem;
 }
 
-.assigned-item-action {
+.item-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     margin-left: 1rem;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background: #f5f5f5;
-    font-size: 0.85rem;
-    font-weight: 600;
+    height: 32px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 4px;
+    background-color: #243447;
+    color: white;
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 400;
     pointer-events: none;
 }
 

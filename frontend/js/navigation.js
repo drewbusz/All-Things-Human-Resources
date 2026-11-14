@@ -93,12 +93,14 @@ export async function loadNavigation(section) {
         return;
     }
 
+    const headerTitle =
+        document.getElementById("page-title");
 
+    const hamburgerMenu =
+        document.getElementById("hamburger-menu");
 
-    const headerTitle = document.getElementById("page-title");
-    const hamburgerMenu = document.getElementById("hamburger-menu");
-
-    const identityBanner = document.getElementById("workspace-identity");
+    const identityBanner =
+        document.getElementById("workspace-identity");
 
     if (identityBanner) {
         if (section === "employee") {

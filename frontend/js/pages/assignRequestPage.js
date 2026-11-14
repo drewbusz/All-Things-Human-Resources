@@ -55,9 +55,8 @@ export async function loadAssignRequestPage(requestId, actingEmployeeId) {
         const staticCard = document.createElement("div");
         staticCard.classList.add("card"); 
         
-
         staticCard.innerHTML = `
-            <h3>Assign & Prioritize | Request #${request.request_id}</h3>
+            <h3 id="card-title"></h3>
             <hr>
 
             <div class="card-row-assign">
@@ -85,6 +84,16 @@ export async function loadAssignRequestPage(requestId, actingEmployeeId) {
             </div>
         `;
 
+        // Dynamic Page title using return page 
+        const previousPage = sessionStorage.getItem("requestReturnPage"); 
+        
+        const cardTitle = 
+            previousPage === "active-requests"
+                ? "Viewing Active Request # " + requestId
+                : "Assign & Priotize Request # " + requestId; 
+
+        staticCard.querySelector("#card-title").textContent = cardTitle; 
+
         // Populate static request information
         staticCard.querySelector("#assignment-type").textContent =
             request.request_type ?? "";
@@ -111,10 +120,18 @@ export async function loadAssignRequestPage(requestId, actingEmployeeId) {
             staticCard, 
             requestForm
         ); 
-        // Return to the unassigned request queue.
-        requestForm.querySelector("#back-to-unassigned")
+               
+
+        // Return to the previous page.
+        requestForm.querySelector("#back-button")
             .addEventListener("click", () => {
-                loadPage("unassigned-requests");
+                const previousPage =
+                    sessionStorage.getItem("requestReturnPage")
+                    || "unassigned-requests"; 
+
+                sessionStorage.removeItem("requestReturnPage"); 
+
+                loadPage(previousPage);
             });
 
         // Submit assignment values through the existing backend.

@@ -594,9 +594,9 @@ JOIN employee e
 JOIN request_view rv
     ON a.request_id = rv.request_id;
 
---- =============================================================
---- REQUEST AUTHORIZATION VIEW 
---- =============================================================
+-- =============================================================
+-- REQUEST AUTHORIZATION VIEW 
+-- =============================================================
 CREATE VIEW request_authorization_view AS
 SELECT
     ra.request_auth_id,

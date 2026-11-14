@@ -120,7 +120,6 @@ export function renderProcessRequestForm(
                             </option>
                         </select>
                     </div>
-
                 </div>
 
 
@@ -136,21 +135,14 @@ export function renderProcessRequestForm(
                             id="request-summary"
                             name="brief_summary"
                         ></textarea>
-
                     </div>
-
                 </div>
-
             </div>
-
-            <hr>
-
-            <button type="submit">
-                Save Changes
-            </button>
-
-            <p class="feedback"></p>
-
+            <div class="form-actions">
+            <button type="button" id="back-button">Back</button>
+                <p class="feedback"></p>
+                <button type="submit">Save Assignment</button>
+            </div>
         </div>
     `;
     // Safely populate the request summary as text 
@@ -216,14 +208,16 @@ export function renderAuthorizedRequestProcessingForm(
             </div>
 
             <div class="form-actions">
+                <button type="back" id="back-button">
+                    Back
+                </button>
+                <p id="assignment-message" class="feedback" role="status"></p>
                 <button type="submit">Save Assignment</button>
             </div>
 
-            <p id="assignment-message" class="feedback" role="status"></p>
+            
 
-            <button type="button" id="back-to-unassigned">
-                Back to Unassigned Requests
-            </button>
+            
 
         </div>
     `;
@@ -431,14 +425,14 @@ export function loadRequestNotes(
 export function renderRequestRows(requests) { 
 
     const requestRows = requests.map(request => `
-    <div class="assigned-item-card"
+    <div class="item-card"
          id="assigned-item-${request.request_id}"
          data-request-id="${request.request_id}"
     >
 
         <div class="assigned-item-content">
 
-            <h3>${request.request_type}</h3>
+            <h3>#${request.request_id} - ${request.request_type}</h3>
 
             <div class="assigned-item-details">
 
@@ -456,21 +450,25 @@ export function renderRequestRows(requests) {
 
                 <div class="assigned-detail">
                     <span class="detail-label">Priority</span>
-                    <span class="detail-value">${request.priority_level ?? ""}</span>
+                    <span class="detail-value">${formatFieldName(request.priority_level) || "None Selected"}</span>
                 </div>
 
                 <div class="assigned-detail">
                     <span class="detail-label">Status</span>
                     <span class="detail-value">${request.status}</span>
                 </div>
+                <div class="assigned-detail">
+                    <span class="detail-label">Current Owner</span>
+                    <span class="detail-value">${formatFieldName(request.assigned_to) || "None Selected"}</span>
+                </div>
 
             </div>
 
         </div>
 
-        <div class="assigned-item-action">
+        <button type="button" class="item-action">
             View Request →
-        </div>
+        </button>
 
     </div>
 `).join("");

@@ -187,6 +187,26 @@ export async function getActiveRequests(
     return result.data; 
 }
 
+// Get all pending requests (Pending intake review)
+export async function getPendingRequests(
+    actingEmployeeId
+) { 
+    const response = await fetch(
+        `/api/requests/active?actingEmployeeId=${actingEmployeeId}`
+    ); 
+
+    const result = await response.json(); 
+
+    if (!response.ok) { 
+        throw new Error(
+            result.message ||
+            result.error ||
+            "Unable to review pending requests."
+        ); 
+    }
+    return result.data; 
+}
+
 // ===================================
 // PATCH API CALLS
 // ===================================

@@ -11,7 +11,9 @@ import {
     updateRequest,
     saveRequestNote
 } from "../api/requestApi.js";
-
+import {
+    loadPage
+} from "../router.js"; 
 // import request render helper
 import {
     renderProcessRequestForm,
@@ -336,28 +338,46 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
             });
         }
 
-        form.addEventListener(
-            "submit",
-            async event => {
+        // Store the original form values for comparison.
+        const originalFormData = new FormData(form);
 
-                event.preventDefault();
+        // Store the submit button 
+        const submitButton =
+            form.querySelector('[type="submit"]');
 
-                const submitButton =
-                    form.querySelector('[type="submit"]'); 
+        submitButton.addEventListener("click", async event => {
 
-                if (submitButton) { 
-                    submitButton.disabled = true; 
+            event.preventDefault();
+
+            const message = form.querySelector(".feedback");
+
+            // Compare original and current form values.
+            const currentFormData = new FormData(form);
+
+            const hasChanges =
+                JSON.stringify([...originalFormData.entries()]) !==
+                JSON.stringify([...currentFormData.entries()]);
+
+            // Do not submit if no changes were made.
+            if (!hasChanges) {
+
+                if (message) {
+                    message.textContent = "No changes were made.";
+                    message.classList.remove("success", "error");
                 }
 
-                const message =
-                    form.querySelector(".feedback"); 
+                return;
+            }
 
-                try { 
-                    await submitRequestUpdates(
-                        form,
-                        requestId, 
-                        actingEmployeeId
-                    ); 
+            // Disable the button only when an update will be submitted.
+            submitButton.disabled = true;
+
+            try {
+                await submitRequestUpdates(
+                    form,
+                    requestId,
+                    actingEmployeeId
+                );
 
                     // Refresh request history after successful submission 
                     const updatedHistory = await getRequestHistory(
@@ -422,6 +442,27 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
             }
         );
 
+        // Back Button event listener
+        form.querySelector("#back-button")
+            .addEventListener("click", () => {
+
+                const previousPage =
+                    sessionStorage.getItem("requestReturnPage")
+                    || "assigned-requests";
+
+                console.log("Back button:", form.querySelector("#back-button"));
+
+                console.log(
+                    "Stored return page:",
+                    sessionStorage.getItem("requestReturnPage")
+                );
+                sessionStorage.removeItem("requestReturnPage");
+
+                loadPage(
+                    previousPage,
+                    actingEmployeeId
+                );
+            });
 
     } catch (error) {
 

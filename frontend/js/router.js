@@ -9,9 +9,14 @@
 import { loadNavigation } from "./navigation.js";
 
 // importing specific pages 
-import { loadProcessingHomePage } from "./pages/processingHomePage.js";
+import {
+    loadProcessingHomePage, 
+    loadAuthorizedHomePage,
+    loadEmployeeHomePage,
+    loadManagerHomePage
+} from "./pages/homePages.js";
 import { loadProcessRequestPage } from "./pages/processRequestPage.js";
-import { loadNewRequestPage } from "./pages/newRequestPage.js";
+import { loadIntakeRequestPage } from "./pages/intakeRequestPage.js";
 import { loadMyAssignedRequests } from "./pages/myAssignedRequestsPage.js";
 import { loadUnassignedRequests } from "./pages/unassignedRequestsPage.js";
 import { loadAssignRequestPage } from "./pages/assignRequestPage.js";
@@ -43,17 +48,17 @@ export function loadPage(
     contentArea.innerHTML = ``;
     switch (page) {
 
-        //=================//
-        // HR Staff Pages // 
+        // ==================================
+        // HR Staff Pages
+        // ==================================
         // hr staff processing home page 
         case "processing-home":
             loadNavigation("processing");
-            loadProcessingHomePage();
+            loadProcessingHomePage(2);
             break;
         // Requests assigned to the user for processing
         case "assigned-requests":
             loadNavigation("processing");
-            console.log("Load page: ", page);
             loadMyAssignedRequests(2, 2);
             break;
 
@@ -63,17 +68,16 @@ export function loadPage(
             loadProcessRequestPage(requestId, 2);
             break;
 
-        // Authorized staff page placeholders // 
+        // ==================================
+        // AUTHORIZED Staff Pages
+        // ==================================
         case "authorized-home":
             loadNavigation("authorized_staff");
-            showPagePlaceholder(
-                "Authorized Staff Home",
-                "Navigation and overview for authorized HR functions."
-            );
+            loadAuthorizedHomePage(2); 
             break;
         case "new-requests":
             loadNavigation("authorized_staff");
-            loadPendingRequests(2);
+            loadPendingRequests(actingEmployeeId || 2, confirmation);
             break;
         // All new and unreviewed/unassigned requests
         case "unassigned-requests":
@@ -83,7 +87,11 @@ export function loadPage(
         // UC-3: Assign and prioritize a selected HR request.
         case "assign-request":
             loadNavigation("authorized_staff");
-            loadAssignRequestPage(requestId, actingEmployeeId);
+            loadAssignRequestPage(
+                requestId,
+                actingEmployeeId || 2,
+                confirmation
+            );
             break;
         // AUTHORIZED HR STAFF VIEW OF ALL ACTIVE REQUESTS 
         case "active-requests":
@@ -97,12 +105,15 @@ export function loadPage(
                 "Review and manage confidential requests within authorized permissions."
             );
             break;
+        // UC-2 Review and Classify Incoming Request
         case "request-intake":
-            loadNaviation("authorized_staff");
-            // loadNewRequest(); 
+            loadNavigation("authorized_staff");
+            loadIntakeRequestPage(requestId, actingEmployeeId); 
             break;
-        //=============================//
-        // Employee page placeholders // 
+
+        //=============================
+        // Employee pages
+        //=============================
         case "employee-home":
             loadNavigation("employee");
             // loadEmployeeHome(data.employeeId); 
@@ -146,11 +157,7 @@ export function loadPage(
         //]Manager Pages//
         case "manager-home":
             loadNavigation("manager");
-            // loadManagerHomePage(); 
-            showPagePlaceholder(
-                "Management Home",
-                "Access management functions and request approvals."
-            );
+            loadManagerHomePage(); 
             break;
         case "pending-approvals":
             loadNavigation("manager");

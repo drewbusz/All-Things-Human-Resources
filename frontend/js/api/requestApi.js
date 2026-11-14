@@ -192,7 +192,7 @@ export async function getPendingRequests(
     actingEmployeeId
 ) { 
     const response = await fetch(
-        `/api/requests/active?actingEmployeeId=${actingEmployeeId}`
+        `/api/requests/intake?actingEmployeeId=${actingEmployeeId}`
     ); 
 
     const result = await response.json(); 
@@ -207,17 +207,67 @@ export async function getPendingRequests(
     return result.data; 
 }
 
+// Get an intake request for review 
+export async function getIntakeRequest(
+    requestId,
+    actingEmployeeId
+) { 
+    const response = 
+        await fetch(
+            `api/requests/${requestId}/intake?actingEmployeeId=${actingEmployeeId}`
+        ); 
+
+    const result = 
+        await response.json(); 
+
+    if (!response.ok) { 
+        throw new Error(
+            result.message ||
+            result.error ||
+            "Unable to retrieve request for intake."
+        ); 
+    }
+    return result.data; 
+}
 // ===================================
 // PATCH API CALLS
 // ===================================
 
+// Save Request Intake 
+export async function reviewIntakeRequest(
+    requestId, 
+    requestData,
+    actingEmployeeId
+) { 
+    const response
+        = await fetch(
+            `api/requests/${requestId}/intake?actingEmployeeId=${actingEmployeeId}`, 
+            {
+                method: "PATCH", 
+                headers: { 
+                    "Content-Type": "application/json"
+                }, 
+                body:
+                    JSON.stringify(requestData)
+            }
+        ); 
+
+    const result = await response.json(); 
+
+    if (!response.ok) { 
+        throw new Error(
+            result.message ||
+            result.error ||
+            "Unable to complete request intake review."
+        ); 
+    }
+    return result.data; 
+}
 // Save updates to the request details 
 export async function updateRequest(
     requestId,
     requestData,
 ) {
-    console.log("requestId:", requestId);
-    console.log("requestData:", requestData);
     // Submit one update request
     const response
         = await fetch(

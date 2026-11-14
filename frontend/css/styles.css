@@ -309,9 +309,17 @@ h3 {
 }
 .card-row-assign {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px;
+    width: 100%;
+    box-sizing: border-box;
 }
+
+    .card-row-assign > * {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
 
 .info-item {
     display: flex;
@@ -628,11 +636,11 @@ form>div {
 }
 
 /* ============================================================
-   UC-3: Assignment Success Confirmation
-   Displays feedback after returning to Unassigned Requests.
+   ASction Success Confirmation
+   Displays feedback after successful Patch Operation.
    ============================================================ */
 
-.assignment-success {
+.action-success {
     padding: 14px 18px;
     margin-bottom: 20px;
     border: 1px solid #b8d9c4;
@@ -666,4 +674,65 @@ form>div {
 .form-field select.invalid {
     border: 2px solid #d32f2f;
     background-color: #ffebee;
+}
+
+/* ============================================================
+   HOME PAGE LAYOUT
+   ============================================================ */
+
+.home-page {
+    width: 100%;
+}
+
+.home-page-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+/* ==========================
+   HOME PAGE NAVIGATION CARDS
+   ========================== */
+
+.home-page-card {
+    background-color: #ffffff;
+    border: 1px solid #d5dce5;
+    border-radius: 8px;
+    padding: 25px;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+    .home-page-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .home-page-card h3 {
+        margin-top: 0;
+        margin-bottom: 12px;
+    }
+
+    .home-page-card p {
+        color: #555;
+        line-height: 1.5;
+    }
+
+    .home-page-card .card-link {
+        display: inline-block;
+        margin-top: 12px;
+        color: #245b8f;
+        font-weight: 600;
+    }
+
+/* =================
+   RESPONSIVE LAYOUT
+   ================= */
+
+@media (max-width: 700px) {
+
+    .home-page-cards {
+        grid-template-columns: 1fr;
+    }
 }

@@ -65,4 +65,4 @@ workspaceSelect.addEventListener("change", () => {
 // ------------------
 // Initial Page
 // ------------------
-loadPage("process-request", 1, 2); 
+loadPage("processing-home", 2); 

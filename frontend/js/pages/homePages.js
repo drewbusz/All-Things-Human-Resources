@@ -1,0 +1,241 @@
+
+// ===================================================
+// Home pages
+// ===================================================
+import { loadPage } from "../router.js"; 
+import { getActingEmployeeInfo } from "../api/employeeApi.js"; 
+
+// Processing Home Page
+export async function loadProcessingHomePage(
+    actingEmployeeId
+) { 
+
+    const contentArea = 
+        document.getElementById("contentArea"); 
+
+    try {
+        const welcomePage =
+            document.createElement("div"); 
+
+        welcomePage.classList.add("home-page");
+
+        welcomePage.innerHTML = `
+            <h3>HR Processing Workspace</h3>
+            <p>
+                Welcome to the HR Processing workspace.
+                Select a section below to continue.
+            </p>
+            <hr>
+            <div class="home-page-cards">
+                
+            <div class="home-page-card" id="assignedRequestsCard">
+            <h3>Assigned Requests</h3>
+
+            <p>
+                Review and process requests currently
+                assigned to you.
+            </p>
+
+            <span class="card-link">
+                View Assigned Requests →
+            </span>
+            </div>
+        </div>
+        `;
+        contentArea.replaceChildren(welcomePage); 
+
+        // =============================
+        // NAVIGATE EVENT LISTENERS
+        // =============================
+
+        document.getElementById("assignedRequestsCard")
+            .addEventListener("click", () => { 
+                loadPage("assigned-requests", actingEmployeeId); 
+            }); 
+
+    } catch (error) { 
+        console.error(
+            "Unable to load HR Processing Workspace:",
+            error
+        ); 
+        contentArea.textContent =
+            `Unable to load the HR Processing Workspace: ${error.message}`; 
+    } 
+} 
+
+// Authorized HR Home Page
+export async function loadAuthorizedHomePage(
+    actingEmployeeId
+) { 
+    const contentArea = 
+        document.getElementById("contentArea"); 
+
+    try { 
+        const welcomePage = 
+            document.createElement("div"); 
+        welcomePage.classList.add("home-page"); 
+
+        welcomePage.innerHTML = `
+            <h3>Authorized Staff Workspace</h3>
+            <p>
+                Welcome to the Authorized HR Staff Workspace.
+                Select a section below to continue.
+            </p>
+            <hr>
+            <div class="home-page-cards">
+                <div class="home-page-card"
+                    data-page="new-requests">
+                    <h3>New Requests</h3>
+                    <p>
+                        Review active requests awaiting intake and processing.
+                    </p>
+
+                    <span class="card-link">
+                        View Pending Requests →
+                    </span>
+                </div>
+                <div class="home-page-card"
+                    data-page="unassigned-requests">
+                    <h3>Unassigned Requests</h3>
+                    <p>
+                        Review active requests awaiting intake and processing.
+                    </p>
+
+                    <span class="card-link">
+                        View Unassigned Requests →
+                    </span>
+                </div>
+                <div class="home-page-card"
+                    data-page="active-requests">
+                    <h3>All Active Requests</h3>
+                    <p>
+                        Review all active and incomplete requests.
+                    </p>
+
+                    <span class="card-link">
+                        View All Active Requests →
+                    </span>
+                </div>
+            </div>
+        `;
+        contentArea.replaceChildren(welcomePage); 
+
+        // =============================
+        // NAVIGATE EVENT LISTENER
+        // =============================
+        const homePageCards =
+            welcomePage.querySelector(".home-page-cards"); 
+
+        homePageCards.addEventListener("click", (event) => { 
+            // Identify the selected card
+            const selectedCard =
+                event.target.closest(".home-page-card"); 
+
+            // Ignore clicks outside of a card 
+            if (!selectedCard) return; 
+
+            // Retrieve the destination page 
+            const destination =
+                selectedCard.dataset.page; 
+
+            // Navigate to the selected page 
+            loadPage(destination, actingEmployeeId); 
+        }); 
+    } catch (error) { 
+        console.error(
+            "Unable to load Authorized Staff Workspace:",
+            error
+        ); 
+
+        contentArea.textContent =
+            `Unable to load the Authorized Staff Workspace: ${
+            error.message || "An unexpected error occurred."
+            }`; 
+    }
+}
+// Employee Home Page
+export async function loadEmployeeHomePage(
+    actingEmployeeId
+) { 
+
+}
+
+// Manager Home Page 
+export async function loadManagerHomePage(
+    actingEmployeeId
+) { 
+    const contentArea = 
+        document.getElementById("contentArea"); 
+
+    try { 
+        const welcomePage = 
+            document.createElement("div"); 
+
+        welcomePage.classList.add("home-page"); 
+
+        welcomePage.innerHTML = `
+            <h3>Manager Workspace</h3>
+            <p>
+                Welcome to the Management Workspace.
+                Select a section below to continue.
+            </p>
+            <hr>
+            <div class="home-page-cards"> 
+                <div class="home-page-card"
+                    data-page="pending-approvals">
+                <h3>Pending Approval Requests</h3>
+                <p>
+                    Review requests pending your approval.
+                </p>
+
+                <span class="card-link">
+                    View Pending Approvals →
+                </span>
+                </div>
+                <div class="home-page-card"
+                    data-page="my-team">
+                <h3>See My Team</h3>
+                <p>
+                    See information about the employees on your team. 
+                </p>
+
+                <span class="card-link">
+                    View Your Team →
+                </span>
+                </div>
+            </div>
+        `; 
+
+        contentArea.replaceChildren(welcomePage); 
+
+        // =============================
+        // NAVIGATE EVENT LISTENER
+        // =============================
+        const homePageCards = 
+            welcomePage.querySelector(".home-page-cards"); 
+
+        homePageCards.addEventListener("click", (event) => { 
+            // Identify the selected card
+            const selectedCard = 
+                event.target.closest(".home-page-card"); 
+
+            // Ignore clicks outside of a card
+            if (!selectedCard) return; 
+
+            const destination =
+                selectedCard.dataset.page; 
+
+            loadPage(destination, actingEmployeeId); 
+        }); 
+
+    } catch (error) { 
+        console.error(
+            "Unable to load Manager Workspace:",
+            error
+        );
+
+        contentArea.textContent =
+            `Unable to load the Manager Workspace: ${error.message || "An unexpected error occurred."
+            }`; 
+    }
+}

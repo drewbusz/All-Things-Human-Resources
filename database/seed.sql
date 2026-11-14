@@ -1325,3 +1325,226 @@ VALUES
         4,
         '2027-09-30 23:59:59'
     );
+
+-- ============================================================
+-- REQUEST INTAKE VERIFICATION PENDING 
+-- ============================================================
+INSERT INTO request_history ( 
+    request_id, 
+    created_by_emp_id, 
+    modified_field, 
+    previous_value, 
+    current_value, 
+    type
+) VALUES 
+( 
+    8, 
+    6, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+), 
+( 
+    9, 
+    7, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+), 
+( 
+    10, 
+    8, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+), 
+( 
+    11, 
+    9, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+), 
+( 
+    12, 
+    10, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+), 
+( 
+    13, 
+    5, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+), 
+( 
+    15, 
+    9, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+), 
+( 
+    1, 
+    5, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+),
+( 
+    3, 
+    7, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+),
+( 
+    5, 
+    9, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+),
+( 
+    7, 
+    5, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+),
+( 
+    2, 
+    6, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+),
+( 
+    4, 
+    8, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+),
+( 
+    6, 
+    10, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+),
+( 
+    14, 
+    6, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+),
+( 
+    16, 
+    10, 
+    "intake_verification", 
+    "",
+    "pending",
+    "created"
+);
+-- ============================================================
+-- REQUEST INTAKE VERIFICATION VERIFIED 
+-- ============================================================
+INSERT INTO request_history ( 
+    request_id, 
+    created_by_emp_id, 
+    modified_field, 
+    previous_value, 
+    current_value, 
+    type
+) VALUES 
+( 
+    1, 
+    2, 
+    "intake_verification", 
+    "pending",
+    "verified",
+    "updated"
+),
+( 
+    3, 
+    2, 
+    "intake_verification", 
+    "pending",
+    "verified",
+    "updated"
+),
+( 
+    5, 
+    2, 
+    "intake_verification", 
+    "pending",
+    "verified",
+    "updated"
+),
+( 
+    7, 
+    2, 
+    "intake_verification", 
+    "pending",
+    "verified",
+    "updated"
+),
+( 
+    2, 
+    2, 
+    "intake_verification", 
+    "pending",
+    "verified",
+    "updated"
+),
+( 
+    4, 
+    2, 
+    "intake_verification", 
+    "pending",
+    "verified",
+    "updated"
+),
+( 
+    6, 
+    2, 
+    "intake_verification", 
+    "pending",
+    "verified",
+    "updated"
+),
+( 
+    14, 
+    2, 
+    "intake_verification", 
+    "pending",
+    "verified",
+    "updated"
+),
+( 
+    16, 
+    2, 
+    "intake_verification", 
+    "pending",
+    "verified",
+    "updated"
+);

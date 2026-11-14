@@ -14,7 +14,10 @@ import { formatFieldName } from "../utils/textFormatHelper.js";
 // LOAD PENDING REQUESTS
 // ============================================================
 
-export async function loadPendingRequests(actingEmployeeId) {
+export async function loadPendingRequests(
+    actingEmployeeId,
+    confirmation = null
+) {
 
     const contentArea =
         document.getElementById("contentArea");
@@ -40,6 +43,20 @@ export async function loadPendingRequests(actingEmployeeId) {
 
         // Display the page.
         contentArea.replaceChildren(pipeline);
+
+        // Display confirmation after a successful patch operation.
+        if (confirmation) {
+
+            const notice = document.createElement("div");
+            notice.className = "action-success";
+            notice.setAttribute("role", "status");
+
+            notice.textContent =
+                confirmation.message ||
+                `Intake complete for Request #${confirmation.requestId}`; 
+
+            pipeline.prepend(notice);
+        }
 
         // Reference the request list.
         const requestList =
@@ -77,7 +94,7 @@ export async function loadPendingRequests(actingEmployeeId) {
                 // Store this page for the Back button.
                 sessionStorage.setItem(
                     "requestReturnPage",
-                    "pending-requests"
+                    "new-requests"
                 );
 
                 // Navigate to the request intake page.

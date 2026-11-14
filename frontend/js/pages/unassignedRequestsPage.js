@@ -16,11 +16,6 @@ import { renderRequestRows } from "../utils/requestRenderHelper.js";
 import { formatDateForDisplay } from "../utils/dateHelper.js";
 import { loadPage } from "../router.js";
 
-
-// ============================================================
-// LOAD UNASSIGNED REQUESTS
-// ============================================================
-
 // ============================================================
 // LOAD UNASSIGNED REQUESTS
 // ============================================================
@@ -44,13 +39,13 @@ export async function loadUnassignedRequests(actingEmployeeId, confirmation = nu
             <div id="unassigned-request-list"></div>
         `;
 
-        contentArea.appendChild(pipeline);
+        contentArea.replaceChildren(pipeline);
 
         // Display confirmation after a successful assignment.
         if (confirmation) {
 
             const notice = document.createElement("div");
-            notice.className = "assignment-success";
+            notice.className = "action-success";
             notice.setAttribute("role", "status");
 
             notice.textContent =

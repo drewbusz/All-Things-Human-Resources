@@ -214,11 +214,6 @@ export function renderAuthorizedRequestProcessingForm(
                 <p id="assignment-message" class="feedback" role="status"></p>
                 <button type="submit">Save Assignment</button>
             </div>
-
-            
-
-            
-
         </div>
     `;
     // Populate assignable employees
@@ -301,6 +296,91 @@ export function renderAuthorizedRequestProcessingForm(
     // Populate existing completion date
     requestForm.querySelector("#assignment-completion").value =
         formatDateForInput(request.expected_completion) ?? "";
+
+    return requestForm;
+}
+
+// REQUEST INTAKE FORM 
+export function renderRequestIntakeForm(
+    request, 
+    activeRequestTypes
+) { 
+    const requestForm = document.createElement("form"); 
+    requestForm.id = "intake-form"; 
+
+    requestForm.innerHTML = `
+        <div class="card">
+        <h3>Request Fields</h3>
+            <div id="request-fields"></div>
+            <hr>
+            <div class="form-field">
+                <label for="request-type">Request Type</label>
+                <select id="request-type" required>
+                    <option value="">Select a Request Type</option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="request-confidentiality">Confidentiality Level</label>
+                <select id="assignment-confidentiality" required>
+                    <option value="">Select Confidentiality</option>
+                    <option value="nonconfidential">Nonconfidential</option>
+                    <option value="confidential">Confidential</option>
+                    <option value="highly">Highly Confidential</option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" id="back-button">
+                    Back
+                </button>
+                <p id="intake-message" class="feedback" role="status"></p>
+                <button type="submit" id="save-close">Save & Close</button>
+                <button type="submit" id="save-assign">Save & Assign</button>
+            </div>
+        </div>
+    `;
+
+    // Populate active request types
+    const requestTypeSelect =
+        requestForm.querySelector("#request-type");
+
+    if (activeRequestTypes.length === 0) {
+        const option = document.createElement("option");
+
+        option.value = "";
+        option.textContent = "No active request types available.";
+
+        requestTypeSelect.appendChild(option);
+        requestTypeSelect.disabled = true;
+    } else {
+        activeRequestTypes.forEach(type => {
+
+            const option =
+                document.createElement("option");
+
+            option.value =
+                Number(type.request_type_id);
+
+            option.textContent =
+                formatFieldName(type.name);
+
+            requestTypeSelect.appendChild(option);
+        });
+        // Select existing request type
+        requestTypeSelect.value =
+            String(Number(request.request_type_id ?? ""));
+    }
+
+    // If both are empty, allow the page to load but disable form submission
+
+    if (
+        activeRequestTypes.length === 0
+    ) {
+        requestForm.querySelector(
+            'button[type="submit"]'
+        ).disabled = true;
+    }
 
     return requestForm;
 }

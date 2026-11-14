@@ -55,10 +55,10 @@ const navigation = {
                 page: "unassigned-requests",
                 label: "Unassigned Requests"
             },
-            {
-                page: "confidential",
-                label: "Confidential Requests"
-            },
+            // {
+            //     page: "confidential",
+            //     label: "Confidential Requests"
+            // },
             {
                 page: "active-requests",
                 label: "All Active Requests"

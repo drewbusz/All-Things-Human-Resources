@@ -20,10 +20,15 @@ import {
 } from "../utils/requestRenderHelper.js"; 
 import { getAssignableEmployees } from "../api/employeeApi.js";
 import { formatDateForDisplay } from "../utils/dateHelper.js";
+import { formatFieldName } from "../utils/textFormatHelper.js"; 
 import { loadPage } from "../router.js";
 
 
-export async function loadAssignRequestPage(requestId, actingEmployeeId) {
+export async function loadAssignRequestPage(
+    requestId,
+    actingEmployeeId,
+    confirmation = null
+) {
 
     const contentArea = document.getElementById("contentArea");
 
@@ -59,7 +64,7 @@ export async function loadAssignRequestPage(requestId, actingEmployeeId) {
             <h3 id="card-title"></h3>
             <hr>
 
-            <div class="card-row-assign">
+            <div class="card-row">
                 <div class="info-item">
                     <span class="info-label">Current Request Type</span>
                     <span class="info-value" id="assignment-type"></span>
@@ -74,13 +79,24 @@ export async function loadAssignRequestPage(requestId, actingEmployeeId) {
                     <span class="info-label">Submitted Date</span>
                     <span class="info-value" id="assignment-date"></span>
                 </div>
+                <div class="info-item">
+                    <span class="info-label">Intake Source</span>
+                    <span class="info-value" id="intake-source"></span>
+                </div>
             </div>
 
             <hr>
+            <div class="card-row-assign">
 
             <div class="info-item">
                 <span class="info-label">Request Summary</span>
                 <span class="info-value" id="assignment-summary"></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Confidentiality Level</span>
+                <span class="info-value" id="request-confidentiality"></span>
+            </div>
+            
             </div>
         `;
 
@@ -107,6 +123,11 @@ export async function loadAssignRequestPage(requestId, actingEmployeeId) {
         staticCard.querySelector("#assignment-summary").textContent =
             request.brief_summary ?? "";
 
+        staticCard.querySelector("#intake-source").textContent = 
+            formatFieldName(request.intake_source ?? ""); 
+
+        staticCard.querySelector('#request-confidentiality').textContent = formatFieldName(request.confidentiality_level ?? ""); 
+
         // Render the authorized request processing form
         const requestForm =
             renderAuthorizedRequestProcessingForm(
@@ -120,7 +141,20 @@ export async function loadAssignRequestPage(requestId, actingEmployeeId) {
             staticCard, 
             requestForm
         ); 
-               
+
+        // Display confirmation after a successful patch operation.
+        if (confirmation) {
+
+            const notice = document.createElement("div");
+            notice.className = "action-success";
+            notice.setAttribute("role", "status");
+
+            notice.textContent =
+                confirmation.message ||
+                `Intake complete for Request #${confirmation.requestId}`; 
+
+            contentArea.prepend(notice);
+        }
 
         // Return to the previous page.
         requestForm.querySelector("#back-button")

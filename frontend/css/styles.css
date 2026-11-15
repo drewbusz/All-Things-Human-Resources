@@ -650,6 +650,7 @@ form>div {
     color: #205b38;
     font-size: 14px;
     font-weight: 600;
+    white-space: pre-line;
 }
 
 .feedback {

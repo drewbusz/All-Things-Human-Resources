@@ -20,7 +20,10 @@ import { loadPage } from "../router.js";
 // LOAD UNASSIGNED REQUESTS
 // ============================================================
 
-export async function loadUnassignedRequests(actingEmployeeId, confirmation = null) {
+export async function loadUnassignedRequests(
+    actingEmployeeId,
+    confirmation = null
+) {
 
     const contentArea = document.getElementById("contentArea");
 
@@ -48,9 +51,7 @@ export async function loadUnassignedRequests(actingEmployeeId, confirmation = nu
             notice.className = "action-success";
             notice.setAttribute("role", "status");
 
-            notice.textContent =
-                `Request #${confirmation.requestId} was successfully assigned ` +
-                `to ${confirmation.employeeName}.`;
+            notice.textContent = confirmation.message; 
 
             pipeline.prepend(notice);
         }

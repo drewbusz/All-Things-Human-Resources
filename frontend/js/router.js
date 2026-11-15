@@ -96,7 +96,7 @@ export function loadPage(
         // AUTHORIZED HR STAFF VIEW OF ALL ACTIVE REQUESTS 
         case "active-requests":
             loadNavigation("authorized_staff");
-            loadActiveRequests(2);
+            loadActiveRequests(2, confirmation);
             break; 
         case "confidential":
             loadNavigation("authorized_staff");

@@ -156,6 +156,8 @@ export async function loadAssignRequestPage(
             contentArea.prepend(notice);
         }
 
+        confirmation = ''; 
+
         // Return to the previous page.
         requestForm.querySelector("#back-button")
             .addEventListener("click", () => {
@@ -202,20 +204,74 @@ export async function loadAssignRequestPage(
                 };
 
                 try {
-                    // Send assignment data through the frontend API module.
+                    // Determine the destination page.
+                    const previousPage =
+                        sessionStorage.getItem("requestReturnPage")
+                        || "unassigned-requests";
+
+                    // Retrieve the request type dropdown.
+                    const requestTypeSelect =
+                        requestForm.querySelector("#request-type");
+
+                   
+                    // Compare original values against submitted values.
+                    const employeeChanged =
+                        String(request.assigned_emp_id ?? "") !=
+                        String(updateData.assigned_emp_id ?? "");
+
+                    const requestTypeChanged =
+                        String(request.request_type_id ?? "") !=
+                        String(updateData.request_type_id ?? "");
+
+                    // Build confirmation message.
+                    let message = "";
+
+                    // Employee assignment or reassignment.
+                    if (employeeChanged) {
+
+                        const employeeName =
+                            employeeSelect.options[
+                                employeeSelect.selectedIndex
+                            ].text;
+
+                        const action =
+                            !request.assigned_emp_id
+                                ? "assigned"
+                                : "reassigned";
+
+                        message +=
+                            `Request #${request.request_id} was successfully ${action} to ${employeeName}.`;
+                    }
+
+                    // Request type modification.
+                    if (requestTypeChanged) {
+
+                        const selectedRequestType =
+                            requestTypeSelect.options[
+                                requestTypeSelect.selectedIndex
+                            ].text;
+
+                        // Add a space if an employee confirmation already exists.
+                        if (message) {
+                            message += " ";
+                        }
+
+                        message +=
+                            `\nRequest type was successfully updated to ${selectedRequestType}.`;
+                    }
+                    // Submit assignment and request type changes.
                     await saveRequestAssignment(requestId, updateData);
 
-                    // Save a confirmation for the destination page.
-                    // The request has been successfully assigned.
+                    // Save confirmation for the destination page.
                     const confirmation = {
                         requestId: request.request_id,
-                        employeeName:
-                            employeeSelect.options[employeeSelect.selectedIndex].text
+                        message: message
                     };
 
+                    sessionStorage.removeItem("requestReturnPage");
 
                     // Return to the queue and display the confirmation.
-                    loadPage("unassigned-requests", null, null, confirmation);
+                    loadPage(previousPage, null, null, confirmation);
 
                 } catch (error) {
                     console.error(error);

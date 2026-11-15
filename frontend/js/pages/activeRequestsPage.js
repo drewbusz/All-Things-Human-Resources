@@ -20,7 +20,10 @@ import { loadPage } from "../router.js";
 // LOAD ACTIVE REQUESTS
 // ============================================================
 
-export async function loadActiveRequests(actingEmployeeId) {
+export async function loadActiveRequests(
+    actingEmployeeId,
+    confirmation = null
+) {
 
     const contentArea =
         document.getElementById("contentArea");
@@ -47,6 +50,17 @@ export async function loadActiveRequests(actingEmployeeId) {
 
         // Display the page.
         contentArea.replaceChildren(pipeline);
+
+        // Display confirmation after successful reassignment 
+        if (confirmation) { 
+            const notice = document.createElement("div"); 
+            notice.className = "action-success"; 
+            notice.setAttribute("role", "status"); 
+
+            notice.textContent = confirmation.message; 
+
+            pipeline.prepend(notice); 
+        }
 
         // Reference the request list.
         const requestList =

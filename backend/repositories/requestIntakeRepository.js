@@ -27,7 +27,7 @@ async function getPendingRequests(source = "all") {
               FROM request_history rh
               WHERE rh.request_id = rv.request_id
                 AND rh.modified_field = 'intake_verification'
-                AND rh.current_value = 'verified'
+                AND rh.current_value IN ('verified', 'waived')
           )
         ORDER BY
             rv.submission_date DESC,
@@ -47,7 +47,7 @@ async function getIntakeRequest(requestId) {
                 FROM request_history rh
                 WHERE rh.request_id = rv.request_id
                   AND rh.modified_field = 'intake_verification'
-                  AND rh.current_value = 'verified'
+                  AND rh.current_value IN ('verified', 'waived')
             ) AS reviewed
         FROM request_view rv
         WHERE rv.request_id = ?

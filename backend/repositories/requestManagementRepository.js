@@ -29,7 +29,7 @@ async function needsIntakeReview(requestId, connection = pool) {
                 FROM request_history
                 WHERE request_id = ?
                   AND modified_field = 'intake_verification'
-                  AND current_value = 'verified'
+                  AND current_value IN ('verified', 'waived')
             ) AS reviewed
     `, [requestId, requestId]);
 

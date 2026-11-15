@@ -315,18 +315,17 @@ export function renderRequestIntakeForm(
             <hr>
             <div class="form-field">
                 <label for="request-type">Request Type</label>
-                <select id="request-type" required>
+                <select id="request-type" name="request_type_id" required>
                     <option value="">Select a Request Type</option>
                 </select>
             </div>
 
             <div class="form-field">
                 <label for="request-confidentiality">Confidentiality Level</label>
-                <select id="assignment-confidentiality" required>
+                <select id="assignment-confidentiality" name="confidentiality_level" required>
                     <option value="">Select Confidentiality</option>
-                    <option value="nonconfidential">Nonconfidential</option>
-                    <option value="confidential">Confidential</option>
-                    <option value="highly">Highly Confidential</option>
+                    <option value="Nonconfidential">Nonconfidential</option>
+                    <option value="Confidential">Confidential</option>
                 </select>
             </div>
 

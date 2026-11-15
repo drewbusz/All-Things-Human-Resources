@@ -1333,6 +1333,7 @@ INSERT INTO request_history (
     request_id, 
     created_by_emp_id, 
     modified_field, 
+    previous_value, 
     current_value,
     type
 ) VALUES 
@@ -1340,112 +1341,128 @@ INSERT INTO request_history (
     8, 
     6, 
     "request_created", 
-    "new request",
+    "",
+    "8",
     "created"
 ), 
 ( 
     9, 
     7, 
     "request_created",   
-    "new request",
+    "",
+    "9",
     "created"
 ), 
 ( 
     10, 
     8, 
     "request_created",   
-    "new request",
+    "",
+    "10",
     "created"
 ), 
 ( 
     11, 
     9, 
     "request_created",   
-    "new request",
+    "",
+    "11",
     "created"
 ), 
 ( 
     12, 
     10, 
     "request_created",   
-    "new request",
+    "",
+    "12",
     "created"
 ), 
 ( 
     13, 
     5, 
     "request_created",   
-    "new request",
+    "",
+    "13",
     "created"
 ), 
 ( 
     15, 
     9, 
     "request_created",   
-    "new request",
+    "",
+    "15",
     "created"
 ), 
 ( 
     1, 
     5, 
     "request_created",   
-    "new request",
+    "",
+    "1",
     "created"
 ),
 ( 
     3, 
     7, 
     "request_created",   
-    "new request",
+    "",
+    "3",
     "created"
 ),
 ( 
     5, 
     9, 
     "request_created",   
-    "new request",
+    "",
+    "5",
     "created"
 ),
 ( 
     7, 
     5, 
     "request_created",   
-    "new request",
+    "",
+    "7",
     "created"
 ),
 ( 
     2, 
     6, 
     "request_created",   
-    "new request",
+    "",
+    "2",
     "created"
 ),
 ( 
     4, 
     8, 
     "request_created",   
-    "new request",
+    "",
+    "4",
     "created"
 ),
 ( 
     6, 
     10, 
     "request_created",   
-    "new request",
+    "",
+    "6",
     "created"
 ),
 ( 
     14, 
     6, 
     "request_created",   
-    "new request",
+    "",
+    "14",
     "created"
 ),
 ( 
     16, 
     10, 
     "request_created",
-    "new request",
+    "",
+    "16",
     "created"
 );
 -- ============================================================

@@ -115,6 +115,9 @@ export async function loadIntakeRequestPage(
             requestForm
         );
 
+        requestForm
+            .querySelector("#assignment-confidentiality")
+            .value = request.confidentiality_level ?? ""; 
 
         // Return to the previous page.
         requestForm.querySelector("#back-button")

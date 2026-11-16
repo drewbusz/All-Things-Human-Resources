@@ -18,6 +18,7 @@ This version of the project represents **Vertical Slice 1**. The documentation d
 |---|---|---|
 | 9/24/26 | 1.0.0 | Vertical Slice 1 |
 | 10/11/26| 1.1.0 | Vertical Slice 2 |  
+| 11/15/26| 1.2.0 | Assignment 8 Integration Milestone | 
 
 ----------
 ### Version 1.0.0 Summary
@@ -30,6 +31,16 @@ Version 1.0.0 represents **Vertical Slice 1** of the All Things HR system. This 
 Version 1.1.0 represents **Vertical Slice 2** of the All Things HR system. This revision expands the implementation documentation for UC-3 and UC-4, adds implementation progress summaries for Vertical Slices 1 and 2, and updates the key use case definitions to reflect the current assignment and request-processing workflows.
 
 The front-end documentation was also revised to better describe the application's reusable card, form, list, and history structures. The Front-End Structure section was expanded to document the current directory organization, page loading, workspace selection, shared navigation, shared utilities, and reusable API modules.
+
+----------
+
+### Version 1.2.0 Summary
+
+Version 1.2.0 reflects the implementation work completed for Assignment 8: System Integration and Implementation Milestone. The application now includes employee request submission (UC-1), an HR intake queue and classification workflow (UC-2), expanded assignment and reassignment functionality (UC-3), and the existing request-processing workflow (UC-4).
+
+The back end uses the existing Express controller, service, and repository structure to validate requests, apply permission checks, maintain request history, and save changes in MariaDB. The front end includes submission, intake, assignment, active-request, and processing pages. Integration testing is still required to verify the complete workflow and remaining issues.
+
+----------
 
 The table of contents and version history were updated to reflect the revised section structure and newly added documentation.
 

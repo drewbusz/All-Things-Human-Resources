@@ -663,3 +663,78 @@ Modules in `js/api/` provide the client-side interface for communicating with th
 `employeeApi.js` contains reusable functions for retrieving employee-related information.
 
 Page modules call these API functions rather than defining `fetch()` requests directly. This separates API communication from page rendering and provides a consistent pattern for accessing back-end functionality throughout the front end.
+
+_____
+
+### 8.1 Implementation Progress
+
+For Assignment 8, our team worked on connecting the different parts of the HR application so a request could move from one workspace to another. Employees can submit requests, Authorized Staff can review and assign them, and HR Processing can update their status. The application also keeps a record of changes made to each request.
+
+We tested these features to make sure information was saved and displayed correctly. Some features, such as manager approval and additional security checks, still need more work or testing.
+______
+
+#### 8.2 How the Workflow Works
+
+The process begins when an employee submits an HR request. The request then appears in the Authorized Staff workspace, where an HR staff member checks the information and completes intake. Next, the request can be assigned to an employee, given a priority, and assigned an expected completion date.
+
+After that, the assigned HR employee can open the request in the HR Processing workspace and update its status. The Request Activity section shows a history of changes. Moving a request to Manager Approval means it is ready for that step; it does not mean a manager has approved it.
+
+______
+
+### 8.3 Parts of the Application Used
+The workflow uses the front-end pages built with JavaScript, the shared request API, the Node.js and Express backend, and the MariaDB database. These parts work together to display requests and save updates.
+
+For testing, we switched between the Employee, Authorized Staff, and HR Processing workspaces. The workspace selector is part of the classroom demonstration and is not a real login or security system.
+
+______
+
+### 8.4 How We Tested the Application
+
+We completed both rounds of integration testing on November 15, 2026. First, we tested the application using Request #3. Then, we repeated the main workflow using Request #4 to confirm the results and check for other issues.
+
+During the second test, we checked whether each action worked and whether the application showed the correct information afterward. We also checked the Request Activity history. We did not run a separate database query for Request #4, so its results are based on what we saw in the application.
+
+______
+
+### 8.5 Integration Testing Results
+
+The original tests with Request #3 covered six areas: submitting a request, completing intake, assigning a request, updating its status, checking request history, and checking required-field validation. All six passed in that test run. We also checked the database during the original testing. The required-field test confirmed that the browser blocked an incomplete form, but it did not test backend validation.
+
+For the new testing, Riley Davis submitted Request #4, a Leave Request asking for five days off in December 2026. We followed the request through the system and recorded these results:
+
+Test	What we did	What happened	Result
+TC-01: Submit a Request	Riley Davis submitted a Leave Request.	Request #4 appeared under Authorized Staff → New Requests → Pending Requests.	Passed
+TC-02: Complete Intake	We opened Request #4, reviewed its details, and clicked Save & Assign.	The request showed Confidential and Self Service. A message said, “Intake completed successfully for Request #4,” and the assignment page opened.	Passed
+TC-03: Assign the Request	We assigned Request #4 to Alex Johnson, selected Medium priority, and set the expected completion date to November 20, 2026.	The application confirmed the assignment. When we reopened the request, the information was still there.	Passed
+TC-04: Update the Status	In HR Processing, we changed the status from HR Processing to Manager Approval.	The application displayed “Request updated successfully,” and the detail page showed the new status.	Passed
+TC-05: Check Request History	We reviewed the Request Activity section for Request #4.	Six entries showed the request's creation and changes to intake, assignment, priority, completion date, and workflow status.	Passed
+TC-06: Required-Field Validation	We checked whether the form would stop an incomplete submission.	This passed during the earlier Request #3 test but was not repeated with Request #4.	Previously passed; not retested
+
+The Request Activity section for Request #4 showed that Riley Davis created the request and Alex Johnson made the later updates. It also showed the workflow step changing from 4 to 5. This supported what we saw on the processing page.
+
+______
+
+### 8.6 Issue Found During Testing: Status: undefined
+
+During the November 15 testing, we noticed a possible display problem. Some request cards showed Status: undefined instead of the request's actual status. We saw this on the All Active Requests page in Authorized Staff and the My Assigned Requests page in HR Processing. A Pending Requests card also showed the issue.
+
+What we expected: Each request card should show its current status, such as HR Processing or Manager Approval.
+
+What actually happened: The list displayed Status: undefined. However, when we opened Request #4, the detail page showed the correct status, and we were able to save the status update.
+
+This may be a problem with how the front end displays information from the API. We have not checked the code closely enough to confirm the cause. The issue should be investigated because staff should be able to see a request's status without opening it.
+
+Issue status: Still needs investigation. We have not confirmed a database problem.
+
+______
+
+### 8.7 Reproducing the Tests and Next Steps
+
+To repeat these tests, first follow the setup instructions in Section 2 to prepare MariaDB, install the backend dependencies, configure the .env file, and start the application. Then open http://localhost:3000/.
+
+Start in the Employee workspace and submit a new Leave Request. Switch to Authorized Staff to complete intake and assign the request. Next, switch to HR Processing, open the assigned request, update its status, and review the Request Activity section. The new request number may be different from #3 or #4 depending on the database.
+
+During the earlier Request #3 testing, we ran into problems with an older seed.sql file. After using the current project version, we were able to repeat the workflow successfully. This was a setup problem and is separate from the new Status: undefined issue.
+
+There is still more testing to complete. We need to check reassignment, actual manager approval or denial, employee request history, confidentiality rules, request notes, and backend validation. We should also investigate the status display problem and make sure the request lists show the correct information.
+______

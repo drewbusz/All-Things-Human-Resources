@@ -1,4 +1,5 @@
-// HR Staff process request page
+
+﻿// HR Staff process request page
 
 // import API's
 import {
@@ -185,121 +186,78 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
         // Activity Tabs
         // ==============================
 
-        historyCard.addEventListener(
-            "click",
-            event => {
+        historyCard.addEventListener("click", async event => {
+            const addNoteButton = event.target.closest("#add-note-button");
 
-                const tab =
-                    event.target.closest(
-                        ".activity-tab"
-                    );
+            if (addNoteButton) {
+                const noteText = activityContent.querySelector("#new-note")?.value.trim();
+                const noteMessage = activityContent.querySelector("#note-message");
 
-                if (!tab) {
+                if (!noteText) {
+                    noteMessage.textContent = "Enter a note before submitting.";
                     return;
                 }
 
+                addNoteButton.disabled = true;
 
-                // Update the active tab
-                historyCard
-                    .querySelectorAll(
-                        ".activity-tab"
-                    )
-                    .forEach(tabButton => {
+                try {
+                    await saveRequestNote(noteText, requestId, actingEmployeeId);
 
-                        tabButton.classList.remove(
-                            "active"
-                        );
-                    });
-
-
-                tab.classList.add("active");
-
-
-                // Display the selected content
-                if (
-                    tab.dataset.tab ===
-                    "history"
-                ) {
-
-                    loadRequestHistory(
-                        activityContent,
-                        requestHistory
+                    const updatedNotes = await getRequestNotesByRequestId(
+                        requestId,
+                        actingEmployeeId
                     );
 
-                } else if (
-                    tab.dataset.tab ===
-                    "notes"
-                ) {
-                    activityContent.textContent =
-                        ``; 
-                   // loadRequestNotes(
-                   //      activityContent,
-                   //      requestNotes,
-                   //      requestId,
-                   //      actingEmployeeId
-                    //  );
+                    loadRequestNotes(activityContent, updatedNotes);
 
-                    const addNoteButton =
-                        actvityContent.querySelector(
-                            "#add-note-button"
-                        ); 
+                    activityContent.querySelector("#note-message").textContent =
+                        "Note added successfully.";
+                } catch (error) {
+                    const message = activityContent.querySelector("#note-message");
 
-                    addNoteButton.addEventListener(
-                        "click",
-                        async () => {
-
-                            const noteText =
-                                activityContent
-                                    .querySelector("#new-note")
-                                    .value.trim(); 
-
-                            const noteMessage =
-                                activityContent.querySelector(
-                                    "#note-message"
-                                ); 
-
-                            if (!noteText) { 
-                                noteMessage.textContent =
-                                    "Enter a note before submitting."; 
-
-                                return; 
-                            }
-
-                            // Prevent duplicate submissions 
-                            addNoteButton.disabled = true; 
-
-                            try { 
-                                await saveRequestNote( 
-                                    noteText, 
-                                    requestId, 
-                                    actingEmployeeId
-                                ); 
-
-                                noteMessage.textContent =
-                                    "Note added successfully."; 
-
-                                const updatedNotes =
-                                    await getRequestNotesByRequestId(
-                                        requestId
-                                    ); 
-
-                                loadRequestNotes(
-                                    activityContent, 
-                                    updatedNotes
-                                ); 
-                            } catch (error) { 
-                                console.error(error); 
-
-                                noteMessage.textContent =
-                                    error.message ||
-                                    "Unable to save note."; 
-                            } finally { 
-                                addNoteButton.disabled = false; 
-                            }
-                        });
+                    if (message) {
+                        message.textContent =
+                            error.message || "Unable to save note.";
+                    }
+                } finally {
+                    addNoteButton.disabled = false;
                 }
+
+                return;
             }
-        );
+
+            const tab = event.target.closest(".activity-tab");
+            if (!tab) return;
+
+            historyCard.querySelectorAll(".activity-tab").forEach(button => {
+                button.classList.remove("active");
+            });
+
+            tab.classList.add("active");
+
+            try {
+                if (tab.dataset.tab === "history") {
+                    const latestHistory = await getRequestHistory(
+                        requestId,
+                        actingEmployeeId
+                    );
+
+                    loadRequestHistory(activityContent, latestHistory);
+                } else if (tab.dataset.tab === "notes") {
+                    activityContent.textContent = "Loading notes...";
+
+                    const requestNotes = await getRequestNotesByRequestId(
+                        requestId,
+                        actingEmployeeId
+                    );
+
+                    loadRequestNotes(activityContent, requestNotes);
+                }
+            } catch (error) {
+                activityContent.textContent =
+                    error.message || "Unable to load request activity.";
+            }
+        });
 
 
         // ==============================
@@ -546,6 +504,3 @@ async function submitRequestUpdates(
 
     return updatedRequest;
 }
-
-
-

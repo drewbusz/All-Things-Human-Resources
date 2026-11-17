@@ -88,9 +88,10 @@ export async function getRequestFields(
 
 // Get request notes with the request id 
 export async function getRequestNotesByRequestId(
-    request_id
-) { 
-    const requestNoteResponse = await fetch(`/api/requests/${request_id}/notes`); 
+    request_id,
+    actingEmployeeId
+) {
+    const requestNoteResponse = await fetch(/api/requests/${request_id}/notes?actingEmployeeId=${actingEmployeeId});
     const requestNoteResult = await requestNoteResponse.json(); 
 
     if (!requestNoteResponse.ok) { 
@@ -332,7 +333,7 @@ export async function saveRequestNote(note, requestId, actingEmployeeId) {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(note)
+            body: JSON.stringify({ note })
         }
     );
 

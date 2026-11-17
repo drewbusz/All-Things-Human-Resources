@@ -4,6 +4,7 @@ const requestController = require("../controllers/requestController");
 const submissionController = require("../controllers/requestSubmissionController");
 const intakeController = require("../controllers/requestIntakeController");
 const managementController = require("../controllers/requestManagementController");
+const trackingController = require("../controllers/requestTrackingController");
 
 const router = express.Router();
 
@@ -17,6 +18,11 @@ router.post(
     "/",
     submissionController.createRequest
 );
+
+// UC-6: Employee request tracking and notes
+router.get("/mine", trackingController.getMyRequests);
+router.get("/:id/notes", trackingController.getRequestNotes);
+router.post("/:id/notes", trackingController.addRequestNote);
 
 // UC-2: Intake and classification
 router.get(

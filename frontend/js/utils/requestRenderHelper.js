@@ -138,10 +138,10 @@ export function renderProcessRequestForm(
                     </div>
                 </div>
             </div>
-            <div class="form-actions">
+            <div class="form-actions" id="form-actions">
             <button type="button" id="back-button">Back</button>
                 <p class="feedback"></p>
-                <button type="submit">Save Assignment</button>
+                <button type="submit">Save Changes</button>
             </div>
         </div>
     `;
@@ -389,8 +389,6 @@ export function loadRequestHistory(
     activityContent,
     requestHistory
 ) {
-    activityContent.innerHTML = ``; 
-
     const header =
         document.createElement("div"); 
 
@@ -402,8 +400,6 @@ export function loadRequestHistory(
         <span>Field</span>
         <span>Change</span>
     `;
-
-    activityContent.appendChild(header); 
 
     const historyList = document.createElement("div"); 
     historyList.classList.add("history-list"); 
@@ -425,7 +421,7 @@ export function loadRequestHistory(
             historyList.appendChild(row); 
         }); 
     }
-    activityContent.appendChild(historyList); 
+    activityContent.replaceChildren(header, historyList); 
 }
 
 // REQUEST NOTES
@@ -433,39 +429,32 @@ export function loadRequestNotes(
     activityContent,
     requestNotes
 ) {
-    activityContent.innerHTML = ""; 
 
     const addNote = document.createElement("div"); 
     addNote.classList.add("add-note"); 
 
     addNote.innerHTML = `
-            <label for= "new-note">
-                Add Note
+            <label for="new-note">
+                Add New Note
             </label>
-
+            <button
+                type="button"
+                id="add-note-button"
+                class="add-note-button"
+             >
+                Add Note
+            </button>
+            <p id="note-message"></p>
             <textarea
                 id="new-note"
                 name="new-note"
                 rows="4"
                 placeHolder="Enter a note..."
             ></textarea>
-
-            <button
-                type="button"
-                id="add-note-button"
-             >
-                Add Note
-            </button>
-            <p id="note-message"></p>
-        `;
-
-    activityContent.appendChild(addNote); 
-
-    const divider = document.createElement("hr"); 
-    activityContent.appendChild(divider); 
+            `;
 
     const header = document.createElement("div"); 
-    header.classList.add("notes-header"); 
+    header.classList.add("note-header"); 
 
     header.innerHTML = `
         <span>Date</span>
@@ -473,16 +462,14 @@ export function loadRequestNotes(
         <span>Note</span>
     `; 
 
-    activityContent.appendChild(header); 
-
     const notesList = document.createElement("div"); 
-    notesList.classList.add("notes-list"); 
+    notesList.classList.add("note-list"); 
 
     const noteRows = renderNoteRows(requestNotes); 
 
     if (noteRows.length === 0) { 
         const empty = document.createElement("p"); 
-        empty.classList.add("notes-empty"); 
+        empty.classList.add("note-empty"); 
 
         empty.textContent =
             "No request notes are available."; 
@@ -494,7 +481,11 @@ export function loadRequestNotes(
         }); 
     }
 
-    activityContent.appendChild(notesList); 
+    activityContent.replaceChildren(
+        addNote,
+        header,
+        notesList
+    ); 
 
      
         

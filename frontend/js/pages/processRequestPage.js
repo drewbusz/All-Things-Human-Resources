@@ -40,9 +40,10 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
     try {
         // Retrieve the request and requestHistory together 
         // update this to include request note and request field API calls once implemented on the backend 
-        const [request, requestHistory] = await Promise.all([
+        const [request, requestHistory, requestNotes] = await Promise.all([
             getRequestById(requestId, actingEmployeeId),
-            getRequestHistory(requestId, actingEmployeeId)
+            getRequestHistory(requestId, actingEmployeeId), 
+            getRequestNotesByRequestId(requestId, actingEmployeeId)
         ]);
 
         console.log("Request retrieved: ", request);
@@ -72,47 +73,43 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                         Request Type
                     </span>
 
-                    <span class="info-value">
-                        ${request.request_type}
+                    <span class="info-value" id="request-type">
                     </span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Submitted By</span>
+
+                    <span class="info-value" id="submitted-by"></span>
                 </div>
 
 
                 <div class="info-item">
-                    <span class="info-label">
-                        Submitted By
-                    </span>
+                    <span class="info-label">Request Date</span>
 
-                    <span class="info-value">
-                        ${request.submitted_by}
-                    </span>
+                    <span class="info-value" id="submission-date"></span>
                 </div>
 
 
                 <div class="info-item">
-                    <span class="info-label">
-                        Request Date
-                    </span>
+                    <span class="info-label">Confidentiality Level</span>
 
-                    <span class="info-value">
-                        ${formatDateForDisplay(request.submission_date)}
-                    </span>
-                </div>
-
-
-                <div class="info-item">
-                    <span class="info-label">
-                        Confidentiality Level
-                    </span>
-
-                    <span class="info-value">
-                        ${formatFieldName(request.confidentiality_level)}
-                    </span>
+                    <span class="info-value" id="confidentiality"></span>
                 </div>
 
             </div>
         `;
 
+        staticCard.querySelector("#request-type")
+            .textContent = request.request_type; 
+
+        staticCard.querySelector("#submitted-by")
+            .textContent = formatFieldName(request.submitted_by); 
+
+        staticCard.querySelector("#submission-date")
+            .textContent = formatDateForDisplay(request.submission_date); 
+        staticCard.querySelector("#confidentiality")
+            .textContent = formatFieldName(request.confidentiality_level); 
 
         // process request card
         const requestForm =
@@ -121,7 +118,6 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                 workflowSteps,
                 // requestFields
             );
-
 
         // request activity card
         const historyCard =
@@ -149,13 +145,6 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                 </button>
 
             </div>
-
-            <hr>
-
-            <h3>Request Activity</h3>
-
-            <hr>
-
             <div id="activity-content">
             </div>
         `;
@@ -168,12 +157,10 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
             historyCard
         );
 
-
         const activityContent =
             historyCard.querySelector(
                 "#activity-content"
             );
-
 
         // Display request history by default
         loadRequestHistory(
@@ -181,9 +168,33 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
             requestHistory
         );
 
+        // Display notification and prepare approval button if approval is required 
+        const approvalRequired = request.approval_required;
 
+        if (approvalRequired) {
+            const formActions =
+                requestForm.querySelector("#form-actions");
+
+            const prepareApprovalButton = document
+                .createElement("button")
+
+            prepareApprovalButton.classList.add("prepare-approval-button");
+
+            prepareApprovalButton.textContent = "Prepare Approval Request"; 
+
+            const approvalNotification =
+                document.createElement("div")
+
+            approvalNotification.classList.add("approval-needed");
+
+            approvalNotification.textContent =
+                "Management approval required for this request.";
+
+            formActions.appendChild(prepareApprovalButton);
+            requestForm.prepend(approvalNotification);
+        }
         // ==============================
-        // Activity Tabs
+        // Activity Tab Event Listeners
         // ==============================
 
         historyCard.addEventListener("click", async event => {
@@ -237,6 +248,7 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
 
             try {
                 if (tab.dataset.tab === "history") {
+                    
                     const latestHistory = await getRequestHistory(
                         requestId,
                         actingEmployeeId
@@ -244,7 +256,7 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
 
                     loadRequestHistory(activityContent, latestHistory);
                 } else if (tab.dataset.tab === "notes") {
-                    activityContent.textContent = "Loading notes...";
+
 
                     const requestNotes = await getRequestNotesByRequestId(
                         requestId,

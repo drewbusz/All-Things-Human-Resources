@@ -13,9 +13,15 @@
 import {
     getRequestById,
     reviewIntakeRequest,
-    getActiveRequestTypes
+    getActiveRequestTypes, 
+    getRequestHistory, 
+    getRequestNotesByRequestId
 } from "../api/requestApi.js";
-import {renderRequestIntakeForm} from "../utils/requestRenderHelper.js";
+import {
+    renderRequestIntakeForm,
+    loadRequestHistory,
+    loadRequestNotes
+} from "../utils/requestRenderHelper.js";
 import { getAssignableEmployees } from "../api/employeeApi.js";
 import { formatDateForDisplay } from "../utils/dateHelper.js";
 import { formatFieldName } from "../utils/textFormatHelper.js";
@@ -31,10 +37,12 @@ export async function loadIntakeRequestPage(
     try {
         // Load the request and eligible HR employees.
 
-        const [request, activeRequestTypes] =
+        const [request, activeRequestTypes, requestHistory, requestNotes] =
             await Promise.all([
                 getRequestById(requestId, actingEmployeeId),
                 getActiveRequestTypes(),
+                getRequestHistory(requestId, actingEmployeeId), 
+                getRequestNotesByRequestId(requestId, actingEmployeeId)
             ]);
 
         if (!request || typeof request !== "object") {
@@ -109,16 +117,138 @@ export async function loadIntakeRequestPage(
                 activeRequestTypes
             );
 
-        // Display both cards 
+        // Render Activity Card
+        const historyCard =
+            document.createElement("div");
+
+        historyCard.classList.add("card");
+
+        historyCard.innerHTML = `
+            <div class="activity-tabs">
+
+                <button
+                    type="button"
+                    class="activity-tab active"
+                    data-tab="history"
+                >
+                    History
+                </button>
+
+                <button
+                    type="button"
+                    class="activity-tab"
+                    data-tab="notes"
+                >
+                    Notes
+                </button>
+
+            </div>
+            <div id="activity-content">
+            </div>
+        `;
+        
+        // Display all 3 cards 
         contentArea.replaceChildren(
             staticCard,
-            requestForm
+            requestForm, 
+            historyCard
+        );
+
+        // load Request History 
+        const activityContent =
+            historyCard.querySelector(
+                "#activity-content"
+            );
+
+        // Display request history by default
+        loadRequestHistory(
+            activityContent,
+            requestHistory
         );
 
         requestForm
             .querySelector("#assignment-confidentiality")
             .value = request.confidentiality_level ?? ""; 
 
+        // ==============================
+        // Activity Tab Event Listeners
+        // ==============================
+
+        historyCard.addEventListener("click", async event => {
+            const addNoteButton = event.target.closest("#add-note-button");
+
+            if (addNoteButton) {
+                const noteText = activityContent.querySelector("#new-note")?.value.trim();
+                const noteMessage = activityContent.querySelector("#note-message");
+
+                if (!noteText) {
+                    noteMessage.textContent = "Enter a note before submitting.";
+                    return;
+                }
+
+                addNoteButton.disabled = true;
+
+                try {
+                    await saveRequestNote(noteText, requestId, actingEmployeeId);
+
+                    const updatedNotes = await getRequestNotesByRequestId(
+                        requestId,
+                        actingEmployeeId
+                    );
+
+                    loadRequestNotes(activityContent, updatedNotes);
+
+                    activityContent.querySelector("#note-message").textContent =
+                        "Note added successfully.";
+                } catch (error) {
+                    const message = activityContent.querySelector("#note-message");
+
+                    if (message) {
+                        message.textContent =
+                            error.message || "Unable to save note.";
+                    }
+                } finally {
+                    addNoteButton.disabled = false;
+                }
+
+                return;
+            }
+
+            const tab = event.target.closest(".activity-tab");
+            if (!tab) return;
+
+            historyCard.querySelectorAll(".activity-tab").forEach(button => {
+                button.classList.remove("active");
+            });
+
+            tab.classList.add("active");
+
+            try {
+                if (tab.dataset.tab === "history") {
+
+                    const latestHistory = await getRequestHistory(
+                        requestId,
+                        actingEmployeeId
+                    );
+
+                    loadRequestHistory(activityContent, latestHistory);
+                } else if (tab.dataset.tab === "notes") {
+
+
+                    const requestNotes = await getRequestNotesByRequestId(
+                        requestId,
+                        actingEmployeeId
+                    );
+
+                    loadRequestNotes(activityContent, requestNotes);
+                }
+            } catch (error) {
+                activityContent.textContent =
+                    error.message || "Unable to load request activity.";
+            }
+        });
+
+        
         // Return to the previous page.
         requestForm.querySelector("#back-button")
             .addEventListener("click", () => {
@@ -130,8 +260,6 @@ export async function loadIntakeRequestPage(
 
                 loadPage(previousPage);
             });
-
-
         // Submit assignment values through the existing backend.
         requestForm.addEventListener("submit", async (event) => { 
             event.preventDefault(); 

@@ -91,7 +91,8 @@ export async function getRequestNotesByRequestId(
     request_id,
     actingEmployeeId
 ) {
-    const requestNoteResponse = await fetch(/api/requests/${request_id}/notes?actingEmployeeId=${actingEmployeeId});
+    const requestNoteResponse = await fetch(`/api/requests/${request_id}/notes?actingEmployeeId=${actingEmployeeId}`);
+
     const requestNoteResult = await requestNoteResponse.json(); 
 
     if (!requestNoteResponse.ok) { 

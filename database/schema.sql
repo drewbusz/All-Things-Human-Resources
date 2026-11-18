@@ -485,6 +485,7 @@ SELECT
     r.intake_source,
     r.expected_completion,
     r.brief_summary,
+    rt.approval_required, 
     rt.name AS request_type,
     ws.step_name AS status, 
     ws.step_code AS status_code, 

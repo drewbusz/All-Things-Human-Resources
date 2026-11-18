@@ -13,10 +13,14 @@
 import {
     getRequestById,
     saveRequestAssignment,
-    getActiveRequestTypes
+    getActiveRequestTypes, 
+    getRequestHistory, 
+    getRequestNotesByRequestId
 } from "../api/requestApi.js";
 import {
-    renderAuthorizedRequestProcessingForm
+    renderAuthorizedRequestProcessingForm, 
+    loadRequestHistory, 
+    loadRequestNotes
 } from "../utils/requestRenderHelper.js"; 
 import { getAssignableEmployees } from "../api/employeeApi.js";
 import { formatDateForDisplay } from "../utils/dateHelper.js";
@@ -35,11 +39,13 @@ export async function loadAssignRequestPage(
     try {
         // Load the request and eligible HR employees.
        
-        const [request, employees, activeRequestTypes] =
+        const [request, employees, activeRequestTypes, requestNotes, requestHistory] =
             await Promise.all([
                 getRequestById(requestId, actingEmployeeId),
-                getAssignableEmployees(), 
+                getAssignableEmployees(),
                 getActiveRequestTypes(),
+                getRequestNotesByRequestId(requestId, actingEmployeeId), 
+                getRequestHistory(requestId, actingEmployeeId)
             ]);
 
         if (!request || typeof request !== "object") {
@@ -136,11 +142,54 @@ export async function loadAssignRequestPage(
                 activeRequestTypes
             ); 
 
-        // Display both cards 
+        // request activity card
+        const historyCard =
+            document.createElement("div");
+
+        historyCard.classList.add("card");
+
+        historyCard.innerHTML = `
+            <div class="activity-tabs">
+
+                <button
+                    type="button"
+                    class="activity-tab active"
+                    data-tab="history"
+                >
+                    History
+                </button>
+
+                <button
+                    type="button"
+                    class="activity-tab"
+                    data-tab="notes"
+                >
+                    Notes
+                </button>
+
+            </div>
+            <div id="activity-content">
+            </div>
+        `;
+
+
+        // Render the cards within the content area
         contentArea.replaceChildren(
-            staticCard, 
-            requestForm
-        ); 
+            staticCard,
+            requestForm,
+            historyCard
+        );
+
+        const activityContent =
+            historyCard.querySelector(
+                "#activity-content"
+            );
+
+        // Display request history by default
+        loadRequestHistory(
+            activityContent,
+            requestHistory
+        );
 
         // Display confirmation after a successful patch operation.
         if (confirmation) {
@@ -169,6 +218,84 @@ export async function loadAssignRequestPage(
 
                 loadPage(previousPage);
             });
+
+        // ==============================
+        // Activity Tab Event Listeners
+        // ==============================
+
+        historyCard.addEventListener("click", async event => {
+            const addNoteButton = event.target.closest("#add-note-button");
+
+            if (addNoteButton) {
+                const noteText = activityContent.querySelector("#new-note")?.value.trim();
+                const noteMessage = activityContent.querySelector("#note-message");
+
+                if (!noteText) {
+                    noteMessage.textContent = "Enter a note before submitting.";
+                    return;
+                }
+
+                addNoteButton.disabled = true;
+
+                try {
+                    await saveRequestNote(noteText, requestId, actingEmployeeId);
+
+                    const updatedNotes = await getRequestNotesByRequestId(
+                        requestId,
+                        actingEmployeeId
+                    );
+
+                    loadRequestNotes(activityContent, updatedNotes);
+
+                    activityContent.querySelector("#note-message").textContent =
+                        "Note added successfully.";
+                } catch (error) {
+                    const message = activityContent.querySelector("#note-message");
+
+                    if (message) {
+                        message.textContent =
+                            error.message || "Unable to save note.";
+                    }
+                } finally {
+                    addNoteButton.disabled = false;
+                }
+
+                return;
+            }
+
+            const tab = event.target.closest(".activity-tab");
+            if (!tab) return;
+
+            historyCard.querySelectorAll(".activity-tab").forEach(button => {
+                button.classList.remove("active");
+            });
+
+            tab.classList.add("active");
+
+            try {
+                if (tab.dataset.tab === "history") {
+
+                    const latestHistory = await getRequestHistory(
+                        requestId,
+                        actingEmployeeId
+                    );
+
+                    loadRequestHistory(activityContent, latestHistory);
+                } else if (tab.dataset.tab === "notes") {
+
+
+                    const requestNotes = await getRequestNotesByRequestId(
+                        requestId,
+                        actingEmployeeId
+                    );
+
+                    loadRequestNotes(activityContent, requestNotes);
+                }
+            } catch (error) {
+                activityContent.textContent =
+                    error.message || "Unable to load request activity.";
+            }
+        });
 
         // Submit assignment values through the existing backend.
         requestForm.addEventListener(

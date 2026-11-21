@@ -39,10 +39,10 @@ export async function loadIntakeRequestPage(
 
         const [request, activeRequestTypes, requestHistory, requestNotes] =
             await Promise.all([
-                getRequestById(requestId, actingEmployeeId),
+                getRequestById(requestId),
                 getActiveRequestTypes(),
-                getRequestHistory(requestId, actingEmployeeId), 
-                getRequestNotesByRequestId(requestId, actingEmployeeId)
+                getRequestHistory(requestId), 
+                getRequestNotesByRequestId(requestId)
             ]);
 
         if (!request || typeof request !== "object") {
@@ -189,11 +189,10 @@ export async function loadIntakeRequestPage(
                 addNoteButton.disabled = true;
 
                 try {
-                    await saveRequestNote(noteText, requestId, actingEmployeeId);
+                    await saveRequestNote(noteText, requestId);
 
                     const updatedNotes = await getRequestNotesByRequestId(
-                        requestId,
-                        actingEmployeeId
+                        requestId
                     );
 
                     loadRequestNotes(activityContent, updatedNotes);
@@ -227,8 +226,7 @@ export async function loadIntakeRequestPage(
                 if (tab.dataset.tab === "history") {
 
                     const latestHistory = await getRequestHistory(
-                        requestId,
-                        actingEmployeeId
+                        requestId
                     );
 
                     loadRequestHistory(activityContent, latestHistory);
@@ -236,8 +234,7 @@ export async function loadIntakeRequestPage(
 
 
                     const requestNotes = await getRequestNotesByRequestId(
-                        requestId,
-                        actingEmployeeId
+                        requestId
                     );
 
                     loadRequestNotes(activityContent, requestNotes);
@@ -287,10 +284,11 @@ export async function loadIntakeRequestPage(
                 formData.entries() 
             ); 
 
-            updateData.actingEmployeeId = actingEmployeeId; 
-
             // Submit intake review through the backend API 
-            await reviewIntakeRequest(requestId, updateData, actingEmployeeId); 
+            await reviewIntakeRequest( 
+                requestId,
+                updateData
+            ); 
 
             // Create confirmation for the desination page. 
             const confirmation = {
@@ -304,7 +302,6 @@ export async function loadIntakeRequestPage(
                 loadPage(
                     "assign-request",
                     requestId,
-                    actingEmployeeId,
                     confirmation
                 );
 
@@ -313,7 +310,6 @@ export async function loadIntakeRequestPage(
                 loadPage(
                     "new-requests",
                     null,
-                    actingEmployeeId,
                     confirmation
                 );
 

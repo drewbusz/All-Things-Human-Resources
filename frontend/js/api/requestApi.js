@@ -2,12 +2,11 @@
 
 // Get request details 
 export async function getRequestById(
-    requestId,
-    actingEmployeeId
+    requestId
 ) { 
 
     // Retrieve the existing request from the Express backend
-    const response = await fetch(`/api/requests/${requestId}?actingEmployeeId=${actingEmployeeId}`);
+    const response = await fetch(`/api/requests/${requestId}`);
 
     const result = await response.json();
 
@@ -39,13 +38,12 @@ export async function getWorkflowStepsByRequestType(
 
 // get Request History 
 export async function getRequestHistory(
-    request_id,
-    actingEmployeeId
+    request_id
 ) { 
 
     const historyResponse =
         await fetch(
-        `/api/requests/${request_id}/history?actingEmployeeId=${actingEmployeeId}`
+        `/api/requests/${request_id}/history`
     );
 
     const historyResult =
@@ -88,10 +86,9 @@ export async function getRequestFields(
 
 // Get request notes with the request id 
 export async function getRequestNotesByRequestId(
-    request_id,
-    actingEmployeeId
+    request_id
 ) {
-    const requestNoteResponse = await fetch(`/api/requests/${request_id}/notes?actingEmployeeId=${actingEmployeeId}`);
+    const requestNoteResponse = await fetch(`/api/requests/${request_id}/notes`);
 
     const requestNoteResult = await requestNoteResponse.json(); 
 
@@ -126,11 +123,10 @@ export async function getActiveRequestTypes() {
 
 // Work Item list APIs
 export async function getAssignedRequestsByEmpId(
-    employeeId,
-    actingEmployeeId
+    employeeId
 ) { 
     const response =
-        await fetch(`/api/requests/assigned/${employeeId}?actingEmployeeId=${actingEmployeeId}`); 
+        await fetch(`/api/requests/assigned/${employeeId}`); 
 
     const result = await response.json(); 
 
@@ -146,11 +142,10 @@ export async function getAssignedRequestsByEmpId(
 
 // Get unassigned requests
 export async function getUnassignedRequests(
-    actingEmployeeId
 ) {
     const response =
         await fetch(
-            `/api/requests/unassigned?actingEmployeeId=${actingEmployeeId}`
+            `/api/requests/unassigned`
         );
 
     const result
@@ -169,12 +164,10 @@ export async function getUnassignedRequests(
 }
 
 // Get all active requests
-export async function getActiveRequests(
-    actingEmployeeId
-) { 
+export async function getActiveRequests() { 
     const response =
         await fetch(
-            `/api/requests/active?actingEmployeeId=${actingEmployeeId}`
+            `/api/requests/active`
         ); 
 
     const result = await response.json(); 
@@ -190,11 +183,9 @@ export async function getActiveRequests(
 }
 
 // Get all pending requests (Pending intake review)
-export async function getPendingRequests(
-    actingEmployeeId
-) { 
+export async function getPendingRequests() { 
     const response = await fetch(
-        `/api/requests/intake?actingEmployeeId=${actingEmployeeId}`
+        `/api/requests/intake`
     ); 
 
     const result = await response.json(); 
@@ -211,12 +202,11 @@ export async function getPendingRequests(
 
 // Get an intake request for review 
 export async function getIntakeRequest(
-    requestId,
-    actingEmployeeId
+    requestId
 ) { 
     const response = 
         await fetch(
-            `api/requests/${requestId}/intake?actingEmployeeId=${actingEmployeeId}`
+            `api/requests/${requestId}/intake`
         ); 
 
     const result = 
@@ -238,12 +228,11 @@ export async function getIntakeRequest(
 // Save Request Intake 
 export async function reviewIntakeRequest(
     requestId, 
-    requestData,
-    actingEmployeeId
+    requestData
 ) { 
     const response
         = await fetch(
-            `api/requests/${requestId}/intake?actingEmployeeId=${actingEmployeeId}`, 
+            `api/requests/${requestId}/intake`, 
             {
                 method: "PATCH", 
                 headers: { 
@@ -325,10 +314,13 @@ export async function saveRequestAssignment(
     return result.data;
 }
 
-// Save request notes (Pending backend)
-export async function saveRequestNote(note, requestId, actingEmployeeId) { 
+// Save request notes 
+export async function saveRequestNote(
+    note,
+    requestId
+) { 
     const response = await fetch(
-        `/api/requests/${requestId}/notes?actingEmployeeId=${actingEmployeeId}`,
+        `/api/requests/${requestId}/notes`,
         {
             method: "POST",
             headers: {
@@ -356,7 +348,6 @@ export async function saveRequestNote(note, requestId, actingEmployeeId) {
 export async function saveRequestFieldValues(
     fieldValues,
     requestId,
-    actingEmployeeId
 ) { 
     const response = await fetch(
         `/api/requests/${requestId}/fields`,
@@ -366,8 +357,7 @@ export async function saveRequestFieldValues(
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                fieldValues,
-                actingEmployeeId
+                fieldValues
             })
         }
     );

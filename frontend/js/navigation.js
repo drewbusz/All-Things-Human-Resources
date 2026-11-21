@@ -2,9 +2,15 @@
 // Defining navigation and Page titles
 // ====================================
 
-import { getAvailableWorkspaces } from "../auth/authState.js"; 
+import {
+    getAvailableWorkspaces,
+    getCurrentEmployeeState
+} from "../auth/authState.js"; 
+
+import { formatFieldName } from "../js/utils/textFormatHelper.js"; 
 
 const workspaces = getAvailableWorkspaces(); 
+
 
 const navigation = {
     employee: {
@@ -96,6 +102,7 @@ export async function loadNavigation(section) {
         console.error(`Navigation configuration not found: ${section}`);
         return;
     }
+    const employee = getCurrentEmployeeState(); 
 
     const headerTitle =
         document.getElementById("page-title");
@@ -107,19 +114,26 @@ export async function loadNavigation(section) {
         document.getElementById("workspace-identity");
 
     if (identityBanner) {
-        if (section === "employee") {
-            identityBanner.innerHTML = `
+        identityBanner.innerHTML = `
             <div class="workspace-identity-content">
-                <h2>Hi, Riley</h2>
-                <span>Riley Davis · Employee ID 7</span>
+                <span id="welcome-message"></span>
+                <span id="employee-identity">Riley Davis · Employee ID 7</span>
             </div>
         `;
-            identityBanner.hidden = false;
+
+        const welcomeMessage = identityBanner.querySelector("#welcome-message"); 
+
+        const employeeIdentity = identityBanner.querySelector("#employee-identity"); 
+
+        welcomeMessage.textContent = `Welcome, ${formatFieldName(employee.firstName)}!`; 
+        employeeIdentity.textContent =
+            `${formatFieldName(employee.firstName)} ${formatFieldName(employee.lastName)} · Employee ID ${employee.employeeId}`; 
+
+         identityBanner.hidden = false;
         } else {
             identityBanner.hidden = true;
             identityBanner.innerHTML = "";
         }
-    }
 
 
     headerTitle.textContent = config.title;

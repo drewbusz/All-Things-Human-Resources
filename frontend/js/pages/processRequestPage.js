@@ -33,7 +33,7 @@ import {
     formatFieldName
 } from "../utils/textFormatHelper.js"; 
 
-export async function loadProcessRequestPage(requestId, actingEmployeeId) {
+export async function loadProcessRequestPage(requestId) {
 
     const contentArea = document.getElementById("contentArea");
 
@@ -41,9 +41,9 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
         // Retrieve the request and requestHistory together 
         // update this to include request note and request field API calls once implemented on the backend 
         const [request, requestHistory, requestNotes] = await Promise.all([
-            getRequestById(requestId, actingEmployeeId),
-            getRequestHistory(requestId, actingEmployeeId), 
-            getRequestNotesByRequestId(requestId, actingEmployeeId)
+            getRequestById(requestId),
+            getRequestHistory(requestId), 
+            getRequestNotesByRequestId(requestId)
         ]);
 
         console.log("Request retrieved: ", request);
@@ -212,11 +212,10 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                 addNoteButton.disabled = true;
 
                 try {
-                    await saveRequestNote(noteText, requestId, actingEmployeeId);
+                    await saveRequestNote(noteText, requestId);
 
                     const updatedNotes = await getRequestNotesByRequestId(
-                        requestId,
-                        actingEmployeeId
+                        requestId
                     );
 
                     loadRequestNotes(activityContent, updatedNotes);
@@ -346,13 +345,11 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                 await submitRequestUpdates(
                     form,
                     requestId,
-                    actingEmployeeId
                 );
 
                     // Refresh request history after successful submission 
                     const updatedHistory = await getRequestHistory(
                         requestId, 
-                        actingEmployeeId
                     ); 
 
                     // Display the refreshed history if the history tab is active 
@@ -428,10 +425,7 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
                 );
                 sessionStorage.removeItem("requestReturnPage");
 
-                loadPage(
-                    previousPage,
-                    actingEmployeeId
-                );
+                loadPage(previousPage);
             });
 
     } catch (error) {
@@ -458,8 +452,7 @@ export async function loadProcessRequestPage(requestId, actingEmployeeId) {
 
 async function submitRequestUpdates(
     form,
-    requestId,
-    actingEmployeeId
+    requestId
 ) {
 
     // const fieldValues = [
@@ -491,9 +484,7 @@ async function submitRequestUpdates(
         current_step_id:
             form.querySelector(
                 '[name="current_step_id"]'
-            )?.value,
-
-        actingEmployeeId: actingEmployeeId
+            )?.value
     };
 
     console.log(

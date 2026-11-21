@@ -21,7 +21,6 @@ import { loadPage } from "../router.js";
 // ============================================================
 
 export async function loadUnassignedRequests(
-    actingEmployeeId,
     confirmation = null
 ) {
 
@@ -30,7 +29,7 @@ export async function loadUnassignedRequests(
     try {
 
         // Retrieve unassigned requests from the backend API.
-        const requests = await getUnassignedRequests(actingEmployeeId);
+        const requests = await getUnassignedRequests();
 
         // Create the page container and request list.
         const pipeline = document.createElement("div");
@@ -53,7 +52,7 @@ export async function loadUnassignedRequests(
 
             notice.textContent = confirmation.message; 
 
-            pipeline.prepend(notice);
+            contentArea.prepend(notice);
         }
 
         // Reference the request list.
@@ -93,9 +92,7 @@ export async function loadUnassignedRequests(
                 // Navigate to the assignment page.
                 loadPage(
                     "assign-request",
-                    requestId,
-                    actingEmployeeId
-                );
+                    requestId                );
             });
 
         });

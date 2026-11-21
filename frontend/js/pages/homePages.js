@@ -3,11 +3,9 @@
 // Home pages
 // ===================================================
 import { loadPage } from "../router.js"; 
-import { getActingEmployeeInfo } from "../api/employeeApi.js"; 
 
 // Processing Home Page
 export async function loadProcessingHomePage(
-    actingEmployeeId
 ) { 
 
     const contentArea = 
@@ -50,7 +48,7 @@ export async function loadProcessingHomePage(
 
         document.getElementById("assignedRequestsCard")
             .addEventListener("click", () => { 
-                loadPage("assigned-requests", actingEmployeeId); 
+                loadPage("assigned-requests"); 
             }); 
 
     } catch (error) { 
@@ -65,7 +63,6 @@ export async function loadProcessingHomePage(
 
 // Authorized HR Home Page
 export async function loadAuthorizedHomePage(
-    actingEmployeeId
 ) { 
     const contentArea = 
         document.getElementById("contentArea"); 
@@ -139,7 +136,7 @@ export async function loadAuthorizedHomePage(
                 selectedCard.dataset.page; 
 
             // Navigate to the selected page 
-            loadPage(destination, actingEmployeeId); 
+            loadPage(destination); 
         }); 
     } catch (error) { 
         console.error(
@@ -155,14 +152,12 @@ export async function loadAuthorizedHomePage(
 }
 // Employee Home Page
 export async function loadEmployeeHomePage(
-    actingEmployeeId
 ) { 
 
 }
 
 // Manager Home Page 
 export async function loadManagerHomePage(
-    actingEmployeeId
 ) { 
     const contentArea = 
         document.getElementById("contentArea"); 
@@ -225,7 +220,7 @@ export async function loadManagerHomePage(
             const destination =
                 selectedCard.dataset.page; 
 
-            loadPage(destination, actingEmployeeId); 
+            loadPage(destination); 
         }); 
 
     } catch (error) { 

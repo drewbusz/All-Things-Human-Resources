@@ -15,7 +15,6 @@ import { formatFieldName } from "../utils/textFormatHelper.js";
 // ============================================================
 
 export async function loadPendingRequests(
-    actingEmployeeId,
     confirmation = null
 ) {
 
@@ -26,7 +25,7 @@ export async function loadPendingRequests(
 
         // Retrieve pending requests from the backend API.
         const requests =
-            await getPendingRequests(actingEmployeeId);
+            await getPendingRequests();
 
         // Create the page container and request list.
         const pipeline = document.createElement("div");
@@ -55,7 +54,7 @@ export async function loadPendingRequests(
                 confirmation.message ||
                 `Intake complete for Request #${confirmation.requestId}`; 
 
-            pipeline.prepend(notice);
+            contentArea.prepend(notice);
         }
 
         // Reference the request list.
@@ -100,8 +99,7 @@ export async function loadPendingRequests(
                 // Navigate to the request intake page.
                 loadPage(
                     "request-intake",
-                    requestId,
-                    actingEmployeeId
+                    requestId
                 );
 
             });

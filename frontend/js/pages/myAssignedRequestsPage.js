@@ -12,23 +12,41 @@ import {
     loadPage
 } from "../router.js"; 
 
-export async function loadMyAssignedRequests(employeeId, actingEmployeeId) { 
+// Authentication State
+import {
+    getCurrentEmployeeState
+} from "../../auth/authState.js";  
 
-    const contentArea = document.getElementById("contentArea"); 
+export async function loadMyAssignedRequests() { 
+
+    const contentArea = document.getElementById("contentArea");
+
+    // Retrieve the authenticated employee 
+    const employee =
+        getCurrentEmployeeState();
+
+    // Retrieve the employeeId
+    const employeeId = employee.employeeId; 
 
     try { 
-        const assignedRequests = await getAssignedRequestsByEmpId(employeeId, actingEmployeeId);
-        const assignedRequestRows = await renderRequestRows(assignedRequests);
+        const assignedRequests = await getAssignedRequestsByEmpId(employeeId);
+        
 
         // build pipeline
         const pipeline = document.createElement("div");
-
+        pipeline.classList.add("request-pipeline"); 
+        
         pipeline.innerHTML = `
             <h3>My Assigned Requests</h3>
             <hr><br>
-            ${assignedRequestRows}
-        `
+            <div id="request-rows"></div>
+        `; 
         contentArea.replaceChildren(pipeline);
+
+        const assignedRequestRows = await renderRequestRows(assignedRequests);
+
+        const requestRows = pipeline.querySelector("#request-rows"); 
+        requestRows.innerHTML = assignedRequestRows; 
 
         const workItemCards = contentArea.querySelectorAll(".item-card");
 
@@ -45,8 +63,7 @@ export async function loadMyAssignedRequests(employeeId, actingEmployeeId) {
 
                 loadPage(
                     "process-request",
-                    requestId,
-                    actingEmployeeId
+                    requestId
                 );
             });
         });

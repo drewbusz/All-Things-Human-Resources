@@ -103,7 +103,6 @@ const workspaceHomePages = {
 export function loadPage(
     page,
     requestId = null,
-    actingEmployeeId = null,
     confirmation = null
 ) {
     const contentArea = document.getElementById("contentArea");
@@ -120,9 +119,6 @@ export function loadPage(
     // Retrieve the authenticated employee 
     const employee =
         getCurrentEmployeeState(); 
-
-    const employeeId =
-        employee.employeeId; 
 
     // Retrieve available workspaces 
     const availableWorkspaces =
@@ -149,17 +145,16 @@ export function loadPage(
         // HR PROCESSING PAGES
         // ==================================
         case "processing-home":
-            loadProcessingHomePage(employeeId);
+            loadProcessingHomePage();
             break;
 
         case "assigned-requests":
-            loadMyAssignedRequests(employeeId, employeeId);
+            loadMyAssignedRequests();
             break;
 
         case "process-request":
             loadProcessRequestPage(
-                requestId,
-                employeeId
+                requestId
             );
             break;
 
@@ -168,19 +163,17 @@ export function loadPage(
         // ==================================
 
         case "authorized-home":
-            loadAuthorizedHomePage(employeeId);
+            loadAuthorizedHomePage();
             break;
 
         case "new-requests":
             loadPendingRequests(
-                employeeId,
                 confirmation
             );
             break;
 
         case "unassigned-requests":
             loadUnassignedRequests(
-                employeeId,
                 confirmation
             );
             break;
@@ -188,14 +181,12 @@ export function loadPage(
         case "assign-request":
             loadAssignRequestPage(
                 requestId,
-                employeeId,
                 confirmation
             );
             break;
 
         case "active-requests":
             loadActiveRequests(
-                employeeId,
                 confirmation
             );
             break;
@@ -210,7 +201,6 @@ export function loadPage(
         case "request-intake":
             loadIntakeRequestPage(
                 requestId,
-                employeeId
             );
             break;
 
@@ -219,7 +209,10 @@ export function loadPage(
         // ==================================
 
         case "employee-home":
-            loadEmployeeHomePage(employeeId);
+            showPagePlaceholder(
+                "Employee Portal",
+                "Access employee HR services and requests."
+            );
             break;
         case "my-requests":
             showPagePlaceholder(
@@ -241,7 +234,7 @@ export function loadPage(
             break;
         // UC-1: Employee submits a new HR request
         case "submit-request":
-            loadSubmitRequestPage(employeeId);
+            loadSubmitRequestPage();
             break;
 
 

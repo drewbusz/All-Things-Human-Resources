@@ -30,7 +30,6 @@ import { loadPage } from "../router.js";
 
 export async function loadAssignRequestPage(
     requestId,
-    actingEmployeeId,
     confirmation = null
 ) {
 
@@ -41,11 +40,11 @@ export async function loadAssignRequestPage(
        
         const [request, employees, activeRequestTypes, requestNotes, requestHistory] =
             await Promise.all([
-                getRequestById(requestId, actingEmployeeId),
+                getRequestById(requestId),
                 getAssignableEmployees(),
                 getActiveRequestTypes(),
-                getRequestNotesByRequestId(requestId, actingEmployeeId), 
-                getRequestHistory(requestId, actingEmployeeId)
+                getRequestNotesByRequestId(requestId), 
+                getRequestHistory(requestId)
             ]);
 
         if (!request || typeof request !== "object") {
@@ -238,11 +237,10 @@ export async function loadAssignRequestPage(
                 addNoteButton.disabled = true;
 
                 try {
-                    await saveRequestNote(noteText, requestId, actingEmployeeId);
+                    await saveRequestNote(noteText, requestId);
 
                     const updatedNotes = await getRequestNotesByRequestId(
-                        requestId,
-                        actingEmployeeId
+                        requestId
                     );
 
                     loadRequestNotes(activityContent, updatedNotes);
@@ -276,8 +274,7 @@ export async function loadAssignRequestPage(
                 if (tab.dataset.tab === "history") {
 
                     const latestHistory = await getRequestHistory(
-                        requestId,
-                        actingEmployeeId
+                        requestId
                     );
 
                     loadRequestHistory(activityContent, latestHistory);
@@ -285,8 +282,7 @@ export async function loadAssignRequestPage(
 
 
                     const requestNotes = await getRequestNotesByRequestId(
-                        requestId,
-                        actingEmployeeId
+                        requestId
                     );
 
                     loadRequestNotes(activityContent, requestNotes);
@@ -318,7 +314,6 @@ export async function loadAssignRequestPage(
                     requestForm.querySelector("#assigned-employee");
 
                 const updateData = {
-                    actingEmployeeId: actingEmployeeId,
                     assigned_emp_id: Number(employeeSelect.value),
                     request_type_id:
                         Number(
@@ -398,7 +393,7 @@ export async function loadAssignRequestPage(
                     sessionStorage.removeItem("requestReturnPage");
 
                     // Return to the queue and display the confirmation.
-                    loadPage(previousPage, null, null, confirmation);
+                    loadPage(previousPage, null, confirmation);
 
                 } catch (error) {
                     console.error(error);

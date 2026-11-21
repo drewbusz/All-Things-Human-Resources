@@ -21,7 +21,6 @@ import { loadPage } from "../router.js";
 // ============================================================
 
 export async function loadActiveRequests(
-    actingEmployeeId,
     confirmation = null
 ) {
 
@@ -32,7 +31,7 @@ export async function loadActiveRequests(
 
         // Retrieve active requests from the backend API.
         const requests =
-            await getActiveRequests(actingEmployeeId);
+            await getActiveRequests();
 
         // Create the page container and request list.
         const pipeline = document.createElement("div");
@@ -59,7 +58,7 @@ export async function loadActiveRequests(
 
             notice.textContent = confirmation.message; 
 
-            pipeline.prepend(notice); 
+            contentArea.prepend(notice); 
         }
 
         // Reference the request list.
@@ -104,8 +103,7 @@ export async function loadActiveRequests(
                 // Navigate to the assignment page.
                 loadPage(
                     "assign-request",
-                    requestId,
-                    actingEmployeeId
+                    requestId
                 );
 
             });

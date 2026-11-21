@@ -221,6 +221,57 @@ export async function getIntakeRequest(
     }
     return result.data; 
 }
+// UC-5 Approvals
+// -----------------------
+// Get assigned approvals
+export async function getMyApprovals() {
+    const response = await fetch(`api/requests/approvals/mine`);
+
+    const result = await response.json(); 
+
+    if (!response.ok) { 
+        throw new Error(
+            result.message ||
+            result.error ||
+            "Unable to retrieve assigned approvals."
+        ); 
+    }
+    return result.data;
+}
+
+// Get Request Approval (Manager)
+export async function getRequestApproval(
+    requestId
+) { 
+    const response = await fetch(`api/requests/${requestId}/approval`); 
+
+    const result = await response.json(); 
+
+    if (!response.ok) { 
+        throw new Error(
+            result.error ||
+            result.message ||
+            "Unable to retrieve approval details."
+        ); 
+    }
+    return result.data; 
+}
+
+// Review Approval ((HR Processing))
+export async function getApprovalForReview(requestId) { 
+    const response = await fetch(`api/requests/${requestId}/approval/review`); 
+
+    const result = await response.json(); 
+
+    if (!response.ok) { 
+        throw new Error( 
+            result.error || 
+            result.message || 
+            "Unable to retrieve approval for review."
+        ); 
+    }
+    return result.data; 
+}
 // ===================================
 // PATCH API CALLS
 // ===================================
@@ -375,3 +426,50 @@ export async function saveRequestFieldValues(
     return result.data;
 }
 
+// UC-5 Approvals 
+export async function prepareApproval(requestId, summary) { 
+    const response = await fetch(`api/requests/${requestId}/approval`,
+        { 
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                summary
+            })
+        }
+    ); 
+
+    const result = await response.json(); 
+
+    if (!response.ok) { 
+        throw new Error(
+            result.error || 
+            result.message || 
+            "Unable to create approval request at this time."
+        ); 
+    }
+    return result.data; 
+}
+
+export async function decideApproval(requestId, decision) {
+
+    const response = await fetch(`api/requests/${requestId}/approval/decision`, { 
+        method: "POST", 
+        headers: { 
+            "Content-Type" : "application/json"
+        }, 
+        body: JSON.stringify({ decision })
+        }
+    ); 
+    const result = await response.json(); 
+
+    if (!response.ok) { 
+        throw new Error(
+            result.error ||
+            result.message ||
+            "Unable to store approval decision at this time."
+        ); 
+    } 
+    return result.data; 
+}

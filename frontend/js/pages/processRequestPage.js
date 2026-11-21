@@ -10,7 +10,8 @@ import {
     getRequestNotesByRequestId,
     //saveRequestFieldValues,
     updateRequest,
-    saveRequestNote
+    saveRequestNote, 
+    prepareApproval
 } from "../api/requestApi.js";
 import {
     loadPage
@@ -19,7 +20,8 @@ import {
 import {
     renderProcessRequestForm,
     loadRequestHistory,
-    loadRequestNotes
+    loadRequestNotes, 
+    renderApprovalRequestForm
 } from "../utils/requestRenderHelper.js";
 
 // import date formatting helpers
@@ -33,7 +35,7 @@ import {
     formatFieldName
 } from "../utils/textFormatHelper.js"; 
 
-export async function loadProcessRequestPage(requestId) {
+export async function loadProcessRequestPage(requestId, confirmation = null) {
 
     const contentArea = document.getElementById("contentArea");
 
@@ -43,16 +45,24 @@ export async function loadProcessRequestPage(requestId) {
         const [request, requestHistory, requestNotes] = await Promise.all([
             getRequestById(requestId),
             getRequestHistory(requestId), 
-            getRequestNotesByRequestId(requestId)
+            getRequestNotesByRequestId(requestId), 
+            
         ]);
+
+        const workflowSteps = await getWorkflowStepsByRequestType(request.request_type_id); 
+
+        // Determine current workflow status
+        const currentStep = workflowSteps.find(
+            step => step.workflow_step_id == request.current_step_id
+        );
+
+        const currentStatus = currentStep?.step_name;
+
+        console.log("Current request status:", currentStatus);
 
         console.log("Request retrieved: ", request);
 
-        // Retrieve the workflow steps for the request type
-        const workflowSteps =
-            await getWorkflowStepsByRequestType(
-                request.request_type_id
-            );
+        
         // -----------------------------------------------
         // Render Process Request Form
         //------------------------------------------------
@@ -115,7 +125,7 @@ export async function loadProcessRequestPage(requestId) {
         const requestForm =
             renderProcessRequestForm(
                 request,
-                workflowSteps,
+                workflowSteps
                 // requestFields
             );
 
@@ -168,30 +178,101 @@ export async function loadProcessRequestPage(requestId) {
             requestHistory
         );
 
-        // Display notification and prepare approval button if approval is required 
-        const approvalRequired = request.approval_required;
+        // Display confirmation after a successful patch operation.
+        if (confirmation) {
+
+            const notice = document.createElement("div");
+            notice.className = "action-success";
+            notice.setAttribute("role", "status");
+
+            notice.textContent =
+                confirmation.message ||
+                `Intake complete for Request #${confirmation.requestId}`;
+
+            contentArea.prepend(notice);
+        }
+
+        confirmation = ''; 
+
+        // =====================================
+        // APPROVAL NOTIFICATION
+        // =====================================
+
+        const approvalRequired = Boolean(request.approval_required);
 
         if (approvalRequired) {
-            const formActions =
-                requestForm.querySelector("#form-actions");
-
-            const prepareApprovalButton = document
-                .createElement("button")
-
-            prepareApprovalButton.classList.add("prepare-approval-button");
-
-            prepareApprovalButton.textContent = "Prepare Approval Request"; 
 
             const approvalNotification =
-                document.createElement("div")
+                document.createElement("div");
 
             approvalNotification.classList.add("approval-needed");
 
-            approvalNotification.textContent =
-                "Management approval required for this request.";
+            const formActions =
+                requestForm.querySelector("#form-actions");
 
-            formActions.appendChild(prepareApprovalButton);
-            requestForm.prepend(approvalNotification);
+            // --------------------------------
+            // APPROVAL STATUS
+            // --------------------------------
+
+            switch (currentStatus?.trim().toLowerCase()) {
+                case "review approval":
+                    approvalNotification.textContent =
+                        "Review manager decision.";
+
+                    const reviewApprovalButton =
+                        document.createElement("button");
+
+                    reviewApprovalButton.type = "button";
+                    reviewApprovalButton.classList.add("review-approval-button");
+                    reviewApprovalButton.textContent = "Review Manager Decision";
+
+                    formActions?.appendChild(reviewApprovalButton);
+
+                    reviewApprovalButton.addEventListener("click", () => {
+
+                        const reviewForm =
+                            renderReviewApprovalForm(requestId);
+
+                        requestForm.replaceWith(reviewForm);
+                    });
+                    break;
+                case "manager approval":
+                    approvalNotification.textContent =
+                        "Management approval requested and pending for this item.";
+                    break;
+                case "hr processing":
+                    approvalNotification.textContent =
+                        "Management approval required for this request.";
+
+                    const prepareApprovalButton =
+                        document.createElement("button");
+
+                    prepareApprovalButton.type = "button";
+                    prepareApprovalButton.classList.add("prepare-approval-button");
+                    prepareApprovalButton.textContent = "Prepare Approval Request";
+
+                    formActions?.appendChild(prepareApprovalButton);
+
+                    prepareApprovalButton.addEventListener("click", () => {
+
+                        const approvalForm =
+                            renderApprovalRequestForm(requestId);
+
+                        handleApprovalSubmission(approvalForm, requestId);
+
+                        requestForm.replaceWith(approvalForm);
+                    });
+                    break;
+                default:
+                    console.log(
+                        "No approval action configured for status:",
+                        currentStatus
+                    );
+                    break;
+            }
+
+            // Display approval notification
+            contentArea.prepend(approvalNotification);
         }
         // ==============================
         // Activity Tab Event Listeners
@@ -506,4 +587,70 @@ async function submitRequestUpdates(
     // );
 
     return updatedRequest;
+}
+
+// ============================================================
+// SUBMIT APPROVAL REQUEST
+// ============================================================
+
+function handleApprovalSubmission(form, requestId) {
+
+    form.addEventListener("submit", async event => {
+
+        event.preventDefault();
+
+        const summary =
+            form.elements.summary.value.trim();
+
+        const message =
+            form.querySelector(".feedback");
+
+        const submitButton =
+            form.querySelector('[type="submit"]');
+
+        if (!summary) {
+
+            message.textContent =
+                "An approval summary is required.";
+
+            message.classList.add("error");
+
+            return;
+        }
+
+        submitButton.disabled = true;
+        console.log("Preparing approval request for: ", requestId); 
+        console.log("Approval Summary: ", summary); 
+
+        try {
+
+            // Submit approval request to backend
+            await prepareApproval(requestId, summary);
+
+            const confirmation =
+                `Approval request prepared successfully for request ID: ${requestId}.`;
+
+            loadPage(
+                "process-request",
+                requestId,
+                null,
+                confirmation
+            ); 
+
+        } catch (error) {
+
+            console.error("Approval submission failed:", error);
+
+            message.textContent =
+                error.message ||
+                "Unable to prepare approval request.";
+
+            message.classList.remove("success");
+            message.classList.add("error");
+
+        } finally {
+
+            submitButton.disabled = false;
+        }
+    });
 }

@@ -188,18 +188,32 @@ async function manageRequest(requestId, actorId, changes) {
                 );
             }
 
+            // Reclassification cannot remove a required manager approval.
             const [types] = await connection.execute(`
-                SELECT request_type_id
-                FROM request_type
-                WHERE request_type_id = ?
-                  AND is_active = TRUE
+                SELECT
+                    new_type.request_type_id,
+                    new_type.approval_required AS new_approval_required,
+                    old_type.approval_required AS current_approval_required
+                FROM request_type AS new_type
+                JOIN request_type AS old_type
+                    ON old_type.request_type_id = ?
+                WHERE new_type.request_type_id = ?
+                AND new_type.is_active = TRUE
                 LIMIT 1
-            `, [next.request_type_id]);
+            `, [current.request_type_id, next.request_type_id]);
 
             if (types.length === 0) {
                 throw repositoryError(
                     "The selected request type is not active.",
                     "INVALID_REQUEST_TYPE"
+                );
+            }
+
+            if (Boolean(types[0].current_approval_required) &&
+                !Boolean(types[0].new_approval_required)) {
+                throw repositoryError(
+                    "A request that requires manager approval cannot be reclassified to a type without approval.",
+                    "REQUEST_RECLASSIFICATION_BLOCKED"
                 );
             }
 

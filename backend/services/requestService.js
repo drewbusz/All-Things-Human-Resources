@@ -1,6 +1,7 @@
 const requestRepository = require("../repositories/requestRepository");
 const employeeService = require("./employeeService");
 const managementRepository = require("../repositories/requestManagementRepository");
+const approvalService = require("./approvalService");
 
 const {
     canAccessRequest,
@@ -339,6 +340,13 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
                     throw createServiceError(
                         "A request cannot skip workflow steps.",
                         "INVALID_STATUS"
+                    );
+                }
+
+                // UC-5 approval steps must be changed through the approval endpoints.
+                if (nextNum > currentNum) {
+                    await approvalService.checkProcessingTransition(
+                        currentRequest, currentStep, nextStep, connection
                     );
                 }
             }

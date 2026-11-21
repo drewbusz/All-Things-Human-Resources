@@ -1,10 +1,10 @@
-
 const express = require("express");
 const requestController = require("../controllers/requestController");
 const submissionController = require("../controllers/requestSubmissionController");
 const intakeController = require("../controllers/requestIntakeController");
 const managementController = require("../controllers/requestManagementController");
 const trackingController = require("../controllers/requestTrackingController");
+const approvalController = require("../controllers/approvalController");
 
 const router = express.Router();
 
@@ -23,6 +23,13 @@ router.post(
 router.get("/mine", trackingController.getMyRequests);
 router.get("/:id/notes", trackingController.getRequestNotes);
 router.post("/:id/notes", trackingController.addRequestNote);
+
+// UC-5: HR prepares approvals; managers decide; HR reviews the outcome.
+router.get("/approvals/mine", approvalController.getMyPendingApprovals);
+router.post("/:id/approval", approvalController.prepareApproval);
+router.get("/:id/approval", approvalController.getRequestApproval);
+router.post("/:id/approval/decision", approvalController.decideApproval);
+router.post("/:id/approval/review", approvalController.reviewApproval);
 
 // UC-2: Intake and classification
 router.get(

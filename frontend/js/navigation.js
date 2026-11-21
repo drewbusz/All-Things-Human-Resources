@@ -2,6 +2,10 @@
 // Defining navigation and Page titles
 // ====================================
 
+import { getAvailableWorkspaces } from "../auth/authState.js"; 
+
+const workspaces = getAvailableWorkspaces(); 
+
 const navigation = {
     employee: {
         title: "All Things HR | Employees",

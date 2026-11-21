@@ -4,9 +4,10 @@
 // based on user type (employee, HR staff, Manager)
 // ==================================================
 
-// importing navigation specializations
-
 import { loadNavigation } from "./navigation.js";
+
+// Authentication State
+import { getCurrentEmployeeState, getAvailableWorkspaces, isAuthenticated } from "../auth/authState.js"; 
 
 // importing specific pages 
 import {
@@ -38,6 +39,67 @@ function showPagePlaceholder(title, description) {
     `;
 }
 
+// Access Denied 
+function showAccessDenied() { 
+    const contentArea =
+        document.getElementById("contentArea"); 
+
+    contentArea.innerHTML = `
+        <div class="card"> 
+            <h2>Access Denied</h2>
+            <hr>
+            <p>
+                You do not have access to this workspace or its requested page. 
+            </p>
+            </div>    
+        `; 
+}
+
+// ============================================================
+// PAGE WORKSPACE REQUIREMENTS
+// ============================================================
+// Associated each page with its required workspace.
+// Workspace availability is determined by the backend
+// and retrieved through authState.js
+// ============================================================
+const pageWorkspaces = {
+    //  HR Processing 
+    "processing-home": "processing",
+    "assigned-requests": "processing",
+    "process-request": "processing",
+
+    // Authorized HR Staff
+    "authorized-home": "authorized_staff",
+    "new-requests": "authorized_staff",
+    "unassigned-requests": "authorized_staff",
+    "assign-request": "authorized_staff",
+    "active-requests": "authorized_staff",
+    "confidential": "authorized_staff",
+    "request-intake": "authorized_staff",
+
+    // Employee
+    "employee-home": "employee",
+    "my-requests": "employee",
+    "view-request": "employee",
+    "employee-history": "employee",
+    "submit-request": "employee",
+
+    // Manager
+    "manager-home": "manager",
+    "pending-approvals": "manager",
+    "approval-request": "manager",
+    "my-team": "manager"
+}; 
+
+// WORKSPACE NAVIGATION 
+const workspaceHomePages = {
+    processing: "processing-home",
+    authorized_staff: "authorized-home",
+    employee: "employee-home",
+    manager: "manager-home"
+}; 
+
+
 export function loadPage(
     page,
     requestId = null,
@@ -45,87 +107,121 @@ export function loadPage(
     confirmation = null
 ) {
     const contentArea = document.getElementById("contentArea");
-    contentArea.innerHTML = ``;
+    
+    // ------------------------------
+    // Check authentication
+    // ------------------------------------
+    if (!isAuthenticated()) { 
+        contentArea.innerHTML = ""; 
+        showAccessDenied(); 
+        return; 
+    }
+
+    // Retrieve the authenticated employee 
+    const employee =
+        getCurrentEmployeeState(); 
+
+    const employeeId =
+        employee.employeeId; 
+
+    // Retrieve available workspaces 
+    const availableWorkspaces =
+        getAvailableWorkspaces(); 
+
+    // Verify workspace access
+    const requiredWorkspace =
+        pageWorkspaces[page]; 
+
+    if (
+        !requiredWorkspace || !availableWorkspaces.includes(requiredWorkspace)
+    ) { 
+        showAccessDenied(); 
+        return; 
+    }
+    // Prepare page content
+    contentArea.innerHTML = ""; 
+
+    // Load navigation for the selected workspace 
+    loadNavigation(requiredWorkspace); 
+
     switch (page) {
-
         // ==================================
-        // HR Staff Pages
+        // HR PROCESSING PAGES
         // ==================================
-        // hr staff processing home page 
         case "processing-home":
-            loadNavigation("processing");
-            loadProcessingHomePage(2);
+            loadProcessingHomePage(employeeId);
             break;
-        // Requests assigned to the user for processing
+
         case "assigned-requests":
-            loadNavigation("processing");
-            loadMyAssignedRequests(2, 2);
+            loadMyAssignedRequests(employeeId, employeeId);
             break;
 
-        // Load a specific request 
         case "process-request":
-            loadNavigation("processing");
-            loadProcessRequestPage(requestId, 2);
+            loadProcessRequestPage(
+                requestId,
+                employeeId
+            );
             break;
 
         // ==================================
-        // AUTHORIZED Staff Pages
+        // AUTHORIZED STAFF PAGES
         // ==================================
+
         case "authorized-home":
-            loadNavigation("authorized_staff");
-            loadAuthorizedHomePage(2); 
+            loadAuthorizedHomePage(employeeId);
             break;
+
         case "new-requests":
-            loadNavigation("authorized_staff");
-            loadPendingRequests(actingEmployeeId || 2, confirmation);
-            break;
-        // All new and unreviewed/unassigned requests
-        case "unassigned-requests":
-            loadNavigation("authorized_staff");
-            loadUnassignedRequests(2, confirmation);
-            break;
-        // UC-3: Assign and prioritize a selected HR request.
-        case "assign-request":
-            loadNavigation("authorized_staff");
-            loadAssignRequestPage(
-                requestId,
-                actingEmployeeId || 2,
+            loadPendingRequests(
+                employeeId,
                 confirmation
             );
             break;
-        // AUTHORIZED HR STAFF VIEW OF ALL ACTIVE REQUESTS 
+
+        case "unassigned-requests":
+            loadUnassignedRequests(
+                employeeId,
+                confirmation
+            );
+            break;
+
+        case "assign-request":
+            loadAssignRequestPage(
+                requestId,
+                employeeId,
+                confirmation
+            );
+            break;
+
         case "active-requests":
-            loadNavigation("authorized_staff");
-            loadActiveRequests(2, confirmation);
-            break; 
+            loadActiveRequests(
+                employeeId,
+                confirmation
+            );
+            break;
+
         case "confidential":
-            loadNavigation("authorized_staff");
             showPagePlaceholder(
                 "Confidential Requests",
                 "Review and manage confidential requests within authorized permissions."
             );
             break;
-        // UC-2 Review and Classify Incoming Request
-        case "request-intake":
-            loadNavigation("authorized_staff");
-            loadIntakeRequestPage(requestId, actingEmployeeId); 
-            break;
 
-        //=============================
-        // Employee pages
-        //=============================
-        case "employee-home":
-            loadNavigation("employee");
-            // loadEmployeeHome(data.employeeId); 
-            showPagePlaceholder(
-                "Employee Portal",
-                "Access employee HR services and requests."
+        case "request-intake":
+            loadIntakeRequestPage(
+                requestId,
+                employeeId
             );
             break;
 
+        // ==================================
+        // EMPLOYEE PAGES
+        // ==================================
+
+        case "employee-home":
+            loadEmployeeHomePage(employeeId);
+            break;
         case "my-requests":
-            loadNavigation("employee");
-            // loadMyRequestsPage(data.employeeId); 
             showPagePlaceholder(
                 "My Requests",
                 "Track submitted HR requests and their progress."
@@ -133,61 +229,59 @@ export function loadPage(
             break;
 
         case "view-request":
-            loadNavigation("employee");
-            // loadViewRequestPage(data.employeeId); 
+            // Employee request details
             break;
 
         case "employee-history":
-            loadNavigation("employee");
-            // loadEmployeeHistoryPage(data.employeeId); 
             showPagePlaceholder(
                 "Employee History",
                 "Review available employee history information."
             );
-            break;
 
-            // UC-1: Employee submits a new HR request.
+            break;
+        // UC-1: Employee submits a new HR request
         case "submit-request":
-            loadNavigation("employee");
-            loadSubmitRequestPage(7);
+            loadSubmitRequestPage(employeeId);
             break;
 
 
-        //===============//
-        //]Manager Pages//
+        // ==================================
+        // MANAGER PAGES
+        // ==================================
+
         case "manager-home":
-            loadNavigation("manager");
-            loadManagerHomePage(); 
+            loadManagerHomePage();
             break;
+
         case "pending-approvals":
-            loadNavigation("manager");
-            // loadPendingApprovalPage(); 
             showPagePlaceholder(
                 "Pending Approval Requests",
                 "Review HR requests awaiting management approval."
             );
             break;
+
         case "approval-request":
-            loadNavigation("manager");
-            // loadApprovalRequestPage(data.approvalId); 
+            // Approval request details
             break;
 
         case "my-team":
-            loadNavigation("manager");
             showPagePlaceholder(
                 "My Team",
                 "Team management functionality is pending implementation."
             );
             break;
 
-        //===============//
-        
 
-        // Default page not found
+        // ==================================
+        // DEFAULT
+        // ==================================
+
         default:
-            contentArea.innerHTML = '<h1>Page not found</h1>';
+            contentArea.innerHTML = `
+                <h1>Page not found</h1>
+            `;
             break;
-
+        //===============//
     } // End of switch statement
 
 } // End of loadPage function

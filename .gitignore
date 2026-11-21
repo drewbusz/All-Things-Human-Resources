@@ -13,3 +13,4 @@ node_modules/
 
 # Visual Studio files
 /.vs
+/backend/demo-credentials.txt

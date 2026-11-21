@@ -1,3 +1,4 @@
+
 const { pool } = require("../config/database");
 
 
@@ -14,9 +15,16 @@ function toHistoryValue(value) {
 async function getRequestById(requestId) {
 
     const sql = `
-        SELECT *
-        FROM request_view
-        WHERE request_id = ?
+        SELECT
+            rv.*,
+            requester.manager_id
+
+        FROM request_view rv
+
+        INNER JOIN employee requester
+            ON requester.employee_id = rv.employee_id
+
+        WHERE rv.request_id = ?
         LIMIT 1
     `;
 

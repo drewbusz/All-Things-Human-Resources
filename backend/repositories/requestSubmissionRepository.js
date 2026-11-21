@@ -1,5 +1,5 @@
-
 const { pool } = require("../config/database");
+const fieldService = require("../services/requestFieldService");
 
 function repositoryError(message, code) {
     const error = new Error(message);
@@ -29,7 +29,8 @@ async function createRequest({
     requestTypeId,
     briefSummary,
     confidentialityLevel,
-    intakeSource
+    intakeSource,
+    fieldValues
 }) {
     const connection = await pool.getConnection();
     let transactionStarted = false;
@@ -68,6 +69,14 @@ async function createRequest({
                 "The selected request type is not available.",
                 "REQUEST_TYPE_NOT_AVAILABLE"
             );
+        }
+
+        // The original summary-only form still works. New forms can include
+        // fieldValues, which are validated before the request is inserted.
+        let normalizedFields = [];
+        if (fieldValues !== undefined) {
+            const definitions = await fieldService.getTypeDefinitions(requestTypeId, connection);
+            normalizedFields = fieldService.validateFieldValues(definitions, fieldValues, true);
         }
 
         // Start the request at its first active workflow step
@@ -155,6 +164,12 @@ async function createRequest({
             employeeId,
             String(requestId)
         ]);
+
+        if (normalizedFields.length) {
+            await fieldService.saveNormalizedFieldValues(
+                connection, requestId, employeeId, normalizedFields
+            );
+        }
 
         // Only save once everything succeeds
         await connection.commit();

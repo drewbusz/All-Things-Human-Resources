@@ -1,4 +1,3 @@
-
 const submissionRepository = require("../repositories/requestSubmissionRepository");
 
 function serviceError(message, code) {
@@ -46,7 +45,8 @@ async function createRequest(data) {
     const allowedFields = new Set([
         "actingEmployeeId",
         "request_type_id",
-        "brief_summary"
+        "brief_summary",
+        "fieldValues"
     ]);
 
     // Don't allow submission to set assignment or workflow details
@@ -90,7 +90,8 @@ async function createRequest(data) {
         requestTypeId,
         briefSummary: data.brief_summary.trim(),
         confidentialityLevel: "Confidential",
-        intakeSource: "self_service"
+        intakeSource: "self_service",
+        fieldValues: data.fieldValues
     });
 }
 

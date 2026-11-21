@@ -5,6 +5,7 @@ const intakeController = require("../controllers/requestIntakeController");
 const managementController = require("../controllers/requestManagementController");
 const trackingController = require("../controllers/requestTrackingController");
 const approvalController = require("../controllers/approvalController");
+const fieldController = require("../controllers/requestFieldController");
 
 const router = express.Router();
 
@@ -18,6 +19,11 @@ router.post(
     "/",
     submissionController.createRequest
 );
+
+// Request-specific field definitions and saved values
+router.get("/types/:requestTypeId/fields", fieldController.getTypeFields);
+router.get("/:id/fields", fieldController.getRequestFields);
+router.post("/:id/fields", fieldController.saveRequestFields);
 
 // UC-6: Employee request tracking and notes
 router.get("/mine", trackingController.getMyRequests);

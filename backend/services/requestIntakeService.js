@@ -1,8 +1,7 @@
-
 const employeeService = require("./employeeService");
 const intakeRepository = require("../repositories/requestIntakeRepository");
 
-const HR_TYPES = [3, 5];
+const { canManageRequests } = require("../utils/requestPermissions");
 
 function serviceError(message, code) {
     const error = new Error(message);
@@ -58,10 +57,7 @@ async function requireAuthorizedHR(actingEmployeeId) {
     const authorizations = await employeeService
         .getEmployeeAuthorizations(employeeId);
 
-    const permitted = authorizations.some(auth =>
-        HR_TYPES.includes(Number(auth.auth_type_id)) &&
-        Boolean(auth.can_update)
-    );
+    const permitted = canManageRequests(authorizations, "update");
 
     if (!permitted) {
         throw serviceError(

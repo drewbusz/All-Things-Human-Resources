@@ -1,4 +1,3 @@
-
 const intakeService = require("../services/requestIntakeService");
 
 const errorStatuses = {
@@ -33,22 +32,7 @@ function handleError(error, res, next) {
 }
 
 function getActingEmployeeId(req, res) {
-    const authenticatedId = req.auth?.employeeId;
-
-    if (process.env.NODE_ENV === "production" && !authenticatedId) {
-        res.status(401).json({
-            success: false,
-            message: "Sign-in is required."
-        });
-
-        return null;
-    }
-
-    return authenticatedId ?? (
-        req.method === "GET"
-            ? req.query.actingEmployeeId
-            : req.body?.actingEmployeeId
-    );
+    return req.auth.employeeId;
 }
 
 // Get requests waiting for intake review

@@ -1,11 +1,17 @@
 const express = require("express");
 const path = require("path");
+const session = require("express-session");
+require("dotenv").config();
 
 const requestRoutes =
     require("./routes/requestRoutes");
 
 const employeeRoutes =
     require("./routes/employeeRoutes");
+
+const authRoutes = require("./routes/authRoutes");
+const { requireAuth, requireAuthorizedStaff } =
+    require("./middleware/requireAuth");
 
 const { testConnection } =
     require("./config/database");
@@ -17,7 +23,25 @@ const PORT =
     process.env.PORT || 3000;
 
 
+if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
+    throw new Error("Set SESSION_SECRET in backend/.env (at least 32 characters).");
+}
+
 app.use(express.json());
+
+// Sessions are kept in memory for the local class prototype.
+app.use(session({
+    name: "athr.sid",
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 4 * 60 * 60 * 1000
+    }
+}));
 
 
 app.use(
@@ -57,14 +81,20 @@ app.get(
 );
 
 
+// Login routes are public; request and employee routes require a session.
+app.use("/api/auth", authRoutes);
+
 app.use(
     "/api/requests",
+    requireAuth,
     requestRoutes
 );
 
 
 app.use(
     "/api/employees",
+    requireAuth,
+    requireAuthorizedStaff,
     employeeRoutes
 );
 

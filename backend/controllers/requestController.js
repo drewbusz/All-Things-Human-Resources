@@ -48,22 +48,9 @@ function handleServiceError(error, res, next) {
 }
 
 
+// Use the signed-in employee instead of an ID sent by the browser.
 function getActingEmployeeId(req) {
-    const value = req.method === "GET"
-        ? req.query.actingEmployeeId
-        : req.body?.actingEmployeeId;
-
-    if (
-        value === undefined ||
-        value === null ||
-        value === "" ||
-        !Number.isSafeInteger(Number(value)) ||
-        Number(value) <= 0
-    ) {
-        return null;
-    }
-
-    return Number(value);
+    return req.auth.employeeId;
 }
 
 
@@ -244,6 +231,8 @@ async function updateRequest(req, res, next) {
         }
 
         const requestData = { ...req.body };
+
+        // Ignore any employee ID included in the submitted form.
         delete requestData.actingEmployeeId;
 
         const updatedRequest = await requestService.updateRequest(

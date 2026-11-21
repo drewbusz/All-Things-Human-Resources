@@ -1,4 +1,3 @@
-
 const trackingService = require("../services/requestTrackingService");
 
 const errorStatuses = {
@@ -20,24 +19,9 @@ function handleError(error, res, next) {
     });
 }
 
-// Consistent with the project's development test-user approach.
-// Production requests require authenticated identity when added later.
+// Requests are associated with the employee identified by the session.
 function getActingEmployeeId(req, res) {
-    const authenticatedId = req.auth?.employeeId;
-
-    if (process.env.NODE_ENV === "production" && !authenticatedId) {
-        res.status(401).json({
-            success: false,
-            message: "Sign-in is required."
-        });
-        return null;
-    }
-
-    return authenticatedId ?? (
-        req.method === "GET"
-            ? req.query.actingEmployeeId
-            : req.body?.actingEmployeeId ?? req.query.actingEmployeeId
-    );
+    return req.auth.employeeId;
 }
 
 async function getMyRequests(req, res, next) {

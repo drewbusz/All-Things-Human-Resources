@@ -1,7 +1,7 @@
-
 const employeeService = require("./employeeService");
 const requestService = require("./requestService");
 const managementRepository = require("../repositories/requestManagementRepository");
+const { canManageRequests } = require("../utils/requestPermissions");
 
 function serviceError(message, code) {
     const error = new Error(message);
@@ -57,9 +57,9 @@ async function requireHR(employeeId, needUpdate = false) {
     const authorizations =
         await employeeService.getEmployeeAuthorizations(id);
 
-    const authorized = authorizations.some(auth =>
-        [3, 5].includes(Number(auth.auth_type_id)) &&
-        Boolean(needUpdate ? auth.can_update : auth.can_view)
+    const authorized = canManageRequests(
+        authorizations,
+        needUpdate ? "update" : "read"
     );
 
     if (!authorized) {

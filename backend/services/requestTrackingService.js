@@ -1,8 +1,11 @@
-
 const trackingRepository = require("../repositories/requestTrackingRepository");
 const requestRepository = require("../repositories/requestRepository");
 const requestService = require("./requestService");
 const employeeService = require("./employeeService");
+const {
+    canAccessRequest,
+    hasConfidentialPermission
+} = require("../utils/requestPermissions");
 
 function serviceError(message, code) {
     const error = new Error(message);
@@ -52,16 +55,12 @@ async function addRequestNote(requestId, actingEmployeeId, note) {
             const isOwner = Number(request.employee_id) === employeeId;
 
             if (!isOwner) {
-                const auth = await employeeService.getEmployeeAuthorizations(
+                const authorizations = await employeeService.getEmployeeAuthorizations(
                     employeeId,
                     connection
                 );
-                const types = auth.map(a => Number(a.auth_type_id));
-                const isAssigned = Number(request.assigned_emp_id) === employeeId;
-                const canUpdate = types.includes(3) || types.includes(5) ||
-                    (types.includes(6) && isAssigned);
 
-                if (!canUpdate) {
+                if (!canAccessRequest(authorizations, request, employeeId, "note")) {
                     throw serviceError(
                         "You cannot add a note to this request.",
                         "REQUEST_ACCESS_DENIED"
@@ -75,7 +74,7 @@ async function addRequestNote(requestId, actingEmployeeId, note) {
                         connection
                     );
 
-                    if (!permissions.some(p => Boolean(p.can_update))) {
+                    if (!hasConfidentialPermission(permissions, "update")) {
                         throw serviceError(
                             "You cannot update this Highly Confidential request.",
                             "REQUEST_ACCESS_DENIED"

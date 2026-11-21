@@ -1,7 +1,7 @@
-
 const { pool } = require("../config/database");
 const employeeService = require("../services/employeeService");
 const requestRepository = require("./requestRepository");
+const { canManageRequests } = require("../utils/requestPermissions");
 
 function repositoryError(message, code) {
     const error = new Error(message);
@@ -57,29 +57,13 @@ async function manageRequest(requestId, actorId, changes) {
         await connection.beginTransaction();
         transactionStarted = true;
 
-        // Check the HR employee's permissions
-        const [authorizations] = await connection.execute(`
-            SELECT a.auth_type_id
-            FROM authorization a
-            JOIN authorization_type at
-                ON at.auth_type_id = a.auth_type_id
-            JOIN employee e
-                ON e.employee_id = a.employee_id
-            WHERE a.employee_id = ?
-              AND e.status = 'active'
-              AND a.auth_type_id IN (3, 5)
-              AND a.is_active = TRUE
-              AND at.is_active = TRUE
-              AND at.can_update = TRUE
-              AND a.effective_date <= CURRENT_TIMESTAMP
-              AND (
-                  a.expiration_date IS NULL
-                  OR a.expiration_date >= CURRENT_TIMESTAMP
-              )
-            LIMIT 1
-        `, [actorId]);
+        // Recheck permissions inside the transaction before saving.
+        const authorizations = await employeeService.getEmployeeAuthorizations(
+            actorId,
+            connection
+        );
 
-        if (authorizations.length === 0) {
+        if (!canManageRequests(authorizations, "update")) {
             throw repositoryError(
                 "You are not authorized to manage HR requests.",
                 "REQUEST_ACCESS_DENIED"

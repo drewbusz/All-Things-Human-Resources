@@ -1,10 +1,12 @@
-
 const requestRepository = require("../repositories/requestRepository");
 const employeeService = require("./employeeService");
 const managementRepository = require("../repositories/requestManagementRepository");
 
-const HR_TYPES = [3, 5, 6];
-const ASSIGNMENT_TYPES = [3, 5];
+const {
+    canAccessRequest,
+    canViewUnassignedRequests,
+    hasConfidentialPermission
+} = require("../utils/requestPermissions");
 
 function createServiceError(message, code) {
     const error = new Error(message);
@@ -45,48 +47,24 @@ async function checkAccess(request, employeeId, operation, connection) {
     const authorizations = await employeeService
         .getEmployeeAuthorizations(Number(employeeId), connection);
 
-    const types = authorizations.map(a => Number(a.auth_type_id));
-    const assigned = Number(request.assigned_emp_id) === Number(employeeId);
-    const submitted = Number(request.employee_id) === Number(employeeId);
+    // Highly Confidential requests need their own request authorization.
+    const isOwner = Number(request.employee_id) === Number(employeeId);
+    if (request.confidentiality_level === "Highly Confidential" && !isOwner) {
+        const permissions = await requestRepository.getRequestAuthorizations(
+            request.request_id,
+            Number(employeeId),
+            connection
+        );
 
-    const generalHR = types.includes(3) || types.includes(5);
-    const assignedHR = types.includes(6) && assigned;
-    const hrAccess = generalHR || assignedHR;
-
-    const confidentiality = request.confidentiality_level;
-
-    if (confidentiality === "Highly Confidential") {
-        if (!submitted) {
-            const permissions = await requestRepository
-                .getRequestAuthorizations(
-                    request.request_id,
-                    Number(employeeId),
-                    connection
-                );
-
-            const field = operation === "read" ? "can_view" : "can_update";
-
-            if (!permissions.some(p => Boolean(p[field]))) {
-                throw createServiceError(
-                    "You are not authorized to access this Highly Confidential request.",
-                    "REQUEST_ACCESS_DENIED"
-                );
-            }
+        if (!hasConfidentialPermission(permissions, operation)) {
+            throw createServiceError(
+                "You are not authorized to access this Highly Confidential request.",
+                "REQUEST_ACCESS_DENIED"
+            );
         }
     }
 
-    let allowed = false;
-
-    if (operation === "read") {
-        allowed = submitted || hrAccess;
-    } else if (operation === "assign") {
-        allowed = types.some(t => ASSIGNMENT_TYPES.includes(t));
-    } else if (operation === "process") {
-        allowed = types.includes(5) ||
-            (assigned && types.some(t => HR_TYPES.includes(t)));
-    }
-
-    if (!allowed) {
+    if (!canAccessRequest(authorizations, request, employeeId, operation)) {
         throw createServiceError(
             "You are not authorized to perform this operation.",
             "REQUEST_ACCESS_DENIED"
@@ -181,9 +159,7 @@ async function getUnassignedRequests(actingEmployeeId) {
     const authorizations = await employeeService
         .getEmployeeAuthorizations(Number(actingEmployeeId));
 
-    if (!authorizations.some(a =>
-        ASSIGNMENT_TYPES.includes(Number(a.auth_type_id))
-    )) {
+    if (!canViewUnassignedRequests(authorizations)) {
         throw createServiceError(
             "You are not authorized to view unassigned requests.",
             "REQUEST_ACCESS_DENIED"
@@ -267,14 +243,6 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
         );
     }
 
-    if (data.assigned_emp_id !== undefined &&
-        !validId(data.assigned_emp_id)) {
-        throw createServiceError(
-            "The assigned employee ID is invalid.",
-            "INVALID_EMPLOYEE"
-        );
-    }
-
     if (data.current_step_id !== undefined &&
         !validId(data.current_step_id)) {
         throw createServiceError(
@@ -283,14 +251,12 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
         );
     }
 
+    // Assignment, classification, and confidentiality are handled by UC-3.
     const allowedFields = [
-        "request_type_id",
-        "assigned_emp_id",
         "current_step_id",
         "priority_level",
         "expected_completion",
-        "brief_summary",
-        "confidentiality_level"
+        "brief_summary"
     ];
 
     if (Object.keys(data).some(field => !allowedFields.includes(field))) {
@@ -305,87 +271,12 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
         Number(actingEmployeeId),
         data,
         async (currentRequest, submittedData, connection) => {
-            if (submittedData.request_type_id !== undefined &&
-                Number(submittedData.request_type_id) !==
-                Number(currentRequest.request_type_id)) {
-                throw createServiceError(
-                    "The request type cannot be changed here.",
-                    "INVALID_REQUEST_TYPE"
-                );
-            }
-
-            if (submittedData.confidentiality_level !== undefined &&
-                submittedData.confidentiality_level !==
-                currentRequest.confidentiality_level) {
-                throw createServiceError(
-                    "Confidentiality cannot be changed through this form.",
-                    "REQUEST_ACCESS_DENIED"
-                );
-            }
-
-            const assignmentChanging =
-                submittedData.assigned_emp_id !== undefined &&
-                Number(submittedData.assigned_emp_id) !==
-                Number(currentRequest.assigned_emp_id);
-
-            const operation = assignmentChanging ? "assign" : "process";
-
             await checkAccess(
                 currentRequest,
                 actingEmployeeId,
-                operation,
+                "process",
                 connection
             );
-
-            if (assignmentChanging) {
-                if (await managementRepository.needsIntakeReview(
-                    currentRequest.request_id,
-                    connection
-                )) {
-                    throw createServiceError(
-                        "HR must complete intake review before assignment.",
-                        "INVALID_STATUS"
-                    );
-                }
-
-                if (submittedData.brief_summary !== undefined ||
-                    submittedData.current_step_id !== undefined) {
-                    throw createServiceError(
-                        "Assignment cannot modify processing fields.",
-                        "REQUEST_ACCESS_DENIED"
-                    );
-                }
-
-                const eligible = await employeeService
-                    .isEligibleHRAssignee(
-                        Number(submittedData.assigned_emp_id),
-                        connection
-                    );
-
-                if (!eligible) {
-                    throw createServiceError(
-                        "The selected employee is not eligible for HR assignment.",
-                        "EMPLOYEE_NOT_AUTHORIZED"
-                    );
-                }
-
-                if (currentRequest.confidentiality_level ===
-                    "Highly Confidential") {
-                    const permissions = await requestRepository
-                        .getRequestAuthorizations(
-                            currentRequest.request_id,
-                            Number(submittedData.assigned_emp_id),
-                            connection
-                        );
-
-                    if (!permissions.some(p => Boolean(p.can_update))) {
-                        throw createServiceError(
-                            "The assignee requires explicit access to this Highly Confidential request.",
-                            "REQUEST_ACCESS_DENIED"
-                        );
-                    }
-                }
-            }
 
             const steps = await requestRepository
                 .getWorkflowStepsByRequestType(
@@ -414,7 +305,7 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
             }
 
             // Processing begins after assignment.
-            if (!assignmentChanging && currentRequest.assigned_emp_id === null) {
+            if (currentRequest.assigned_emp_id === null) {
                 throw createServiceError(
                     "The request must be assigned before processing.",
                     "INVALID_STATUS"
@@ -453,7 +344,6 @@ async function updateRequest(requestId, actingEmployeeId, requestData) {
             }
 
             const editableFields = [
-                "assigned_emp_id",
                 "current_step_id",
                 "priority_level",
                 "expected_completion",

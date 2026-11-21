@@ -1,4 +1,3 @@
-
 const submissionService = require("../services/requestSubmissionService");
 
 const errorStatuses = {
@@ -41,16 +40,6 @@ async function getActiveRequestTypes(req, res, next) {
 // Create a new request
 async function createRequest(req, res, next) {
     try {
-        const authenticatedId = req.auth?.employeeId;
-
-        // Production requests will need a signed-in employee
-        if (process.env.NODE_ENV === "production" && !authenticatedId) {
-            return res.status(401).json({
-                success: false,
-                message: "Sign-in is required to submit an HR request."
-            });
-        }
-
         const body = req.body;
 
         const data = {
@@ -61,8 +50,7 @@ async function createRequest(req, res, next) {
                     ? body
                     : {}
             ),
-            actingEmployeeId:
-                authenticatedId ?? body?.actingEmployeeId
+            actingEmployeeId: req.auth.employeeId
         };
 
         const created = await submissionService.createRequest(data);

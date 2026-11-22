@@ -1,3 +1,4 @@
+
 const submissionService = require("../services/requestSubmissionService");
 
 const errorStatuses = {
@@ -5,6 +6,8 @@ const errorStatuses = {
     INVALID_ACTING_EMPLOYEE: 400,
     INVALID_REQUEST_TYPE: 400,
     INVALID_SUMMARY: 400,
+    REQUIRED_FIELD_MISSING: 400,
+    INVALID_FIELD_VALUES: 400,
     ACTING_EMPLOYEE_NOT_AVAILABLE: 400,
     REQUEST_TYPE_NOT_AVAILABLE: 400,
     NO_INITIAL_WORKFLOW: 409

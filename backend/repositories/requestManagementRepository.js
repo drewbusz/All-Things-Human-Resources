@@ -1,3 +1,4 @@
+
 const { pool } = require("../config/database");
 const employeeService = require("../services/employeeService");
 const requestRepository = require("./requestRepository");
@@ -11,6 +12,108 @@ function repositoryError(message, code) {
 
 function historyValue(value) {
     return String(value ?? "").slice(0, 255);
+}
+
+// Add or remove request-level access for the assigned HR processor.
+async function setAssigneeAccess(connection, requestId, employeeId, actorId, grant) {
+    if (employeeId === null || employeeId === undefined) return;
+
+    if (grant) {
+        const [existing] = await connection.execute(`
+            SELECT ra.request_auth_id
+            FROM request_auth ra
+            INNER JOIN authorization a
+                ON a.auth_id = ra.auth_id
+                AND a.employee_id = ra.employee_id
+            INNER JOIN authorization_type at
+                ON at.auth_type_id = a.auth_type_id
+            WHERE ra.request_id = ?
+              AND ra.employee_id = ?
+              AND a.auth_type_id IN (3, 5, 6)
+              AND a.is_active = TRUE
+              AND a.effective_date <= CURRENT_TIMESTAMP
+              AND (a.expiration_date IS NULL OR a.expiration_date >= CURRENT_DATE)
+              AND at.is_active = TRUE
+              AND at.can_view = TRUE
+              AND at.can_update = TRUE
+              AND ra.is_active = TRUE
+              AND ra.effective_date <= CURRENT_TIMESTAMP
+              AND (ra.expiration_date IS NULL OR ra.expiration_date >= CURRENT_TIMESTAMP)
+            LIMIT 1
+        `, [requestId, employeeId]);
+
+        if (existing.length) return;
+
+        const authorizations = await employeeService.getEmployeeAuthorizations(
+            employeeId,
+            connection
+        );
+
+        const auth = authorizations.find(item =>
+            [3, 5, 6].includes(Number(item.auth_type_id)) &&
+            Boolean(item.can_view) &&
+            Boolean(item.can_update)
+        );
+
+        if (!auth) {
+            throw repositoryError(
+                "The assigned employee does not have an active HR authorization.",
+                "ASSIGNEE_NOT_ELIGIBLE"
+            );
+        }
+
+        await connection.execute(`
+            INSERT INTO request_auth (request_id, employee_id, auth_id)
+            VALUES (?, ?, ?)
+        `, [requestId, employeeId, auth.auth_id]);
+
+        await connection.execute(`
+            INSERT INTO request_history (
+                request_id,
+                created_by_emp_id,
+                modified_field,
+                previous_value,
+                current_value,
+                type
+            )
+            VALUES (?, ?, 'request_authorization', '', ?, 'updated')
+        `, [requestId, actorId, `granted:${employeeId}`]);
+
+        return;
+    }
+
+    const [result] = await connection.execute(`
+        UPDATE request_auth ra
+        INNER JOIN authorization a
+            ON a.auth_id = ra.auth_id
+            AND a.employee_id = ra.employee_id
+        SET
+            ra.is_active = FALSE,
+            ra.expiration_date = CURRENT_TIMESTAMP
+        WHERE ra.request_id = ?
+          AND ra.employee_id = ?
+          AND a.auth_type_id IN (3, 5, 6)
+          AND ra.is_active = TRUE
+    `, [requestId, employeeId]);
+
+    if (result.affectedRows) {
+        await connection.execute(`
+            INSERT INTO request_history (
+                request_id,
+                created_by_emp_id,
+                modified_field,
+                previous_value,
+                current_value,
+                type
+            )
+            VALUES (?, ?, 'request_authorization', ?, ?, 'updated')
+        `, [
+            requestId,
+            actorId,
+            `granted:${employeeId}`,
+            `revoked:${employeeId}`
+        ]);
+    }
 }
 
 // Keep new submissions in intake, but preserve the older seeded requests.
@@ -100,17 +203,6 @@ async function manageRequest(requestId, actorId, changes) {
 
         const current = rows[0];
 
-        // Highly Confidential requests have separate rules
-        if (
-            current.confidentiality_level ===
-            "Highly Confidential"
-        ) {
-            throw repositoryError(
-                "Highly Confidential requests must be managed through their separate access workflow.",
-                "REQUEST_ACCESS_DENIED"
-            );
-        }
-
         if (current.step_code === "complete") {
             throw repositoryError(
                 "Completed requests cannot be reassigned or reclassified.",
@@ -163,6 +255,28 @@ async function manageRequest(requestId, actorId, changes) {
         const assigneeChanged =
             String(next.assigned_emp_id ?? "") !==
             String(current.assigned_emp_id ?? "");
+
+        const confidentialityChanged =
+            current.confidentiality_level !== next.confidentiality_level;
+
+        // Only an HR Manager (authorization type 5) can set or remove
+        // the Highly Confidential classification.
+        if (
+            confidentialityChanged &&
+            (
+                current.confidentiality_level === "Highly Confidential" ||
+                next.confidentiality_level === "Highly Confidential"
+            ) &&
+            !authorizations.some(auth =>
+                Number(auth.auth_type_id) === 5 &&
+                Boolean(auth.can_update)
+            )
+        ) {
+            throw repositoryError(
+                "Only an HR Manager can change the Highly Confidential classification.",
+                "REQUEST_ACCESS_DENIED"
+            );
+        }
 
         // Reclassification resets the workflow to its first step
         if (typeChanged) {
@@ -310,6 +424,39 @@ async function manageRequest(requestId, actorId, changes) {
                     historyValue(next[field])
                 ]);
             }
+        }
+
+        // Remove the previous assignee's request access when a Highly
+        // Confidential request is reassigned or downgraded.
+        if (
+            current.confidentiality_level === "Highly Confidential" &&
+            (
+                next.confidentiality_level !== "Highly Confidential" ||
+                assigneeChanged
+            )
+        ) {
+            await setAssigneeAccess(
+                connection,
+                requestId,
+                current.assigned_emp_id,
+                actorId,
+                false
+            );
+        }
+
+        // Ensure the current assignee has request-level access while the
+        // request remains Highly Confidential.
+        if (
+            next.confidentiality_level === "Highly Confidential" &&
+            next.assigned_emp_id !== null
+        ) {
+            await setAssigneeAccess(
+                connection,
+                requestId,
+                Number(next.assigned_emp_id),
+                actorId,
+                true
+            );
         }
 
         await connection.commit();

@@ -1,3 +1,4 @@
+
 const employeeService = require("./employeeService");
 const requestService = require("./requestService");
 const managementRepository = require("../repositories/requestManagementRepository");
@@ -203,12 +204,14 @@ async function manageRequest(requestId, employeeId, data) {
 
     if (
         "confidentiality_level" in updates &&
-        !["Nonconfidential", "Confidential"].includes(
-            updates.confidentiality_level
-        )
+        ![
+            "Nonconfidential",
+            "Confidential",
+            "Highly Confidential"
+        ].includes(updates.confidentiality_level)
     ) {
         throw serviceError(
-            "Select Nonconfidential or Confidential. Highly Confidential requires a separate workflow.",
+            "Select Nonconfidential, Confidential, or Highly Confidential.",
             "INVALID_CONFIDENTIALITY"
         );
     }

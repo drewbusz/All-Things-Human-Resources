@@ -18,12 +18,9 @@ async function getRequestById(requestId) {
         SELECT
             rv.*,
             requester.manager_id
-
         FROM request_view rv
-
         INNER JOIN employee requester
             ON requester.employee_id = rv.employee_id
-
         WHERE rv.request_id = ?
         LIMIT 1
     `;
@@ -153,20 +150,27 @@ async function getRequestAuthorizations(
             at.can_view,
             at.can_update,
             at.can_approve
-        FROM request_auth ra
-        INNER JOIN authorization a
-            ON ra.auth_id = a.auth_id
-            AND ra.employee_id = a.employee_id
+        FROM authorization a
         INNER JOIN authorization_type at
             ON a.auth_type_id = at.auth_type_id
-        WHERE ra.request_id = ?
-          AND ra.employee_id = ?
-          AND ra.is_active = TRUE
-          AND ra.effective_date <= CURRENT_TIMESTAMP
+        INNER JOIN employee e
+            ON a.employee_id = e.employee_id
+        LEFT JOIN request_auth ra
+            ON ra.auth_id = a.auth_id
+            AND ra.employee_id = a.employee_id
+            AND ra.request_id = ?
+            AND ra.is_active = TRUE
+            AND ra.effective_date <= CURRENT_TIMESTAMP
+            AND (
+                ra.expiration_date IS NULL
+                OR ra.expiration_date >= CURRENT_TIMESTAMP
+            )
+        WHERE a.employee_id = ?
           AND (
-              ra.expiration_date IS NULL
-              OR ra.expiration_date >= CURRENT_TIMESTAMP
+              a.auth_type_id IN (3, 5)
+              OR ra.request_auth_id IS NOT NULL
           )
+          AND e.status = 'active'
           AND a.is_active = TRUE
           AND a.effective_date <= CURRENT_TIMESTAMP
           AND (

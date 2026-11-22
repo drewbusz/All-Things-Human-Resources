@@ -5,11 +5,11 @@
 import {
     getAvailableWorkspaces,
     getCurrentEmployeeState
-} from "../auth/authState.js"; 
+} from "../auth/authState.js";
 
-import { formatFieldName } from "../js/utils/textFormatHelper.js"; 
+import { formatFieldName } from "../js/utils/textFormatHelper.js";
 
-const workspaces = getAvailableWorkspaces(); 
+const workspaces = getAvailableWorkspaces();
 
 
 const navigation = {
@@ -102,7 +102,7 @@ export async function loadNavigation(section) {
         console.error(`Navigation configuration not found: ${section}`);
         return;
     }
-    const employee = getCurrentEmployeeState(); 
+    const employee = getCurrentEmployeeState();
 
     const headerTitle =
         document.getElementById("page-title");
@@ -121,19 +121,19 @@ export async function loadNavigation(section) {
             </div>
         `;
 
-        const welcomeMessage = identityBanner.querySelector("#welcome-message"); 
+        const welcomeMessage = identityBanner.querySelector("#welcome-message");
 
-        const employeeIdentity = identityBanner.querySelector("#employee-identity"); 
+        const employeeIdentity = identityBanner.querySelector("#employee-identity");
 
-        welcomeMessage.textContent = `Welcome, ${formatFieldName(employee.firstName)}!`; 
+        welcomeMessage.textContent = `Welcome, ${formatFieldName(employee.firstName)}!`;
         employeeIdentity.textContent =
-            `${formatFieldName(employee.firstName)} ${formatFieldName(employee.lastName)} · Employee ID ${employee.employeeId}`; 
+            `${formatFieldName(employee.firstName)} ${formatFieldName(employee.lastName)} · Employee ID ${employee.employeeId}`;
 
-         identityBanner.hidden = false;
-        } else {
-            identityBanner.hidden = true;
-            identityBanner.innerHTML = "";
-        }
+        identityBanner.hidden = false;
+    } else {
+        identityBanner.hidden = true;
+        identityBanner.innerHTML = "";
+    }
 
 
     headerTitle.textContent = config.title;
@@ -145,9 +145,21 @@ export async function loadNavigation(section) {
 
 
 
-    hamburgerMenu.innerHTML = config.links.map(link => `
+    hamburgerMenu.innerHTML = `
+    ${config.links.map(link => `
         <button type="button" class="menu-link" data-page="${link.page}">
             ${link.label}
         </button>
-    `).join("");
+    `).join("")}
+
+    <div class="menu-divider"></div>
+
+    <button
+        type="button"
+        class="menu-link sign-out-link"
+        data-action="sign-out"
+    >
+        Sign Out
+    </button>
+`;
 }

@@ -47,6 +47,35 @@
         <div id="contentArea">
         </div>
     </main>
+
+
+
+    <!-- Sign Out Confirmation Dialog -->
+    <dialog id="sign-out-dialog" class="sign-out-dialog" aria-labelledby="sign-out-title"
+        aria-describedby="sign-out-description">
+
+        <h2 id="sign-out-title">Sign Out?</h2>
+
+        <p id="sign-out-description">
+            Are you sure you want to sign out of All Things HR?
+        </p>
+
+        <p id="sign-out-error" role="alert" hidden></p>
+
+        <div class="sign-out-actions">
+            <button type="button" id="cancel-sign-out">
+                Cancel
+            </button>
+
+            <button type="button" id="confirm-sign-out">
+                Sign Out
+            </button>
+        </div>
+    </dialog>
+
+
+
+
     <!-- Handles frontend behavior and communication with the backend -->
     <script type="module" src="js/app.js"></script>
 

@@ -2,18 +2,18 @@
 // ===================================================
 // Home pages
 // ===================================================
-import { loadPage } from "../router.js"; 
+import { loadPage } from "../router.js";
 
 // Processing Home Page
 export async function loadProcessingHomePage(
-) { 
+) {
 
-    const contentArea = 
-        document.getElementById("contentArea"); 
+    const contentArea =
+        document.getElementById("contentArea");
 
     try {
         const welcomePage =
-            document.createElement("div"); 
+            document.createElement("div");
 
         welcomePage.classList.add("home-page");
 
@@ -40,37 +40,37 @@ export async function loadProcessingHomePage(
             </div>
         </div>
         `;
-        contentArea.replaceChildren(welcomePage); 
+        contentArea.replaceChildren(welcomePage);
 
         // =============================
         // NAVIGATE EVENT LISTENERS
         // =============================
 
         document.getElementById("assignedRequestsCard")
-            .addEventListener("click", () => { 
-                loadPage("assigned-requests"); 
-            }); 
+            .addEventListener("click", () => {
+                loadPage("assigned-requests");
+            });
 
-    } catch (error) { 
+    } catch (error) {
         console.error(
             "Unable to load HR Processing Workspace:",
             error
-        ); 
+        );
         contentArea.textContent =
-            `Unable to load the HR Processing Workspace: ${error.message}`; 
-    } 
-} 
+            `Unable to load the HR Processing Workspace: ${error.message}`;
+    }
+}
 
 // Authorized HR Home Page
 export async function loadAuthorizedHomePage(
-) { 
-    const contentArea = 
-        document.getElementById("contentArea"); 
+) {
+    const contentArea =
+        document.getElementById("contentArea");
 
-    try { 
-        const welcomePage = 
-            document.createElement("div"); 
-        welcomePage.classList.add("home-page"); 
+    try {
+        const welcomePage =
+            document.createElement("div");
+        welcomePage.classList.add("home-page");
 
         welcomePage.innerHTML = `
             <h3>Authorized Staff Workspace</h3>
@@ -115,58 +115,144 @@ export async function loadAuthorizedHomePage(
                 </div>
             </div>
         `;
-        contentArea.replaceChildren(welcomePage); 
+        contentArea.replaceChildren(welcomePage);
 
         // =============================
         // NAVIGATE EVENT LISTENER
         // =============================
         const homePageCards =
-            welcomePage.querySelector(".home-page-cards"); 
+            welcomePage.querySelector(".home-page-cards");
 
-        homePageCards.addEventListener("click", (event) => { 
+        homePageCards.addEventListener("click", (event) => {
             // Identify the selected card
             const selectedCard =
-                event.target.closest(".home-page-card"); 
+                event.target.closest(".home-page-card");
 
             // Ignore clicks outside of a card 
-            if (!selectedCard) return; 
+            if (!selectedCard) return;
 
             // Retrieve the destination page 
             const destination =
-                selectedCard.dataset.page; 
+                selectedCard.dataset.page;
 
             // Navigate to the selected page 
-            loadPage(destination); 
-        }); 
-    } catch (error) { 
+            loadPage(destination);
+        });
+    } catch (error) {
         console.error(
             "Unable to load Authorized Staff Workspace:",
             error
-        ); 
+        );
 
         contentArea.textContent =
-            `Unable to load the Authorized Staff Workspace: ${
-            error.message || "An unexpected error occurred."
-            }`; 
+            `Unable to load the Authorized Staff Workspace: ${error.message || "An unexpected error occurred."
+            }`;
     }
 }
 // Employee Home Page
-export async function loadEmployeeHomePage(
-) { 
 
+export async function loadEmployeeHomePage() {
+    const contentArea =
+        document.getElementById("contentArea");
+
+    try {
+        const welcomePage =
+            document.createElement("div");
+
+        welcomePage.classList.add("home-page");
+
+        welcomePage.innerHTML = `
+            <h3>Employee Workspace</h3>
+            <p>
+                Welcome to the Employee Workspace.
+                Select a section below to continue.
+            </p>
+            <hr>
+
+            <div class="home-page-cards">
+                <div class="home-page-card"
+                    data-page="submit-request">
+                    <h3>Submit New Request</h3>
+                    <p>
+                        Create and submit a new request
+                        to Human Resources.
+                    </p>
+
+                    <span class="card-link">
+                        Submit New Request →
+                    </span>
+                </div>
+
+                <div class="home-page-card"
+                    data-page="my-requests">
+                    <h3>My Requests</h3>
+                    <p>
+                        View your submitted requests,
+                        check their status, and review
+                        request details.
+                    </p>
+
+                    <span class="card-link">
+                        View My Requests →
+                    </span>
+                </div>
+
+                <div class="home-page-card"
+                    data-page="employee-history">
+                    <h3>Employee History</h3>
+                    <p>
+                        Review your available employee
+                        history information.
+                    </p>
+
+                    <span class="card-link">
+                        View Employee History →
+                    </span>
+                </div>
+            </div>
+        `;
+
+        contentArea.replaceChildren(welcomePage);
+
+        const homePageCards =
+            welcomePage.querySelector(".home-page-cards");
+
+        homePageCards.addEventListener("click", (event) => {
+            const selectedCard =
+                event.target.closest(".home-page-card");
+
+            if (!selectedCard) return;
+
+            const destination =
+                selectedCard.dataset.page;
+
+            loadPage(destination);
+        });
+
+    } catch (error) {
+        console.error(
+            "Unable to load Employee Workspace:",
+            error
+        );
+
+        contentArea.textContent =
+            `Unable to load the Employee Workspace: ${error.message || "An unexpected error occurred."
+            }`;
+    }
 }
+
 
 // Manager Home Page 
 export async function loadManagerHomePage(
-) { 
-    const contentArea = 
-        document.getElementById("contentArea"); 
+) {
+    const contentArea =
+        document.getElementById("contentArea");
 
-    try { 
-        const welcomePage = 
-            document.createElement("div"); 
+    try {
+        const welcomePage =
+            document.createElement("div");
 
-        welcomePage.classList.add("home-page"); 
+        welcomePage.classList.add("home-page");
 
         welcomePage.innerHTML = `
             <h3>Manager Workspace</h3>
@@ -199,31 +285,31 @@ export async function loadManagerHomePage(
                 </span>
                 </div>
             </div>
-        `; 
+        `;
 
-        contentArea.replaceChildren(welcomePage); 
+        contentArea.replaceChildren(welcomePage);
 
         // =============================
         // NAVIGATE EVENT LISTENER
         // =============================
-        const homePageCards = 
-            welcomePage.querySelector(".home-page-cards"); 
+        const homePageCards =
+            welcomePage.querySelector(".home-page-cards");
 
-        homePageCards.addEventListener("click", (event) => { 
+        homePageCards.addEventListener("click", (event) => {
             // Identify the selected card
-            const selectedCard = 
-                event.target.closest(".home-page-card"); 
+            const selectedCard =
+                event.target.closest(".home-page-card");
 
             // Ignore clicks outside of a card
-            if (!selectedCard) return; 
+            if (!selectedCard) return;
 
             const destination =
-                selectedCard.dataset.page; 
+                selectedCard.dataset.page;
 
-            loadPage(destination); 
-        }); 
+            loadPage(destination);
+        });
 
-    } catch (error) { 
+    } catch (error) {
         console.error(
             "Unable to load Manager Workspace:",
             error
@@ -231,6 +317,6 @@ export async function loadManagerHomePage(
 
         contentArea.textContent =
             `Unable to load the Manager Workspace: ${error.message || "An unexpected error occurred."
-            }`; 
+            }`;
     }
 }

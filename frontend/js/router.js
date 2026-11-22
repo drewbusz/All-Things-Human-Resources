@@ -16,6 +16,7 @@ import {
     loadEmployeeHomePage,
     loadManagerHomePage
 } from "./pages/homePages.js";
+
 import { loadProcessRequestPage } from "./pages/processRequestPage.js";
 import { loadIntakeRequestPage } from "./pages/intakeRequestPage.js";
 import { loadMyAssignedRequests } from "./pages/myAssignedRequestsPage.js";
@@ -211,11 +212,9 @@ export function loadPage(
         // ==================================
 
         case "employee-home":
-            showPagePlaceholder(
-                "Employee Portal",
-                "Access employee HR services and requests."
-            );
+            loadEmployeeHomePage();
             break;
+
         case "my-requests":
             showPagePlaceholder(
                 "My Requests",

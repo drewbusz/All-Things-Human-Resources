@@ -945,3 +945,199 @@ form>div {
 #sign-out-error {
     color: #a12622;
 }
+
+
+/* ==========================================
+   LOGIN PAGE
+   ========================================== */
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 65vh;
+    padding: 24px 0;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 440px;
+    padding: 36px;
+    background-color: #ffffff;
+    border: 1px solid #d9dee3;
+    border-radius: 10px;
+    box-shadow: 0 6px 24px rgba(36, 52, 71, 0.08);
+}
+
+/* Application introduction */
+
+.login-introduction {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.login-introduction h1 {
+    margin: 0 0 12px;
+    color: #243447;
+    font-size: 26px;
+    line-height: 1.3;
+}
+
+.login-introduction p {
+    margin: 0;
+    color: #596775;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* Sign-in section */
+
+.login-form-section {
+    border-top: 1px solid #d9dee3;
+    padding-top: 26px;
+}
+
+.login-form-section h2 {
+    display: block;
+    margin: 0 0 8px;
+    color: #243447;
+    font-size: 21px;
+}
+
+.login-form-section>p {
+    margin: 0 0 24px;
+    color: #596775;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Form fields */
+
+#login-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+#login-form label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #243447;
+}
+
+#login-form input {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid #b9c3cd;
+    border-radius: 5px;
+    background-color: #ffffff;
+    color: #222222;
+    font: inherit;
+}
+
+#login-form input:focus-visible {
+    outline: 2px solid #405a75;
+    outline-offset: 2px;
+}
+
+/* Sign-in button */
+
+#login-button {
+    width: 100%;
+    min-height: 44px;
+    padding: 12px 18px;
+    background-color: #243447;
+    border: none;
+    border-radius: 5px;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#login-button:hover {
+    background-color: #354b63;
+}
+
+#login-button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+/* Authentication errors */
+
+#login-error {
+    color: #a12622;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+#login-error:empty {
+    display: none;
+}
+
+/* Responsive login layout */
+
+@media (max-width: 650px) {
+    .login-container {
+        min-height: 60vh;
+        padding: 16px 0;
+    }
+
+    .login-card {
+        padding: 28px 22px;
+    }
+
+    .login-introduction h1 {
+        font-size: 23px;
+    }
+}
+
+/* ==========================================
+   APPLICATION BRANDING
+   ========================================== */
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    background-color: #ffffff;
+    color: #243447;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.workspace-control[hidden],
+.menu-toggle[hidden] {
+    display: none;
+}
+
+@media (max-width: 650px) {
+    .header-brand {
+        gap: 9px;
+    }
+
+    .brand-mark {
+        width: 34px;
+        height: 34px;
+    }
+
+    .navbar-header {
+        font-size: 20px;
+    }
+}

@@ -52,6 +52,7 @@ function initializeSignOut() {
 // ============================================================
 function initializeNavigation() {
     const menuToggle = document.getElementById("menu-toggle");
+    menuToggle.hidden = false;
     const hamburgerMenu = document.getElementById("hamburger-menu");
     const workspaceSelect = document.getElementById("workspace-select");
     const workspaceControl =

@@ -16,6 +16,7 @@ import {
     loadEmployeeHomePage,
     loadManagerHomePage
 } from "./pages/homePages.js";
+
 import { loadProcessRequestPage } from "./pages/processRequestPage.js";
 import { loadIntakeRequestPage } from "./pages/intakeRequestPage.js";
 import { loadMyAssignedRequests } from "./pages/myAssignedRequestsPage.js";
@@ -25,7 +26,9 @@ import { loadSubmitRequestPage } from "./pages/submitRequestPage.js";
 import { loadActiveRequests } from "./pages/activeRequestsPage.js"; 
 import { loadPendingRequests } from "./pages/pendingRequestPage.js"; 
 import { loadMyAssignedApprovals } from "./pages/myAssignedApprovalsPage.js"; 
-import { loadManagerApprovalPage } from "./pages/managerApprovalPage.js"; 
+import { loadManagerApprovalPage } from "./pages/managerApprovalPage.js";
+import { loadMyRequestsPage } from "./pages/myRequestsPage.js";
+import { loadViewRequestPage } from "./pages/viewRequestPage.js";
 
 // Display a consistent placeholder for unfinished pages.
 function showPagePlaceholder(title, description) {
@@ -211,20 +214,15 @@ export function loadPage(
         // ==================================
 
         case "employee-home":
-            showPagePlaceholder(
-                "Employee Portal",
-                "Access employee HR services and requests."
-            );
+            loadEmployeeHomePage();
             break;
+
         case "my-requests":
-            showPagePlaceholder(
-                "My Requests",
-                "Track submitted HR requests and their progress."
-            );
+            loadMyRequestsPage();
             break;
 
         case "view-request":
-            // Employee request details
+            loadViewRequestPage(requestId);
             break;
 
         case "employee-history":

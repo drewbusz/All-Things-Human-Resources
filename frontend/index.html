@@ -16,8 +16,10 @@
     <!-- Application header -->
     <header class="site-header">
         <div class="navbar">
-            <h1 class="navbar-header" id="page-title">
-            </h1>
+            <div class="header-brand">
+                <span class="brand-mark" aria-hidden="true">HR</span>
+                <h1 class="navbar-header" id="page-title"></h1>
+            </div>
 
             <!-- Workspace selection, independent of page navigation -->
             <div class="workspace-control" hidden>
@@ -27,7 +29,7 @@
             </div>
 
             <!-- Hamburger Button -->
-            <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Open navigation menu"
+            <button id="menu-toggle" class="menu-toggle" type="button" hidden aria-label="Open navigation menu"
                 aria-expanded="false" aria-controls="hamburger-menu">
                 <span></span>
                 <span></span>
@@ -47,6 +49,35 @@
         <div id="contentArea">
         </div>
     </main>
+
+
+
+    <!-- Sign Out Confirmation Dialog -->
+    <dialog id="sign-out-dialog" class="sign-out-dialog" aria-labelledby="sign-out-title"
+        aria-describedby="sign-out-description">
+
+        <h2 id="sign-out-title">Sign Out?</h2>
+
+        <p id="sign-out-description">
+            Are you sure you want to sign out of All Things HR?
+        </p>
+
+        <p id="sign-out-error" role="alert" hidden></p>
+
+        <div class="sign-out-actions">
+            <button type="button" id="cancel-sign-out">
+                Cancel
+            </button>
+
+            <button type="button" id="confirm-sign-out">
+                Sign Out
+            </button>
+        </div>
+    </dialog>
+
+
+
+
     <!-- Handles frontend behavior and communication with the backend -->
     <script type="module" src="js/app.js"></script>
 

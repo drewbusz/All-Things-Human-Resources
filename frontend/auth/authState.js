@@ -72,6 +72,6 @@ export function isAuthenticated() {
 // ============================================================
 export function clearAuthState() {
     currentEmployee = null; 
-    availableWorkspaces = null; 
+    availableWorkspaces = [];
 } 
 

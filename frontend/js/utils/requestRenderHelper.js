@@ -17,7 +17,7 @@ export function renderProcessRequestForm(
     //requestFields
 ) {
 
-   // const fieldRows = renderFieldRows(requestFields);
+    // const fieldRows = renderFieldRows(requestFields);
 
     const statusOptions = renderStatusOptions(
         workflowSteps,
@@ -87,16 +87,16 @@ export function renderProcessRequestForm(
                             <option
                                 value=""
                                 ${!request.priority_level
-                                ? "selected"
-                                : ""}
+            ? "selected"
+            : ""}
                             >
                             </option>
 
                             <option
                                 value="low"
                                 ${request.priority_level === "low"
-                                ? "selected"
-                                : ""}
+            ? "selected"
+            : ""}
                             >
                                 Low
                             </option>
@@ -104,8 +104,8 @@ export function renderProcessRequestForm(
                             <option
                                 value="medium"
                                 ${request.priority_level === "medium"
-                                ? "selected"
-                                : ""}
+            ? "selected"
+            : ""}
                             >
                                 Medium
                             </option>
@@ -113,8 +113,8 @@ export function renderProcessRequestForm(
                             <option
                                 value="high"
                                 ${request.priority_level === "high"
-                                ? "selected"
-                                : ""}
+            ? "selected"
+            : ""}
                             >
                                 High
                             </option>
@@ -147,7 +147,7 @@ export function renderProcessRequestForm(
     `;
     // Safely populate the request summary as text 
     const summaryInput =
-        requestForm.querySelector("#request-summary"); 
+        requestForm.querySelector("#request-summary");
 
     summaryInput.value =
         request.brief_summary ?? "";
@@ -158,10 +158,10 @@ export function renderProcessRequestForm(
 // AUTHORIZED STAFF > ASSIGN & CLASSIFY FORM
 export function renderAuthorizedRequestProcessingForm(
     request,
-    employeeOptions, 
+    employeeOptions,
     activeRequestTypes
 ) {
-    
+
     const requestForm = document.createElement("form");
     requestForm.id = "assignment-form";
 
@@ -221,16 +221,16 @@ export function renderAuthorizedRequestProcessingForm(
         requestForm.querySelector("#assigned-employee");
 
     if (employeeOptions.length === 0) {
-        const option = document.createElement("option"); 
+        const option = document.createElement("option");
 
-        option.value = ""; 
+        option.value = "";
         option.textContent =
-            "No assignable employees available."; 
+            "No assignable employees available.";
 
-        employeeSelect.appendChild(option); 
-        employeeSelect.disabled = true; 
+        employeeSelect.appendChild(option);
+        employeeSelect.disabled = true;
 
-    } else { 
+    } else {
         employeeOptions.forEach(employee => {
 
             const option = document.createElement("option");
@@ -259,7 +259,7 @@ export function renderAuthorizedRequestProcessingForm(
 
         requestTypeSelect.appendChild(option);
         requestTypeSelect.disabled = true;
-    } else { 
+    } else {
         activeRequestTypes.forEach(type => {
 
             const option =
@@ -269,7 +269,7 @@ export function renderAuthorizedRequestProcessingForm(
                 Number(type.request_type_id);
 
             option.textContent =
-                formatFieldName(type.name); 
+                formatFieldName(type.name);
 
             requestTypeSelect.appendChild(option);
         });
@@ -302,11 +302,11 @@ export function renderAuthorizedRequestProcessingForm(
 
 // REQUEST INTAKE FORM 
 export function renderRequestIntakeForm(
-    request, 
+    request,
     activeRequestTypes
-) { 
-    const requestForm = document.createElement("form"); 
-    requestForm.id = "intake-form"; 
+) {
+    const requestForm = document.createElement("form");
+    requestForm.id = "intake-form";
 
     requestForm.innerHTML = `
         <div class="card">
@@ -390,9 +390,9 @@ export function loadRequestHistory(
     requestHistory
 ) {
     const header =
-        document.createElement("div"); 
+        document.createElement("div");
 
-    header.classList.add("history-header"); 
+    header.classList.add("history-header");
 
     header.innerHTML = `
         <span>Date</span>
@@ -401,11 +401,11 @@ export function loadRequestHistory(
         <span>Change</span>
     `;
 
-    const historyList = document.createElement("div"); 
-    historyList.classList.add("history-list"); 
+    const historyList = document.createElement("div");
+    historyList.classList.add("history-list");
 
     const historyRows =
-        renderHistoryRows(requestHistory); 
+        renderHistoryRows(requestHistory);
 
     if (historyRows.length === 0) {
         const empty = document.createElement("p");
@@ -416,22 +416,23 @@ export function loadRequestHistory(
             "No request history is available.";
 
         historyList.appendChild(empty);
-    } else { 
-        historyRows.forEach(row => { 
-            historyList.appendChild(row); 
-        }); 
+    } else {
+        historyRows.forEach(row => {
+            historyList.appendChild(row);
+        });
     }
-    activityContent.replaceChildren(header, historyList); 
+    activityContent.replaceChildren(header, historyList);
 }
 
 // REQUEST NOTES
 export function loadRequestNotes(
     activityContent,
-    requestNotes
+    requestNotes,
+    allowNewNotes = true
 ) {
 
-    const addNote = document.createElement("div"); 
-    addNote.classList.add("add-note"); 
+    const addNote = document.createElement("div");
+    addNote.classList.add("add-note");
 
     addNote.innerHTML = `
             <label for="new-note">
@@ -453,46 +454,46 @@ export function loadRequestNotes(
             ></textarea>
             `;
 
-    const header = document.createElement("div"); 
-    header.classList.add("note-header"); 
+    const header = document.createElement("div");
+    header.classList.add("note-header");
 
     header.innerHTML = `
         <span>Date</span>
         <span>Created By</span>
         <span>Note</span>
-    `; 
+    `;
 
-    const notesList = document.createElement("div"); 
-    notesList.classList.add("note-list"); 
+    const notesList = document.createElement("div");
+    notesList.classList.add("note-list");
 
-    const noteRows = renderNoteRows(requestNotes); 
+    const noteRows = renderNoteRows(requestNotes);
 
-    if (noteRows.length === 0) { 
-        const empty = document.createElement("p"); 
-        empty.classList.add("note-empty"); 
+    if (noteRows.length === 0) {
+        const empty = document.createElement("p");
+        empty.classList.add("note-empty");
 
         empty.textContent =
-            "No request notes are available."; 
+            "No request notes are available.";
 
-        notesList.appendChild(empty); 
-    } else { 
-        noteRows.forEach(row => { 
-            notesList.appendChild(row); 
-        }); 
+        notesList.appendChild(empty);
+    } else {
+        noteRows.forEach(row => {
+            notesList.appendChild(row);
+        });
     }
 
     activityContent.replaceChildren(
-        addNote,
+        ...(allowNewNotes ? [addNote] : []),
         header,
         notesList
-    ); 
+    );
 
-     
-        
+
+
 }
 
 // REQUEST ROWS
-export function renderRequestRows(requests) { 
+export function renderRequestRows(requests) {
 
     const requestRows = requests.map(request => `
     <div class="item-card"
@@ -543,7 +544,7 @@ export function renderRequestRows(requests) {
     </div>
 `).join("");
 
-    return requestRows; 
+    return requestRows;
 
 }
 
@@ -682,31 +683,31 @@ function renderHistoryRows(requestHistory) {
 
     return requestHistory.map(history => {
 
-        const row = document.createElement("div"); 
+        const row = document.createElement("div");
 
-        row.classList.add("history-item"); 
+        row.classList.add("history-item");
 
         const date =
-            document.createElement("span"); 
+            document.createElement("span");
 
         date.classList.add("history-date");
 
         date.textContent =
             formatDateForDisplay(
                 history.date_modified
-            ); 
+            );
 
         const changedBy =
-            document.createElement("span"); 
+            document.createElement("span");
 
-        changedBy.classList.add("history-user");  
+        changedBy.classList.add("history-user");
 
         changedBy.textContent =
             formatFieldName(
                 history.changed_by
-            ); 
+            );
 
-        const field = 
+        const field =
             document.createElement("span");
 
         field.classList.add("history-field");
@@ -717,69 +718,69 @@ function renderHistoryRows(requestHistory) {
             );
 
         const change =
-            document.createElement("span"); 
+            document.createElement("span");
 
         change.classList.add("history-change");
 
         change.textContent =
-            `${history.previous_value ?? ""}  >  ${history.current_value ?? ""}`; 
+            `${history.previous_value ?? ""}  >  ${history.current_value ?? ""}`;
 
         row.appendChild(date);
         row.appendChild(changedBy);
         row.appendChild(field);
         row.appendChild(change);
 
-        return row; 
+        return row;
 
     });
-} 
+}
 
 // NOTE ROWS
 function renderNoteRows(requestNotes) {
 
-    return requestNotes.map(note => { 
+    return requestNotes.map(note => {
 
-        const row = document.createElement("div"); 
-                row.classList.add("note-item"); 
+        const row = document.createElement("div");
+        row.classList.add("note-item");
 
-        const date = document.createElement("span"); 
-        date.classList.add("note-date"); 
+        const date = document.createElement("span");
+        date.classList.add("note-date");
 
-        date.textContent = 
+        date.textContent =
             formatDateForDisplay(
                 note.note_date
-            ); 
+            );
 
         const createdBy =
-            document.createElement("span"); 
+            document.createElement("span");
 
-        createdBy.textContent = 
-        formatFieldName( 
+        createdBy.textContent =
+            formatFieldName(
                 note.created_by
-            ); 
+            );
 
-        const noteText = 
-            document.createElement("span"); 
+        const noteText =
+            document.createElement("span");
 
-        noteText.classList.add("note-text"); 
+        noteText.classList.add("note-text");
 
-        noteText.textContent = note.note; 
+        noteText.textContent = note.note;
 
-        row.appendChild(date); 
-        row.appendChild(createdBy); 
-        row.appendChild(noteText); 
+        row.appendChild(date);
+        row.appendChild(createdBy);
+        row.appendChild(noteText);
 
-        return row; 
-    }); 
+        return row;
+    });
 }
 
 // SUBMIT NEW APPROVAL REQUEST FORM 
 export function renderApprovalRequestForm(
     requestId
-) { 
+) {
 
-    const form = document.createElement("form"); 
-    form.id = "new-approval-form"; 
+    const form = document.createElement("form");
+    form.id = "new-approval-form";
 
     form.innerHTML = `
     <div class="card">
@@ -812,13 +813,13 @@ export function renderApprovalRequestForm(
 
             </div>
     </div>
-    `; 
+    `;
 
-    return form; 
+    return form;
 }
 
 // MANAGER APPROVAL PROCESSING FORM 
-export function renderManagerApprovalForm(requestId) { 
+export function renderManagerApprovalForm(requestId) {
     const form = document.createElement("form");
 
     form.id = "manager-approval-form";

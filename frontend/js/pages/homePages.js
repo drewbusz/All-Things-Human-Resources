@@ -189,7 +189,7 @@ export async function loadEmployeeHomePage() {
                     <p>
                         View your submitted requests,
                         check their status, and review
-                        request details.
+                        request details and history.
                     </p>
 
                     <span class="card-link">
@@ -197,6 +197,7 @@ export async function loadEmployeeHomePage() {
                     </span>
                 </div>
 
+                <!-- Employee History temporarily hidden pending team review.
                 <div class="home-page-card"
                     data-page="employee-history">
                     <h3>Employee History</h3>
@@ -209,6 +210,7 @@ export async function loadEmployeeHomePage() {
                         View Employee History →
                     </span>
                 </div>
+                -->
             </div>
         `;
 

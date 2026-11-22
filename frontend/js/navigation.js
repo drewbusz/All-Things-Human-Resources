@@ -20,10 +20,10 @@ const navigation = {
                 page: "employee-home",
                 label: "Employee Portal"
             },
-            {
+           /* {
                 page: "employee-history",
                 label: "Employee History"
-            },
+            }, */
             {
                 page: "my-requests",
                 label: "My Requests"

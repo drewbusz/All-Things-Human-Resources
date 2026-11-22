@@ -141,7 +141,7 @@ export function renderProcessRequestForm(
             <div class="form-actions" id="form-actions">
             <button type="button" id="back-button">Back</button>
                 <p class="feedback"></p>
-                <button type="submit">Save Changes</button>
+                <button type="submit" id="save-changes-button">Save Changes</button>
             </div>
         </div>
     `;
@@ -771,4 +771,118 @@ function renderNoteRows(requestNotes) {
 
         return row; 
     }); 
+}
+
+// SUBMIT NEW APPROVAL REQUEST FORM 
+export function renderApprovalRequestForm(
+    requestId
+) { 
+
+    const form = document.createElement("form"); 
+    form.id = "new-approval-form"; 
+
+    form.innerHTML = `
+    <div class="card">
+        <h3>Prepare Approval Request</h3>
+        <hr>
+
+        <input type="hidden" name="request_id" value="${requestId}">
+
+        <div class="form-group">
+            <label for="approval-summary">
+                Add a Request Summary
+            </label> 
+            <textarea 
+                id="approval-summary"
+                name="summary"
+                rows="4"
+                required></textarea>
+        </div>
+
+        <div class="feedback"></div>
+
+        <div id="form-actions">
+
+                <button
+                    type="submit"
+                    id="submit-approval-button"
+                >
+                    Submit for Approval
+                </button>
+
+            </div>
+    </div>
+    `; 
+
+    return form; 
+}
+
+// MANAGER APPROVAL PROCESSING FORM 
+export function renderManagerApprovalForm(requestId) { 
+    const form = document.createElement("form");
+
+    form.id = "manager-approval-form";
+
+    form.innerHTML = `
+        <div class="card">
+
+            <h3>Review Approval Request</h3>
+            <hr>
+
+            <input
+                type="hidden"
+                name="request_id"
+                value="${requestId}"
+            >
+
+            <div class="form-group">
+
+                <label for="manager-decision">
+                    Manager Decision
+                </label>
+
+                <select
+                    id="manager-decision"
+                    name="decision"
+                    required
+                >
+                    <option value="">Select a Decision</option>
+                    <option value="approved">Approve Request</option>
+                    <option value="denied">Deny Request</option>
+                </select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="manager-comments">
+                    Manager Comments
+                </label>
+
+                <textarea
+                    id="manager-comments"
+                    name="comments"
+                    rows="5"
+                    placeholder="Enter comments explaining your decision..."
+                ></textarea>
+
+            </div>
+
+            <div class="feedback" role="status"></div>
+
+            <div class="form-actions" id="form-actions">
+
+                <button
+                    type="submit"
+                    id="submit-manager-decision"
+                >
+                    Submit Decision
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    return form;
 }

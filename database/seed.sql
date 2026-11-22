@@ -126,7 +126,8 @@ VALUES
     (NULL, 'Human Resources'),
     (NULL, 'Information Technology'),
     (NULL, 'Finance'),
-    (NULL, 'Operations');
+    (NULL, 'Operations'), 
+    (NULL, 'Directors');
 
 
 -- ============================================================
@@ -241,6 +242,15 @@ VALUES
         'Finance Administrator',
         '2020-05-05 08:00:00',
         'eleanor.acosta@example.com'
+    ), 
+    (
+        NULL, 
+        5, 
+        'Martin', 
+        'Kapple', 
+        'Head of Staff',
+        '2009-03-05 08:00:00',
+        'martin.kapple@example.com'
     );
 
 
@@ -264,6 +274,10 @@ UPDATE department
 SET manager_id = 6
 WHERE department_id = 4;
 
+UPDATE DEPARTMENT
+SET manager_id = 12
+WHERE department_id = 5; 
+
 -- ============================================================
 -- ASSIGN MANAGER TO OPERATIONS ADMINS
 -- ============================================================
@@ -274,6 +288,22 @@ WHERE employee_id = 9;
 UPDATE employee
 SET manager_id = 8
 WHERE employee_id = 10; 
+
+UPDATE employee
+SET manager_id = 12
+WHERE employee_id = 1; 
+
+UPDATE employee
+SET manager_id = 12
+WHERE employee_id = 5; 
+
+UPDATE employee
+SET manager_id = 12
+WHERE employee_id = 7; 
+
+UPDATE employee
+SET manager_id = 12
+WHERE employee_id = 8; 
 
 
 -- ============================================================

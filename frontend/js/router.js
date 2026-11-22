@@ -24,6 +24,8 @@ import { loadAssignRequestPage } from "./pages/assignRequestPage.js";
 import { loadSubmitRequestPage } from "./pages/submitRequestPage.js";
 import { loadActiveRequests } from "./pages/activeRequestsPage.js"; 
 import { loadPendingRequests } from "./pages/pendingRequestPage.js"; 
+import { loadMyAssignedApprovals } from "./pages/myAssignedApprovalsPage.js"; 
+import { loadManagerApprovalPage } from "./pages/managerApprovalPage.js"; 
 
 // Display a consistent placeholder for unfinished pages.
 function showPagePlaceholder(title, description) {
@@ -247,14 +249,11 @@ export function loadPage(
             break;
 
         case "pending-approvals":
-            showPagePlaceholder(
-                "Pending Approval Requests",
-                "Review HR requests awaiting management approval."
-            );
+            loadMyAssignedApprovals(); 
             break;
 
         case "approval-request":
-            // Approval request details
+            loadManagerApprovalPage(requestId, confirmation); 
             break;
 
         case "my-team":

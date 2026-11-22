@@ -9,22 +9,30 @@
 //
 // Changes are saved through the existing PATCH request API.
 // ============================================================
-
+// API imports 
 import {
     getRequestById,
     saveRequestAssignment,
     getActiveRequestTypes, 
     getRequestHistory, 
-    getRequestNotesByRequestId
+    getRequestNotesByRequestId, 
+    getTypeFields, 
+    getRequestFields, 
+    saveRequestFields
 } from "../api/requestApi.js";
+
+import { getAssignableEmployees } from "../api/employeeApi.js";
+
+// Rendering Imports 
 import {
     renderAuthorizedRequestProcessingForm, 
     loadRequestHistory, 
     loadRequestNotes
 } from "../utils/requestRenderHelper.js"; 
-import { getAssignableEmployees } from "../api/employeeApi.js";
 import { formatDateForDisplay } from "../utils/dateHelper.js";
 import { formatFieldName } from "../utils/textFormatHelper.js"; 
+
+// Load Page
 import { loadPage } from "../router.js";
 
 
@@ -45,6 +53,13 @@ export async function loadAssignRequestPage(
                 getActiveRequestTypes(),
                 getRequestNotesByRequestId(requestId), 
                 getRequestHistory(requestId)
+            ]);
+
+        // Retrieve field definitions, saved values
+        const [typeFields, fieldValues] =
+            await Promise.all([
+                getTypeFields(request.request_type_id),
+                getRequestFields(requestId),
             ]);
 
         if (!request || typeof request !== "object") {
@@ -92,16 +107,18 @@ export async function loadAssignRequestPage(
 
             <hr>
             <div class="card-row-assign">
-
             <div class="info-item">
-                <span class="info-label">Request Summary</span>
-                <span class="info-value" id="assignment-summary"></span>
+                <span class="info-label">Current Status</span>
+                <span class="info-value" id="current-step-id"></span>
             </div>
             <div class="info-item">
                 <span class="info-label">Confidentiality Level</span>
                 <span class="info-value" id="request-confidentiality"></span>
             </div>
-            
+            <div class="info-item">
+                <span class="info-label">Request Summary</span>
+                <span class="info-value" id="assignment-summary"></span>
+            </div>
             </div>
         `;
 
@@ -131,6 +148,8 @@ export async function loadAssignRequestPage(
         staticCard.querySelector("#intake-source").textContent = 
             formatFieldName(request.intake_source ?? ""); 
 
+        staticCard.querySelector("#current-step-id").textContent = formatFieldName(request.status ?? ""); 
+
         staticCard.querySelector('#request-confidentiality').textContent = formatFieldName(request.confidentiality_level ?? ""); 
 
         // Render the authorized request processing form
@@ -138,7 +157,9 @@ export async function loadAssignRequestPage(
             renderAuthorizedRequestProcessingForm(
                 request, 
                 employees, 
-                activeRequestTypes
+                activeRequestTypes, 
+                typeFields, 
+                fieldValues
             ); 
 
         // request activity card
@@ -178,6 +199,10 @@ export async function loadAssignRequestPage(
             requestForm,
             historyCard
         );
+
+        // Store original request field values for comparison
+        const originalFieldValues =
+            collectRequestFieldValues(requestForm);
 
         const activityContent =
             historyCard.querySelector(
@@ -324,6 +349,17 @@ export async function loadAssignRequestPage(
                     expected_completion:
                         requestForm.querySelector("#assignment-completion").value
                 };
+                // Collect current request field values 
+                const currentFieldValues =
+                    collectRequestFieldValues(requestForm); 
+
+                // Determine whether request fields changed
+                const fieldValuesChanged =
+                    JSON.stringify(originalFieldValues) !==
+                    JSON.stringify(currentFieldValues);
+
+                // Track whether request fields were saved
+                let requestFieldsSaved = false;
 
                 try {
                     // Determine the destination page.
@@ -381,6 +417,14 @@ export async function loadAssignRequestPage(
                         message +=
                             `\nRequest type was successfully updated to ${selectedRequestType}.`;
                     }
+
+                    // Save request-specific field values if changed
+                    if (fieldValuesChanged) {
+                        await saveRequestFields(requestId, currentFieldValues);
+                        requestFieldsSaved = true;
+                    }
+
+                    
                     // Submit assignment and request type changes.
                     await saveRequestAssignment(requestId, updateData);
 
@@ -396,14 +440,16 @@ export async function loadAssignRequestPage(
                     loadPage(previousPage, null, confirmation);
 
                 } catch (error) {
+
                     console.error(error);
 
-                    message.textContent =
-                        error.message ||
-                        "Unable to save assignment.";
+                    message.textContent = requestFieldsSaved
+                        ? `Request fields were saved, but assignment changes failed: ${error.message}`
+                        : error.message || "Unable to save assignment.";
 
                     message.classList.remove("success");
                     message.classList.add("error");
+
                 } finally {
                     saveButton.disabled = false; 
                 }
@@ -423,4 +469,19 @@ export async function loadAssignRequestPage(
             error.message ||
             "Unable to load assignment page.";
     }
+}
+
+// ============================================================
+// COLLECT REQUEST FIELD VALUES
+// ============================================================
+
+function collectRequestFieldValues(form) {
+
+    return [
+        ...form.querySelectorAll("[data-field-id]")
+    ].map(field => ({
+        field_id: field.dataset.fieldId,
+        field_val: field.value
+    }));
+
 }

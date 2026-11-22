@@ -3,9 +3,10 @@
 import {
     getRequestById,
     getRequestApproval,
-    decideApproval
+    decideApproval, 
+    getTypeFields,
+    getRequestFields
 } from "../api/requestApi.js";
-
 
 // Navigation
 import {
@@ -47,9 +48,14 @@ export async function loadManagerApprovalPage(
             getRequestApproval(requestId)
         ]);
 
-        console.log("Request:", request);
-        console.log("Approval:", approval);
+        // Retrieve field definitions, saved values
+        const [typeFields, fieldValues] =
+            await Promise.all([
+                getTypeFields(request.request_type_id),
+                getRequestFields(requestId),
+            ]);
 
+        
 
         // --------------------------------
         // Static Request Information
@@ -126,7 +132,11 @@ export async function loadManagerApprovalPage(
         // --------------------------------
 
         const approvalForm =
-            renderManagerApprovalForm(requestId);
+            renderManagerApprovalForm(
+                requestId,
+                typeFields,
+                fieldValues
+            );
 
 
         // --------------------------------
@@ -189,11 +199,19 @@ export async function loadManagerApprovalPage(
                 // Submit manager decision
                 await decideApproval(requestId, decision);
 
+                // Retrieve the previous page
+                const previousPage = sessionStorage.getItem("requestReturnPage") || "manager-approvals"; 
+
+                // Prepare confrimation message
+                const confirmation = {
+                    requestId: requestId,
+                    message: `Manager decision submitted successfuly forr request ID: ${requestId}`
+                }; 
+
+                sessionStorage.removeItem("requestReturnPage"); 
+
                 // Reload page with confirmation
-                loadManagerApprovalPage(
-                    requestId,
-                    "Manager decision submitted successfully."
-                );
+                loadPage(previousPage, null, confirmation); 
 
             } catch (error) {
 

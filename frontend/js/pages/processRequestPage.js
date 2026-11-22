@@ -6,12 +6,15 @@ import {
     getRequestById,
     getWorkflowStepsByRequestType,
     getRequestHistory,
-    //getRequestFields,
+    getTypeFields, 
+    getRequestFields,
     getRequestNotesByRequestId,
-    //saveRequestFieldValues,
+    saveRequestFields, 
     updateRequest,
     saveRequestNote, 
-    prepareApproval
+    prepareApproval, 
+    getRequestApproval, 
+    reviewApproval
 } from "../api/requestApi.js";
 import {
     loadPage
@@ -21,7 +24,8 @@ import {
     renderProcessRequestForm,
     loadRequestHistory,
     loadRequestNotes, 
-    renderApprovalRequestForm
+    renderApprovalRequestForm, 
+    renderReviewApprovalForm
 } from "../utils/requestRenderHelper.js";
 
 // import date formatting helpers
@@ -42,14 +46,20 @@ export async function loadProcessRequestPage(requestId, confirmation = null) {
     try {
         // Retrieve the request and requestHistory together 
         // update this to include request note and request field API calls once implemented on the backend 
-        const [request, requestHistory, requestNotes] = await Promise.all([
-            getRequestById(requestId),
-            getRequestHistory(requestId), 
-            getRequestNotesByRequestId(requestId), 
-            
-        ]);
+        const [request, requestHistory, requestNotes] =
+            await Promise.all([
+                getRequestById(requestId),
+                getRequestHistory(requestId),
+                getRequestNotesByRequestId(requestId)
+            ]);
 
-        const workflowSteps = await getWorkflowStepsByRequestType(request.request_type_id); 
+        // Retrieve field definitions, saved values, and workflow steps
+        const [typeFields, fieldValues, workflowSteps] =
+            await Promise.all([
+                getTypeFields(request.request_type_id),
+                getRequestFields(requestId),
+                getWorkflowStepsByRequestType(request.request_type_id)
+            ]);
 
         // Determine current workflow status
         const currentStep = workflowSteps.find(
@@ -58,11 +68,6 @@ export async function loadProcessRequestPage(requestId, confirmation = null) {
 
         const currentStatus = currentStep?.step_name;
 
-        console.log("Current request status:", currentStatus);
-
-        console.log("Request retrieved: ", request);
-
-        
         // -----------------------------------------------
         // Render Process Request Form
         //------------------------------------------------
@@ -125,8 +130,9 @@ export async function loadProcessRequestPage(requestId, confirmation = null) {
         const requestForm =
             renderProcessRequestForm(
                 request,
-                workflowSteps
-                // requestFields
+                workflowSteps,
+                typeFields, 
+                fieldValues
             );
 
         // request activity card
@@ -217,24 +223,64 @@ export async function loadProcessRequestPage(requestId, confirmation = null) {
             switch (currentStatus?.trim().toLowerCase()) {
                 case "review approval":
                     approvalNotification.textContent =
-                        "Review manager decision.";
+                        "Manager decision received. HR review is required.";
 
                     const reviewApprovalButton =
                         document.createElement("button");
 
                     reviewApprovalButton.type = "button";
                     reviewApprovalButton.classList.add("review-approval-button");
-                    reviewApprovalButton.textContent = "Review Manager Decision";
+                    reviewApprovalButton.textContent =
+                        "Review Manager Decision";
 
                     formActions?.appendChild(reviewApprovalButton);
 
-                    reviewApprovalButton.addEventListener("click", () => {
+                    reviewApprovalButton.addEventListener("click", async () => {
 
-                        const reviewForm =
-                            renderReviewApprovalForm(requestId);
+                        reviewApprovalButton.disabled = true;
 
-                        requestForm.replaceWith(reviewForm);
+                        try {
+
+                            // Retrieve manager approval information
+                            const approval =
+                                await getRequestApproval(requestId);
+
+                            // Render HR review form
+                            const reviewForm =
+                                renderReviewApprovalForm(
+                                    requestId,
+                                    approval
+                                );
+
+                            // Handle confirmation submission
+                            handleReviewApprovalSubmission(
+                                reviewForm,
+                                requestId
+                            );
+
+                            // Return to the processing form if Back is selected
+                            reviewForm.querySelector("#back-button")
+                                .addEventListener("click", () => {
+                                    reviewForm.replaceWith(requestForm);
+                                });
+
+                            // Replace processing form with review form
+                            requestForm.replaceWith(reviewForm);
+
+                        } catch (error) {
+
+                            console.error(error);
+
+                            approvalNotification.textContent =
+                                error.message ||
+                                "Unable to retrieve manager approval information.";
+
+                        } finally {
+
+                            reviewApprovalButton.disabled = false;
+                        }
                     });
+
                     break;
                 case "manager approval":
                     approvalNotification.textContent =
@@ -243,6 +289,8 @@ export async function loadProcessRequestPage(requestId, confirmation = null) {
                 case "hr processing":
                     approvalNotification.textContent =
                         "Management approval required for this request.";
+
+                    const managerName = request.manager_name; 
 
                     const prepareApprovalButton =
                         document.createElement("button");
@@ -256,7 +304,7 @@ export async function loadProcessRequestPage(requestId, confirmation = null) {
                     prepareApprovalButton.addEventListener("click", () => {
 
                         const approvalForm =
-                            renderApprovalRequestForm(requestId);
+                            renderApprovalRequestForm(requestId, managerName);
 
                         handleApprovalSubmission(approvalForm, requestId);
 
@@ -329,19 +377,15 @@ export async function loadProcessRequestPage(requestId, confirmation = null) {
             try {
                 if (tab.dataset.tab === "history") {
                     
-                    const latestHistory = await getRequestHistory(
-                        requestId,
-                        actingEmployeeId
-                    );
+                    const latestHistory =
+                        await getRequestHistory(requestId);
 
                     loadRequestHistory(activityContent, latestHistory);
                 } else if (tab.dataset.tab === "notes") {
 
 
-                    const requestNotes = await getRequestNotesByRequestId(
-                        requestId,
-                        actingEmployeeId
-                    );
+                    const requestNotes =
+                        await getRequestNotesByRequestId(requestId);
 
                     loadRequestNotes(activityContent, requestNotes);
                 }
@@ -389,11 +433,15 @@ export async function loadProcessRequestPage(requestId, confirmation = null) {
         }
 
         // Store the original form values for comparison.
-        const originalFormData = new FormData(form);
+        const originalFormData = [...new FormData(form).entries()]; 
+
+        // Store original request specific field values 
+        const originalFieldValues = collectRequestFieldValues(form); 
 
         // Store the submit button 
         const submitButton =
-            form.querySelector('[type="submit"]');
+            form.querySelector("#save-changes-button");
+
 
         submitButton.addEventListener("click", async event => {
 
@@ -401,12 +449,25 @@ export async function loadProcessRequestPage(requestId, confirmation = null) {
 
             const message = form.querySelector(".feedback");
 
-            // Compare original and current form values.
-            const currentFormData = new FormData(form);
+            // Collect current form values 
+            const currentFormData = [...new FormData(form).entries()]; 
 
-            const hasChanges =
-                JSON.stringify([...originalFormData.entries()]) !==
-                JSON.stringify([...currentFormData.entries()]);
+            // Colelct current field values 
+            const currentFieldValues = collectRequestFieldValues(form); 
+
+            // Check if values changes
+            const requestDataChanged =
+                JSON.stringify(originalFormData) !==
+                JSON.stringify(currentFormData); 
+
+            const fieldValuesChanged = 
+                JSON.stringify(originalFieldValues) !== 
+                JSON.stringify(currentFieldValues); 
+
+            const hasChanges = 
+                requestDataChanged || fieldValuesChanged; 
+
+            
 
             // Do not submit if no changes were made.
             if (!hasChanges) {
@@ -425,7 +486,9 @@ export async function loadProcessRequestPage(requestId, confirmation = null) {
             try {
                 await submitRequestUpdates(
                     form,
-                    requestId,
+                    requestId, 
+                    fieldValuesChanged, 
+                    requestDataChanged
                 );
 
                     // Refresh request history after successful submission 
@@ -525,7 +588,20 @@ export async function loadProcessRequestPage(requestId, confirmation = null) {
             error.message || "Unable to load request information.";
     }
 }
+// ============================================================
+// COLLECT REQUEST FIELD VALUES
+// ============================================================
 
+function collectRequestFieldValues(form) {
+
+    return [
+        ...form.querySelectorAll("[data-field-id]")
+    ].map(field => ({
+        field_id: field.dataset.fieldId,
+        field_val: field.value
+    }));
+
+}
 
 // ==============================
 // Submit Request Updates
@@ -533,60 +609,51 @@ export async function loadProcessRequestPage(requestId, confirmation = null) {
 
 async function submitRequestUpdates(
     form,
-    requestId
+    requestId, 
+    fieldValuesChanged, 
+    requestDataChanged
 ) {
 
-    // const fieldValues = [
-    //     ...requestForm.querySelectorAll(
-    //         "[data-field-id]"
-    //     )
-    // ].map(field => ({
-    //     field_id: field.dataset.fieldId,
-    //     field_val: field.value
-    // }));
+    // If the request field values changed
+    if (fieldValuesChanged) { 
+        // Collect the new field values
+        const fieldValues =
+            collectRequestFieldValues(form); 
 
-    // Read the form values 
-    const requestData = {
-        brief_summary:
-            form.querySelector(
-                '[name="brief_summary"]'
-            )?.value,
+        // Pass the updated fields to the backend 
+        await saveRequestFields(requestId, fieldValues); 
+    }
 
-        priority_level:
-            form.querySelector(
-                '[name="priority_level"]'
-            )?.value,
 
-        expected_completion:
-            form.querySelector(
-                '[name="expected_completion"]'
-            )?.value,
+    if (requestDataChanged) { 
+        // Read the form values 
+        const requestData = {
+            brief_summary:
+                form.querySelector('[name="brief_summary"]')?.value,
 
-        current_step_id:
-            form.querySelector(
-                '[name="current_step_id"]'
-            )?.value
-    };
+            priority_level:
+                form.querySelector('[name="priority_level"]')?.value,
 
-    console.log(
-        "Submitting request:",
-        requestId,
-        requestData
-    );
+            expected_completion:
+                form.querySelector('[name="expected_completion"]')?.value,
 
-    const updatedRequest =
-        await updateRequest(
+            current_step_id:
+                form.querySelector('[name="current_step_id"]')?.value
+        };
+
+        
+
+        console.log(
+            "Submitting request:",
             requestId,
             requestData
         );
 
-    // await saveRequestFieldValues(
-    //     requestId,
-    //      fieldValues,
-    //     actingEmployeeId
-    // );
+        return await updateRequest(requestId, requestData);
+    }
 
-    return updatedRequest;
+
+    return null;
 }
 
 // ============================================================
@@ -644,6 +711,65 @@ function handleApprovalSubmission(form, requestId) {
             message.textContent =
                 error.message ||
                 "Unable to prepare approval request.";
+
+            message.classList.remove("success");
+            message.classList.add("error");
+
+        } finally {
+
+            submitButton.disabled = false;
+        }
+    });
+}
+
+// ============================================================
+// SUBMIT HR APPROVAL REVIEW
+// ============================================================
+
+function handleReviewApprovalSubmission(form, requestId) {
+
+    form.addEventListener("submit", async event => {
+
+        event.preventDefault();
+
+        const message =
+            form.querySelector(".feedback");
+
+        const submitButton =
+            form.querySelector("#confirm-approval-review");
+
+        submitButton.disabled = true;
+
+        message.textContent = "Submitting approval review...";
+        message.classList.remove("success", "error");
+
+        try {
+
+            // Submit HR review to backend
+            await reviewApproval(requestId);
+
+            // Prepare confirmation
+            const confirmation = {
+                requestId: requestId,
+                message:
+                    `Manager's decision reviewed successfully for Request #${requestId}.`
+            };
+
+            // Reload processing page with updated workflow status
+            loadPage(
+                "process-request",
+                requestId,
+                null,
+                confirmation
+            );
+
+        } catch (error) {
+
+            console.error("Approval review failed:", error);
+
+            message.textContent =
+                error.message ||
+                "Unable to complete approval review.";
 
             message.classList.remove("success");
             message.classList.add("error");

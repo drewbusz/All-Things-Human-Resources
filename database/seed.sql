@@ -25,7 +25,7 @@ VALUES
         'Benefits Inquiry',
         TRUE,
         'Request for information or assistance related to employee benefits.',
-        FALSE
+        TRUE
     ),
     (
         'Payroll Correction',
@@ -258,52 +258,64 @@ VALUES
 -- ASSIGN DEPARTMENT MANAGERS
 -- ============================================================
 
+-- Human Resources
 UPDATE department
 SET manager_id = 1
 WHERE department_id = 1;
 
-UPDATE department
-SET manager_id = 3
-WHERE department_id = 2;
-
+-- Information Technology
 UPDATE department
 SET manager_id = 5
+WHERE department_id = 2;
+
+-- Finance
+UPDATE department
+SET manager_id = 7
 WHERE department_id = 3;
 
+-- Operations
 UPDATE department
-SET manager_id = 6
+SET manager_id = 8
 WHERE department_id = 4;
 
-UPDATE DEPARTMENT
+-- Directors
+UPDATE department
 SET manager_id = 12
-WHERE department_id = 5; 
+WHERE department_id = 5;
 
 -- ============================================================
--- ASSIGN MANAGER TO OPERATIONS ADMINS
+-- ASSIGN EMPLOYEE MANAGERS
 -- ============================================================
+
+-- HR Specialists report to Morgan Taylor
+UPDATE employee
+SET manager_id = 1
+WHERE employee_id IN (2, 3, 4);
+
+-- Systems Analyst reports to Jordan Smith
+UPDATE employee
+SET manager_id = 5
+WHERE employee_id = 6;
+
+-- Finance Administrator reports to Riley Davis
+UPDATE employee
+SET manager_id = 7
+WHERE employee_id = 11;
+
+-- Operations Administrators report to Cameron Brown
 UPDATE employee
 SET manager_id = 8
-WHERE employee_id = 9; 
+WHERE employee_id IN (9, 10);
 
-UPDATE employee
-SET manager_id = 8
-WHERE employee_id = 10; 
-
+-- Department Managers report to Martin Kapple
 UPDATE employee
 SET manager_id = 12
-WHERE employee_id = 1; 
+WHERE employee_id IN (1, 5, 7, 8);
 
+-- Head of Staff has no manager
 UPDATE employee
-SET manager_id = 12
-WHERE employee_id = 5; 
-
-UPDATE employee
-SET manager_id = 12
-WHERE employee_id = 7; 
-
-UPDATE employee
-SET manager_id = 12
-WHERE employee_id = 8; 
+SET manager_id = NULL
+WHERE employee_id = 12;
 
 
 -- ============================================================
@@ -355,8 +367,15 @@ VALUES
     ),
     (
         2,
-        'Complete',
+        'Review Approval',
         3,
+        TRUE,
+        'review_approval'
+    ),
+    (
+        2,
+        'Complete',
+        4,
         TRUE,
         'complete'
     ),
@@ -376,8 +395,15 @@ VALUES
     ),
     (
 	    3, 
-	    'Complete',
+	    'Review Approval',
 	    3, 
+	    TRUE, 
+	    'review_approval'
+    ),
+    (
+	    3, 
+	    'Complete',
+	    4, 
 	    TRUE, 
 	    'complete'
     ),
@@ -397,15 +423,22 @@ VALUES
     ),
     (
 	    4, 
-	    'Quality Control', 
+	    'Review Approval',
 	    3, 
+	    TRUE, 
+	    'review_approval'
+    ),
+    (
+	    4, 
+	    'Quality Control', 
+	    4, 
 	    TRUE, 
 	    'qc'
     ),
     (
 	    4, 
 	    'Complete', 
-	    4, 
+	    5, 
 	    TRUE, 
 	    'complete'
     ),
@@ -431,16 +464,30 @@ VALUES
         'hr_process'
     ),
     (
+        6,
+        'Manager Approval',
+        2,
+        TRUE,
+        'approval'
+    ),
+    (
+        6,
+        'Review Approval',
+        3,
+        TRUE,
+        'review_approval'
+    ),
+    (
 	    6, 
 	    'Quality Control', 
-	    2, 
+	    4, 
 	    TRUE, 
 	    'qc'
     ),
     (
 	    6, 
 	    'Complete', 
-	    3, 
+	    5, 
 	    TRUE, 
 	    'complete'
     );
@@ -649,6 +696,7 @@ INSERT INTO request (
 )
 VALUES
     -- Assigned requests
+
     -- Request 1
     (
         1,
@@ -661,18 +709,20 @@ VALUES
         'Nonconfidential',
         'self_service'
     ),
+
     -- Request 2
     (
         2,
         6,
         1,
-        5,
+        4,
         'high',
         '2026-10-05',
         'Employee submitted a leave request requiring manager approval.',
         'Confidential',
         'email_service'
     ),
+
     -- Request 3
     (
         1,
@@ -685,18 +735,20 @@ VALUES
         'Nonconfidential',
         'self_service'
     ),
+
     -- Request 4
     (
         2,
         8,
         2,
-        5,
+        4,
         'medium',
         '2026-10-14',
         'Employee submitted a request for scheduled medical leave.',
         'Confidential',
         'self_service'
     ),
+
     -- Request 5
     (
         1,
@@ -709,18 +761,20 @@ VALUES
         'Nonconfidential',
         'email_service'
     ),
+
     -- Request 6
     (
         2,
         10,
         2,
-        5,
+        4,
         'medium',
         '2026-10-18',
         'Employee requested review of available family leave options.',
         'Confidential',
         'email_service'
     ),
+
     -- Request 7
     (
         1,
@@ -735,61 +789,66 @@ VALUES
     ),
 
     -- Unassigned requests
+
     -- Request 8
     (
         2,
         6,
         NULL,
         4,
-        NULL, 
+        NULL,
         NULL,
         'Employee submitted an urgent leave request that requires HR review.',
         'Highly Confidential',
         'email_service'
     ),
+
     -- Request 9
     (
         1,
         7,
         NULL,
         1,
-        NULL, 
+        NULL,
         NULL,
         'Employee requested a correction to their supervisor information.',
         'Highly Confidential',
         'self_service'
     ),
+
     -- Request 10
     (
         2,
         8,
         NULL,
         4,
-        NULL, 
+        NULL,
         NULL,
         'Employee requested information about available personal leave.',
         'Confidential',
         'self_service'
     ),
+
     -- Request 11
     (
         1,
         9,
         NULL,
         1,
-        NULL, 
+        NULL,
         NULL,
         'Employee reported an incorrect work phone number in their profile.',
         'Nonconfidential',
         'email_service'
     ),
+
     -- Request 12
     (
         2,
         10,
         NULL,
         4,
-        NULL, 
+        NULL,
         NULL,
         'Employee submitted a time-sensitive leave request for HR processing.',
         'Highly Confidential',
@@ -797,48 +856,52 @@ VALUES
     ),
 
     -- Additional request types
+
     -- Request 13
     (
         3,
         5,
         NULL,
-        7,
-        NULL, 
+        8,
+        NULL,
         NULL,
         'Employee requested information about available dental and vision benefits.',
         'Nonconfidential',
         'self_service'
     ),
+
     -- Request 14
     (
         4,
         6,
         2,
-        10,
+        12,
         'high',
         '2026-10-19',
         'Employee reported an incorrect overtime amount on their most recent paycheck.',
         'Confidential',
         'email_service'
     ),
+
     -- Request 15
     (
         5,
         9,
         NULL,
-        14,
-        NULL, 
+        17,
+        NULL,
         NULL,
         'Employee requested an employment verification letter for a housing application.',
         'Nonconfidential',
         'self_service'
     ),
+
     -- Request 16
     (
         6,
         10,
         1,
-        16,
+        19,
         'medium',
         '2026-10-23',
         'Employee requested an adjusted work schedule as a workplace accommodation.',
@@ -857,32 +920,80 @@ INSERT INTO request_field_value (
     field_val
 )
 VALUES
-    (
-        1,
-        1,
-        'Job title'
-    ),
-    (
-        2,
-        1,
-        'Senior Systems Analyst'
-    ),
-    (
-        3,
-        2,
-        '2026-10-15'
-    ),
-    (
-        4,
-        2,
-        '2026-10-20'
-    ),
-    (
-        5,
-        2,
-        'Personal leave'
-    );
+    -- Request 1
+    (1, 1, 'Job title'),
+    (2, 1, 'Senior Systems Analyst'),
+    -- Request 2
+    (3, 2, '2026-10-15'),
+    (4, 2, '2026-10-20'),
+    (5, 2,'Personal leave'),
+    -- Request 3 
+    (1, 3, 'Preferred First Name'),
+    (2, 3, 'Rye'),
 
+    -- Request 5: Department Assignment Correction
+    (1, 5, 'Department assignment'),
+    (2, 5, 'Human Resources'),
+
+    -- Request 7: Office Location Change
+    (1, 7, 'Office location'),
+    (2, 7, 'Louisville Office'),
+
+    -- Request 9: Supervisor Information Correction
+    (1, 9, 'Supervisor information'),
+    (2, 9, 'Michael Thompson'),
+
+    -- Request 11: Work Phone Number Correction
+    (1, 11, 'Work phone number'),
+    (2, 11, '(502) 555-0148'),
+    
+    -- Request 4: Scheduled Medical Leave
+    (3, 4, '2026-10-26'),
+    (4, 4, '2026-10-30'),
+    (5, 4, 'Medical leave for a scheduled procedure.'),
+
+    -- Request 6: Family Leave Options
+    (3, 6, '2026-11-02'),
+    (4, 6, '2026-11-06'),
+    (5, 6, 'Request for information about available family leave options.'),
+
+    -- Request 8: Urgent Leave Request
+    (3, 8, '2026-10-19'),
+    (4, 8, '2026-10-23'),
+    (5, 8, 'Urgent personal leave request requiring expedited review.'),
+
+    -- Request 10: Personal Leave Information
+    (3, 10, '2026-11-10'),
+    (4, 10, '2026-11-12'),
+    (5, 10, 'Request for information about available personal leave.'),
+
+    -- Request 12: Time-Sensitive Leave Request
+    (3, 12, '2026-10-27'),
+    (4, 12, '2026-10-30'),
+    (5, 12, 'Time-sensitive leave request requiring HR processing.'),
+    
+     -- Request 13: Dental and Vision Benefits
+    (6, 13, 'Dental and Vision'),
+    (7, 13, 'What dental and vision coverage options are available to employees?'),
+    (8, 13, '2027-01-01'),
+
+     -- Request 14: Overtime Payment Correction
+    (9, 14, 'October 1-15, 2026'),
+    (10, 14, 'Incorrect overtime amount reported on paycheck.'),
+    (11, 14, '$450.00'),
+    (12, 14, '$300.00'),
+
+    -- Request 15: Housing Application Verification
+    (13, 15, 'Housing application'),
+    (14, 15, 'ABC Property Management'),
+    (15, 15, 'Employment status, job title, and annual salary.'),
+    (16, 15, '2026-10-30'),
+
+     -- Request 16: Adjusted Work Schedule
+    (17, 16, 'Adjusted work schedule with flexible start and end times.'),
+    (18, 16, 'Request to accommodate an ongoing personal scheduling need.'),
+    (19, 16, '2026-10-26'),
+    (20, 16, '2027-01-26');
 
 -- ============================================================
 -- REQUEST NOTES
@@ -904,28 +1015,6 @@ VALUES
         1,
         'Leave request forwarded for manager approval.'
     );
-
-
--- ============================================================
--- APPROVAL
--- ============================================================
-
-INSERT INTO approval (
-    request_id,
-    approving_emp_id,
-    summary,
-    decision_date,
-    decision
-)
-VALUES
-    (
-        2,
-        1,
-        'Leave request reviewed and approved by the HR manager.',
-        CURRENT_TIMESTAMP,
-        'approved'
-    );
-
 
 -- ============================================================
 -- EMPLOYEE HISTORY
@@ -1072,6 +1161,54 @@ VALUES
         8,
         1,
         'Operations Manager requires view access to requests submitted by employees in the Operations department.'
+    ),
+
+    -- ========================================================
+    -- DEPARTMENT MANAGER APPROVAL AUTHORIZATIONS
+    -- ========================================================
+
+    -- Morgan Taylor - HR Manager
+    (
+        4,
+        1,
+        1,
+        'HR Manager requires authorization to approve employee requests.'
+    ),
+
+    -- Jordan Smith - IT Manager
+    (
+        4,
+        5,
+        1,
+        'IT Manager requires authorization to approve employee requests.'
+    ),
+
+    -- Riley Davis - Finance Manager
+    (
+        4,
+        7,
+        1,
+        'Finance Manager requires authorization to approve employee requests.'
+    ),
+
+    -- Cameron Brown - Operations Manager
+    (
+        4,
+        8,
+        1,
+        'Operations Manager requires authorization to approve employee requests.'
+    ),
+
+    -- ========================================================
+    -- ADDITIONAL EMPLOYEE SELF-SERVICE AUTHORIZATION
+    -- ========================================================
+
+    -- Eleanor Acosta - Finance Administrator
+    (
+        1,
+        11,
+        1,
+        'Finance Administrator requires access to view their own submitted requests.'
     );
 
 -- ============================================================
@@ -1577,4 +1714,5 @@ INSERT INTO request_history (
     "pending",
     "verified",
     "updated"
-);
+); 
+

@@ -15,7 +15,10 @@ import {
     reviewIntakeRequest,
     getActiveRequestTypes, 
     getRequestHistory, 
-    getRequestNotesByRequestId
+    getRequestNotesByRequestId, 
+    getRequestFields, 
+    getTypeFields, 
+    saveRequestFields
 } from "../api/requestApi.js";
 import {
     renderRequestIntakeForm,
@@ -29,8 +32,7 @@ import { loadPage } from "../router.js";
 
 
 export async function loadIntakeRequestPage(
-    requestId,
-    actingEmployeeId
+    requestId
 ) {
     const contentArea = document.getElementById("contentArea");
 
@@ -44,6 +46,12 @@ export async function loadIntakeRequestPage(
                 getRequestHistory(requestId), 
                 getRequestNotesByRequestId(requestId)
             ]);
+
+        const [typeFields, fieldValues] = 
+            await Promise.all([
+                getTypeFields(request.request_type_id), 
+                getRequestFields(requestId)
+            ]); 
 
         if (!request || typeof request !== "object") {
             throw new Error("Unable to retrieve the selected request.");
@@ -114,8 +122,15 @@ export async function loadIntakeRequestPage(
         const requestForm =
             renderRequestIntakeForm(
                 request,
-                activeRequestTypes
+                activeRequestTypes, 
+                typeFields,
+                fieldValues
             );
+
+        // Store original request field values for comparison
+        const originalFieldValues =
+            collectRequestFieldValues(requestForm);
+
 
         // Render Activity Card
         const historyCard =
@@ -261,8 +276,19 @@ export async function loadIntakeRequestPage(
         requestForm.addEventListener("submit", async (event) => { 
             event.preventDefault(); 
 
-        const message =
-            requestForm.querySelector("#intake-message");
+        const message = requestForm.querySelector("#intake-message");
+
+        // Collect current request field values
+        const currentFieldValues =
+            collectRequestFieldValues(requestForm);
+
+        // Determine whether request fields changed
+        const fieldValuesChanged =
+            JSON.stringify(originalFieldValues) !==
+            JSON.stringify(currentFieldValues);
+
+        // Track whether request fields were saved
+        let requestFieldsSaved = false;
 
         // Identify which submit button was selected 
         const selectedAction = event.submitter?.id; 
@@ -283,6 +309,12 @@ export async function loadIntakeRequestPage(
             const updateData = Object.fromEntries(
                 formData.entries() 
             ); 
+
+            if (fieldValuesChanged) { 
+                await saveRequestFields(requestId, currentFieldValues); 
+
+                requestFieldsSaved = true; 
+            }
 
             // Submit intake review through the backend API 
             await reviewIntakeRequest( 
@@ -318,12 +350,13 @@ export async function loadIntakeRequestPage(
         } catch (error) {
             console.error(error);
 
-            message.textContent =
-                error.message ||
-                "Unable to save request review.";
+            message.textContent = requestFieldsSaved
+                ? `Request fields were saved, but intake review failed: ${error.message}`
+                : error.message || "Unable to save request review.";
 
             message.classList.remove("success");
             message.classList.add("error");
+
         } finally {
             saveButtons.forEach(button => button.disabled = false);
         }
@@ -343,4 +376,19 @@ export async function loadIntakeRequestPage(
             error.message ||
             "Unable to load intake review page.";
     }
+}
+
+// ============================================================
+// COLLECT REQUEST FIELD VALUES
+// ============================================================
+
+function collectRequestFieldValues(form) {
+
+    return [
+        ...form.querySelectorAll("[data-field-id]")
+    ].map(field => ({
+        field_id: field.dataset.fieldId,
+        field_val: field.value
+    }));
+
 }

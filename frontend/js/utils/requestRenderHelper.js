@@ -14,10 +14,14 @@ import {
 export function renderProcessRequestForm(
     request,
     workflowSteps,
-    //requestFields
+    typeFields, 
+    fieldValues
 ) {
 
-    // const fieldRows = renderFieldRows(requestFields);
+    const fieldRows = renderFieldRows(
+        typeFields,
+        fieldValues
+    );
 
     const statusOptions = renderStatusOptions(
         workflowSteps,
@@ -30,114 +34,43 @@ export function renderProcessRequestForm(
     requestForm.innerHTML = `
         <div class="card">
 
-            <h3>
-                HR Request Processing | Request ID: ${request.request_id} | Current Owner: ${formatFieldName(request.assigned_to)}
-            </h3>
-
+            <h3 id="process-request-heading"></h3>
             <hr>
-
             <div id="request-fields">
-               
             </div>
-
             <hr>
 
             <div class="process-form-layout">
-
-                <div class="form-column">
-
-                    <div class="form-field">
-                        <label for="expected-completion">
-                            Expected Completion
-                        </label>
-
-                        <input
-                            type="date"
-                            id="expected-completion"
-                            name="expected_completion"
-                            value="${formatDateForInput(request.expected_completion)}"
-                        >
-                    </div>
-
-
-                    <div class="form-field">
-                        <label for="current-step-id">
-                            Current Status
-                        </label>
-
-                        <select
-                            id="current-step-id"
-                            name="current_step_id"
-                            required
-                        >
-                            ${statusOptions}
-                        </select>
-                    </div>
-
-
-                    <div class="form-field">
-                        <label for="request-priority">
-                            Priority Level
-                        </label>
-
-                        <select
-                            id="request-priority"
-                            name="priority_level"
-                        >
-                            <option
-                                value=""
-                                ${!request.priority_level
-            ? "selected"
-            : ""}
-                            >
-                            </option>
-
-                            <option
-                                value="low"
-                                ${request.priority_level === "low"
-            ? "selected"
-            : ""}
-                            >
-                                Low
-                            </option>
-
-                            <option
-                                value="medium"
-                                ${request.priority_level === "medium"
-            ? "selected"
-            : ""}
-                            >
-                                Medium
-                            </option>
-
-                            <option
-                                value="high"
-                                ${request.priority_level === "high"
-            ? "selected"
-            : ""}
-                            >
-                                High
-                            </option>
-                        </select>
-                    </div>
-                </div>
-
-
-                <div class="form-column">
-
-                    <div class="form-field summary-field">
-
-                        <label for="request-summary">
-                            Summary
-                        </label>
-
-                        <textarea
-                            id="request-summary"
-                            name="brief_summary"
-                        ></textarea>
-                    </div>
-                </div>
+            <!-- Row 1: Three columns -->
+            <div class="form-field">
+                <label for="expected-completion">Expected Completion</label>
+                <input type="date" id="expected-completion" name="expected_completion">
             </div>
+
+            <div class="form-field">
+                <label for="current-step-id">Current Status</label>
+                <select id="current-step-id" name="current_step_id" required></select>
+            </div>
+
+            <div class="form-field">
+                <label for="request-priority">Priority Level</label>
+
+                <select id="request-priority" name="priority_level">
+                    <option value=""></option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+
+            <!-- Row 2: Full-width summary -->
+
+            <div class="form-field summary-field">
+                <label for="request-summary">Summary</label>
+                <textarea id="request-summary" name="brief_summary"></textarea>
+            </div>
+
+        </div>
             <div class="form-actions" id="form-actions">
             <button type="button" id="back-button">Back</button>
                 <p class="feedback"></p>
@@ -145,12 +78,33 @@ export function renderProcessRequestForm(
             </div>
         </div>
     `;
-    // Safely populate the request summary as text 
-    const summaryInput =
-        requestForm.querySelector("#request-summary");
 
-    summaryInput.value =
-        request.brief_summary ?? "";
+    // ---------------------------------------
+    // Safely populate the request information 
+    // ---------------------------------------
+    // Request Heading 
+    requestForm.querySelector("#process-request-heading").textContent = `HR Request Processing | Request ID: ${request.request_id} | Current Owner: ${formatFieldName(request.assigned_to)}`; 
+
+    // Expected completion date
+    requestForm.querySelector("#expected-completion").value = formatDateForInput(request.expected_completion); 
+
+    // Request Summary 
+    requestForm.querySelector("#request-summary").value = request.brief_summary ?? "";
+
+    // Priority Level 
+    requestForm.querySelector("#request-priority").value = request.priority_level ?? ""; 
+
+    // Status Options
+    const statusSelect = requestForm.querySelector("#current-step-id"); 
+
+    statusSelect.innerHTML = statusOptions; 
+
+    // Append dynamically rendered request fields 
+    const requestFieldsContainer = requestForm.querySelector("#request-fields"); 
+
+    fieldRows.forEach(row => {
+        requestFieldsContainer.appendChild(row);
+    }); 
 
     return requestForm;
 }
@@ -159,14 +113,18 @@ export function renderProcessRequestForm(
 export function renderAuthorizedRequestProcessingForm(
     request,
     employeeOptions,
-    activeRequestTypes
+    activeRequestTypes, 
+    typeFields,
+    fieldValues
 ) {
+    // Render request specific fields 
+    const fieldRows = renderFieldRows(typeFields, fieldValues); 
 
     const requestForm = document.createElement("form");
     requestForm.id = "assignment-form";
 
     requestForm.innerHTML = `
-        <div class="card">
+        <div class="card authorized-processing-card">
             <h3>Request Fields</h3>
             <div id="request-fields"></div>
 
@@ -212,10 +170,18 @@ export function renderAuthorizedRequestProcessingForm(
                     Back
                 </button>
                 <p id="assignment-message" class="feedback" role="status"></p>
-                <button type="submit">Save Assignment</button>
+                <button type="submit">Save Changes</button>
             </div>
         </div>
     `;
+
+    // Populate field rows 
+    const requestFieldsContainer = requestForm.querySelector("#request-fields"); 
+
+    fieldRows.forEach(row => {
+        requestFieldsContainer.appendChild(row);
+    }); 
+
     // Populate assignable employees
     const employeeSelect =
         requestForm.querySelector("#assigned-employee");
@@ -303,13 +269,19 @@ export function renderAuthorizedRequestProcessingForm(
 // REQUEST INTAKE FORM 
 export function renderRequestIntakeForm(
     request,
-    activeRequestTypes
+    activeRequestTypes, 
+    typeFields,
+    fieldValues
 ) {
+
+    // Render request specific fields 
+    const fieldRows = renderFieldRows(typeFields, fieldValues); 
+
     const requestForm = document.createElement("form");
     requestForm.id = "intake-form";
 
     requestForm.innerHTML = `
-        <div class="card">
+        <div class="card authorized-processing-card">
         <h3>Request Fields</h3>
             <div id="request-fields"></div>
             <hr>
@@ -343,6 +315,13 @@ export function renderRequestIntakeForm(
     // Populate active request types
     const requestTypeSelect =
         requestForm.querySelector("#request-type");
+
+    // Populate request fields
+    const requestFieldsContainer = requestForm.querySelector("#request-fields"); 
+
+    fieldRows.forEach(row => { 
+        requestFieldsContainer.appendChild(row); 
+    })
 
     if (activeRequestTypes.length === 0) {
         const option = document.createElement("option");
@@ -548,103 +527,121 @@ export function renderRequestRows(requests) {
 
 }
 
-// FIELD ROWS
-function renderFieldRows(requestFields) {
+// RENDER FIELD ROWS
 
-    const fieldRows =
-        requestFields.map(field => {
+function renderFieldRows(requestFields, fieldValues = []) {
 
-            const required =
-                field.is_required
-                    ? "required"
-                    : "";
+    // Match saved values to their field definitions
+    const savedValues = new Map(
+        fieldValues.map(field => [
+            String(field.field_id),
+            field.field_val ?? field.field_value ?? ""
+        ])
+    );
 
-            const value =
-                field.field_val ?? "";
+    return requestFields.map(field => {
 
-            let fieldInput;
+        const fieldId = `field-${field.field_id}`;
+        const value =
+            savedValues.get(String(field.field_id)) ?? "";
 
+        // Create field container
+        const fieldItem = document.createElement("div");
+        fieldItem.classList.add("field-item");
 
-            switch (field.field_type) {
+        // Create label
+        const label = document.createElement("label");
+        label.classList.add("field-label");
+        label.htmlFor = fieldId;
+        label.textContent = field.field_label;
 
-                case "date":
+        // Create input element
+        let fieldInput;
 
-                    fieldInput = `
-                        <input
-                            type="date"
-                            id="field-${field.field_id}"
-                            data-field-id="${field.field_id}"
-                            value="${formatDateForInput(value)}"
-                            ${required}
-                        >
-                    `;
+        switch (field.field_type) {
 
-                    break;
+            case "date":
+                fieldInput = document.createElement("input");
+                fieldInput.type = "date";
+                fieldInput.value = formatDateForInput(value);
+                break;
 
+            case "number":
+                fieldInput = document.createElement("input");
+                fieldInput.type = "number";
+                fieldInput.value = value;
+                break;
 
-                case "number":
+            case "textarea":
+                fieldInput = document.createElement("textarea");
+                fieldInput.value = value;
+                break;
 
-                    fieldInput = `
-                        <input
-                            type="number"
-                            id="field-${field.field_id}"
-                            data-field-id="${field.field_id}"
-                            value="${value}"
-                            ${required}
-                        >
-                    `;
+            default:
+                fieldInput = document.createElement("input");
+                fieldInput.type = "text";
+                fieldInput.value = value;
+        }
 
-                    break;
+        // Assign common attributes
+        fieldInput.id = fieldId;
+        fieldInput.dataset.fieldId = field.field_id;
+        fieldInput.required = Boolean(field.is_required);
 
+        // Assemble field row
+        const fieldValue = document.createElement("div");
+        fieldValue.classList.add("field-value");
+        fieldValue.appendChild(fieldInput);
 
-                case "textarea":
+        fieldItem.appendChild(label);
+        fieldItem.appendChild(fieldValue);
 
-                    fieldInput = `
-                        <textarea
-                            id="field-${field.field_id}"
-                            data-field-id="${field.field_id}"
-                            ${required}
-                        >${value}</textarea>
-                    `;
+        return fieldItem;
+    });
+}
 
-                    break;
+function renderStaticFieldRows(
+    requestFields,
+    fieldValues = []
+) {
+    // Match saved values to their field definitions
+    const savedValues = new Map(
+        fieldValues.map(field => [
+            String(field.field_id),
+            field.field_val ?? field.field_value ?? ""
+        ])
+    );
 
+    return requestFields.map(field => {
 
-                default:
+        const value =
+            savedValues.get(String(field.field_id)) ?? "";
 
-                    fieldInput = `
-                        <input
-                            type="text"
-                            id="field-${field.field_id}"
-                            data-field-id="${field.field_id}"
-                            value="${value}"
-                            ${required}
-                        >
-                    `;
-            }
+        // Create field container
+        const fieldItem = document.createElement("div");
+        fieldItem.classList.add("field-item");
 
+        // Create label
+        const label = document.createElement("span");
+        label.classList.add("field-label");
+        label.textContent = field.field_label;
 
-            return `
-                <div class="field-item">
+        // Create static value
+        const fieldValue = document.createElement("span");
+        fieldValue.classList.add("field-value");
 
-                    <label
-                        class="field-label"
-                        for="field-${field.field_id}"
-                    >
-                        ${field.field_label}
-                    </label>
+        // Format date values for display
+        fieldValue.textContent =
+            field.field_type === "date" && value
+                ? formatDateForDisplay(value)
+                : value;
 
-                    <div class="field-value">
-                        ${fieldInput}
-                    </div>
+        // Assemble field row
+        fieldItem.appendChild(label);
+        fieldItem.appendChild(fieldValue);
 
-                </div>
-            `;
-
-        }).join("");
-
-
-    return fieldRows;
+        return fieldItem;
+    });
 }
 
 // STATUS OPTIONS
@@ -776,20 +773,25 @@ function renderNoteRows(requestNotes) {
 
 // SUBMIT NEW APPROVAL REQUEST FORM 
 export function renderApprovalRequestForm(
-    requestId
+    requestId, 
+    managerName
 ) {
 
     const form = document.createElement("form");
     form.id = "new-approval-form";
 
     form.innerHTML = `
-    <div class="card">
+    <div class="card approval-card">
         <h3>Prepare Approval Request</h3>
         <hr>
 
         <input type="hidden" name="request_id" value="${requestId}">
 
-        <div class="form-group">
+        <div class="info-item">
+            <span class="info-label">Approving Manager</span>
+            <span class="info-value" id="manager-name"></span>
+        </div>
+        <div class="form-field approval-summary-field">
             <label for="approval-summary">
                 Add a Request Summary
             </label> 
@@ -799,91 +801,207 @@ export function renderApprovalRequestForm(
                 rows="4"
                 required></textarea>
         </div>
-
         <div class="feedback"></div>
 
-        <div id="form-actions">
+        <div id="form-actions" class="form-actions">
+        <button type="button" id="back-button">Back</button>
+        <button type="submit" id="submit-approval-button">
+            Submit for Approval
+        </button>
 
-                <button
-                    type="submit"
-                    id="submit-approval-button"
-                >
-                    Submit for Approval
-                </button>
-
-            </div>
+    </div>
     </div>
     `;
+
+    form.querySelector("#manager-name").textContent = formatFieldName(managerName); 
 
     return form;
 }
 
-// MANAGER APPROVAL PROCESSING FORM 
-export function renderManagerApprovalForm(requestId) {
-    const form = document.createElement("form");
+// HR REVIEW APPROVAL FORM 
+export function renderReviewApprovalForm(
+    requestId,
+    approval
+) {
 
-    form.id = "manager-approval-form";
+    const form = document.createElement("form");
+    form.id = "hr-review-approval-form";
 
     form.innerHTML = `
-        <div class="card">
+        <div class="card approval-card">
 
-            <h3>Review Approval Request</h3>
+            <h3>Review Manager Decision</h3>
             <hr>
 
-            <input
-                type="hidden"
-                name="request_id"
-                value="${requestId}"
-            >
+            <div class="card-row">
 
-            <div class="form-group">
+                <div class="info-item">
+                    <span class="info-label">Request ID</span>
+                    <span class="info-value" id="approval-request-id"></span>
+                </div>
 
-                <label for="manager-decision">
-                    Manager Decision
-                </label>
+                <div class="info-item">
+                    <span class="info-label">Approving Manager</span>
+                    <span class="info-value" id="approval-manager"></span>
+                </div>
 
-                <select
-                    id="manager-decision"
-                    name="decision"
-                    required
-                >
-                    <option value="">Select a Decision</option>
-                    <option value="approved">Approve Request</option>
-                    <option value="denied">Deny Request</option>
-                </select>
+                <div class="info-item">
+                    <span class="info-label">Manager Decision</span>
+                    <span class="info-value" id="manager-decision"></span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">Decision Date</span>
+                    <span class="info-value" id="decision-date"></span>
+                </div>
 
             </div>
 
-            <div class="form-group">
+            <hr>
 
+            <div class="form-field">
+                <label for="approval-summary">
+                    Approval Request Summary
+                </label>
+
+                <textarea
+                    id="approval-summary"
+                    rows="4"
+                    readonly
+                ></textarea>
+            </div>
+
+            <div class="form-field">
                 <label for="manager-comments">
                     Manager Comments
                 </label>
 
                 <textarea
                     id="manager-comments"
-                    name="comments"
                     rows="5"
-                    placeholder="Enter comments explaining your decision..."
+                    readonly
                 ></textarea>
-
             </div>
 
             <div class="feedback" role="status"></div>
 
-            <div class="form-actions" id="form-actions">
+            <div class="form-actions">
+
+                <button
+                    type="button"
+                    id="back-button"
+                >
+                    Back
+                </button>
 
                 <button
                     type="submit"
-                    id="submit-manager-decision"
+                    id="confirm-approval-review"
                 >
-                    Submit Decision
+                    Confirm Review
                 </button>
 
             </div>
 
         </div>
     `;
+
+    // ========================================================
+    // POPULATE APPROVAL INFORMATION
+    // ========================================================
+
+    form.querySelector("#approval-request-id")
+        .textContent = requestId;
+
+    form.querySelector("#approval-manager")
+        .textContent = approval.manager_name ?? "";
+
+    form.querySelector("#manager-decision")
+        .textContent =
+        formatFieldName(approval.decision ?? "");
+
+    form.querySelector("#decision-date")
+        .textContent =
+        approval.decision_date ?? "";
+
+    form.querySelector("#approval-summary")
+        .value = approval.summary ?? "";
+
+    form.querySelector("#manager-comments")
+        .value = approval.comments ?? "";
+
+    return form;
+}
+
+// MANAGER APPROVAL PROCESSING FORM 
+export function renderManagerApprovalForm(
+    requestId,
+    requestFields,
+    fieldValues
+) {
+
+    // Render read-only request fields
+    const fieldRows = renderStaticFieldRows(
+        requestFields,
+        fieldValues
+    );
+
+    const form = document.createElement("form");
+    form.id = "manager-approval-form";
+
+    form.innerHTML = `
+    <div class="card manager-approval-card">
+
+        <h3>Review Approval Request</h3>
+        <hr>
+
+        <div id="request-fields"></div>
+
+        <hr>
+
+        <div class="form-field">
+
+            <label for="manager-decision">Manager Decision</label>
+
+            <select id="manager-decision" name="decision" required>
+                <option value="">Select a Decision</option>
+                <option value="approved">Approve Request</option>
+                <option value="denied">Deny Request</option>
+            </select>
+
+        </div>
+
+        <div class="form-field">
+
+            <label for="manager-comments">Manager Comments</label>
+
+            <textarea
+                id="manager-comments"
+                name="comments"
+                rows="5"
+                placeholder="Enter comments explaining your decision..."
+            ></textarea>
+
+        </div>
+
+        <div class="feedback" role="status"></div>
+
+        <div class="form-actions" id="form-actions">
+            <button type="button" id="back-button">Back</button>
+            <button type="submit" id="submit-manager-decision">Submit Decision</button>
+
+        </div>
+
+    </div>
+`;
+
+    // Append static request field rows
+    const requestFieldsContainer =
+        form.querySelector("#request-fields");
+
+    fieldRows.forEach(row => {
+        requestFieldsContainer.appendChild(row);
+    });
 
     return form;
 }

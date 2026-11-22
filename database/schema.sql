@@ -102,6 +102,7 @@ CREATE TABLE workflow_step (
     step_code ENUM(
         'hr_process',
         'approval',
+        'review_approval',
         'qc',
         'complete'
     ) NOT NULL,
@@ -491,7 +492,8 @@ SELECT
     ws.step_code AS status_code, 
     ws.step_num AS current_step_num,
     CONCAT(e.first_name, ' ', e.last_name) AS submitted_by,
-    CONCAT(a.first_name, ' ', a.last_name) AS assigned_to  
+    CONCAT(a.first_name, ' ', a.last_name) AS assigned_to, 
+    CONCAT(a.first_name, ' ', a.last_name) AS manager_name 
 FROM request r
 JOIN request_type rt
     ON r.request_type_id = rt.request_type_id
@@ -499,6 +501,8 @@ JOIN employee e
     ON r.employee_id = e.employee_id
 LEFT JOIN employee a
     ON r.assigned_emp_id = a.employee_id
+LEFT JOIN employee m
+    ON e.manager_id = m.employee_id
 LEFT JOIN workflow_step ws
     ON r.current_step_id = ws.workflow_step_id;
 
@@ -623,3 +627,13 @@ JOIN authorization a
 
 JOIN authorization_type at
     ON a.auth_type_id = at.auth_type_id;
+-- =============================================================
+-- EMPLOYEE LOGIN TABLE 
+-- =============================================================
+CREATE TABLE IF NOT EXISTS employee_login (
+    employee_id BIGINT UNSIGNED NOT NULL PRIMARY KEY,
+    password_hash VARCHAR(255) NOT NULL,
+    CONSTRAINT fk_employee_login_employee
+        FOREIGN KEY (employee_id) REFERENCES employee(employee_id)
+        ON DELETE CASCADE
+);

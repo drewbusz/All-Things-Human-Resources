@@ -35,29 +35,6 @@
     }
 }
 
-@media (max-width: 750px) {
-    .process-form-layout {
-        grid-template-columns: 1fr;
-    }
-
-    .summary-field textarea {
-        min-height: 100px
-    }
-
-    .form-actions button {
-        width: 100%;
-    }
-
-    .history-header {
-        display: none;
-    }
-
-    .history-item {
-        grid-template-columns: 1fr;
-        gap: 6px;
-        padding: 16px 0;
-    }
-}
 
 /* BASE APPLICATION STYLES */
 
@@ -310,17 +287,22 @@ h3 {
 
 .card-row-assign {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 24px;
     width: 100%;
     box-sizing: border-box;
 }
 
-.card-row-assign>* {
-    width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-}
+    .card-row-assign > * {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+        /* Last field spans two columns */
+        .card-row-assign > *:last-child {
+            grid-column: span 2;
+        }
 
 .info-item {
     display: flex;
@@ -351,30 +333,50 @@ form>div {
     gap: 20px 24px;
 }
 
-.form-field {
+.form-field,
+.field-item {
     display: flex;
-    margin-bottom: 8px;
     flex-direction: column;
+    min-width: 0;
 }
 
-.form-field label {
-    margin-bottom: 12px;
-    font-weight: bold;
+    .form-field label,
+    .field-label {
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+
+    /* Shared input styling */
+
+    .form-field input,
+    .form-field select,
+    .form-field textarea,
+    .field-value input,
+    .field-value select,
+    .field-value textarea {
+        width: 100%;
+        min-width: 0;
+        padding: 10px;
+        border: 1px solid #aeb6bf;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+
+    .form-field textarea,
+    .field-value textarea {
+        resize: vertical;
+    }
+
+.field-value textarea {
+    min-height: 100px;
 }
 
-.form-field input,
-.form-field select,
-.form-field textarea {
+/* Dynamic request field container */
+
+.field-value {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #aeb6bf;
-    border-radius: 4px;
-    font-family: inherit;
-    font-size: 16px;
-}
-
-.form-field.full-width {
-    grid-column: span 4;
 }
 
 
@@ -546,51 +548,6 @@ form>div {
     border: 1px solid #d9dee3;
     border-bottom: 2px solid #243447;
 }
-
-
-
-/* PROCESS REQUEST FORM */
-
-.process-form-layout {
-    display: grid;
-    grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr);
-    gap: 32px;
-    align-items: stretch;
-}
-
-
-/* FORM COLUMN */
-
-.form-column {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-
-/* FORM FIELDS */
-
-.form-field {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-field label {
-    margin-bottom: 8px;
-    font-weight: bold;
-}
-
-.form-field input,
-.form-field select,
-.form-field textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #aeb6bf;
-    border-radius: 4px;
-    font-family: inherit;
-    font-size: 16px;
-}
-
 
 /* SUMMARY FIELD */
 
@@ -814,6 +771,10 @@ form>div {
     color: #c62828;
 }
 
+/* Hide empty feedback containers throughout the application */
+.feedback:empty {
+    display: none;
+}       
 .form-field select.invalid {
     border: 2px solid #d32f2f;
     background-color: #ffebee;
@@ -1169,6 +1130,21 @@ form>div {
         grid-template-columns: 1fr;
     }
 }
+/* Approval Form */
+.approval-card {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+    .approval-card .form-group {
+        margin-top: 20px;
+    }
+
+    .approval-card textarea {
+        width: 100%;
+        box-sizing: border-box;
+        resize: vertical;
+    }
 
 /* ==========================================
    EMPLOYEE REQUEST DETAILS NAVIGATION
@@ -1200,4 +1176,146 @@ form>div {
 .employee-back-button:focus-visible {
     outline: 2px solid #405a75;
     outline-offset: 2px;
+}
+
+/* ============================================================
+   DYNAMIC REQUEST FIELDS
+   ============================================================ */
+
+#request-fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px 24px;
+    margin-bottom: 20px;
+}
+
+.field-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+    .field-item .field-value {
+        display: block;
+        font-size: 16px;
+        color: #222222;
+    }
+
+.field-label {
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.field-value {
+    width: 100%;
+}
+    .field-value textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+/* Approval Request Summary */
+.approval-summary-field {
+    margin-top: 20px;
+}
+
+    .approval-summary-field textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+/* ============================================================
+   PROCESS REQUEST FORM LAYOUT
+   ============================================================ */
+
+.process-form-layout {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    width: 100%;
+}
+
+/* Summary spans all three columns */
+.summary-field {
+    grid-column: 1 / -1;
+}
+
+    .summary-field textarea {
+        min-height: 150px;
+    }
+
+
+/* ============================================================
+   AUTHORIZED REQUEST PROCESSING FORM
+   ============================================================ */
+
+.authorized-processing-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+    /* Request-specific fields: single column */
+    .authorized-processing-card #request-fields {
+        grid-template-columns: 1fr;
+        margin-bottom: 0;
+    }
+
+    /* Standard form fields */
+    .authorized-processing-card .form-field {
+        width: 100%;
+        margin-bottom: 0;
+    }
+/* ============================================================
+   RESPONSIVE PROCESSING FORM AND ACTIVITY
+   ============================================================ */
+
+/* ============================================================
+   MANAGER APPROVAL FORM
+   ============================================================ */
+
+.manager-approval-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+    .manager-approval-card .form-field {
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .manager-approval-card #request-fields {
+        grid-template-columns: 1fr;
+    }
+
+@media (max-width: 750px) {
+
+    .process-form-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-field {
+        grid-column: auto;
+    }
+
+        .summary-field textarea {
+            min-height: 100px;
+        }
+
+    #request-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions button {
+        width: 100%;
+    }
+
+    .history-header {
+        display: none;
+    }
+
+    .history-item {
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 16px 0;
+    }
 }

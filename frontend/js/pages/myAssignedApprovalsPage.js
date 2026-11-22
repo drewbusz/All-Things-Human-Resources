@@ -94,7 +94,7 @@ export async function loadMyAssignedApprovals(
                 // Store this page for the Back button
                 sessionStorage.setItem(
                     "requestReturnPage",
-                    "my-approvals"
+                    "pending-approvals"
                 );
 
                 // Navigate to manager approval page

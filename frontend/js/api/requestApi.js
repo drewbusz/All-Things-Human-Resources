@@ -81,29 +81,47 @@ export async function getRequestHistory(
     return historyResult.data;
 }
 
-// get request fields and values 
-export async function getRequestFields(
-    request_id
-) {
-    const requestFieldResponse =
-        await fetch(
-            `/api/requests/${request_id}/fields`
-        );
-    const requestFieldResult =
-        await requestFieldResponse.json();
+// =======================================
+// REQUEST FIELD API CALLS
+// =======================================
 
-    if (!requestFieldResponse.ok) {
+// get request fields by requestTypeId
+export async function getTypeFields(requestTypeId) {
+
+    const response = await fetch(
+        `/api/requests/types/${encodeURIComponent(requestTypeId)}/fields`
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
         throw new Error(
-            requestFieldResult.message ||
-            requestFieldResult.error ||
-            "Unable to retrieve request fields."
+            result.message ||
+            "Unable to retrieve field definitions."
         );
     }
 
-    return requestFieldResult.data;
-
+    return result.data;
 }
 
+// Get request field values 
+export async function getRequestFields(requestId) {
+
+    const response = await fetch(
+        `/api/requests/${encodeURIComponent(requestId)}/fields`
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+        throw new Error(
+            result.message ||
+            "Unable to retrieve saved request fields."
+        );
+    }
+
+    return result.data;
+}
 // Get request notes with the request id 
 export async function getRequestNotesByRequestId(
     request_id
@@ -259,7 +277,7 @@ export async function getMyApprovals() {
     return result.data;
 }
 
-// Get Request Approval (Manager)
+// Get Request Approval 
 export async function getRequestApproval(
     requestId
 ) {
@@ -277,19 +295,30 @@ export async function getRequestApproval(
     return result.data;
 }
 
-// Review Approval ((HR Processing))
-export async function getApprovalForReview(requestId) {
-    const response = await fetch(`api/requests/${requestId}/approval/review`);
+// Review Approval
+// Submit HR review of manager decision
+export async function reviewApproval(requestId) {
+
+    const response = await fetch(
+        `/api/requests/${requestId}/approval/review`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({})
+        }
+    );
 
     const result = await response.json();
 
     if (!response.ok) {
         throw new Error(
-            result.error ||
             result.message ||
-            "Unable to retrieve approval for review."
+            "Unable to complete approval review."
         );
     }
+
     return result.data;
 }
 // ===================================
@@ -416,16 +445,15 @@ export async function saveRequestNote(
 }
 
 // Save request field values (Pending backend)
-export async function saveRequestFieldValues(
-    fieldValues,
-    requestId,
-) {
+export async function saveRequestFields(requestId, fieldValues) {
+
     const response = await fetch(
-        `/api/requests/${requestId}/fields`,
+        `/api/requests/${encodeURIComponent(requestId)}/fields`,
         {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "Accept": "application/json"
             },
             body: JSON.stringify({
                 fieldValues
@@ -435,11 +463,10 @@ export async function saveRequestFieldValues(
 
     const result = await response.json();
 
-    if (!response.ok) {
+    if (!response.ok || !result.success) {
         throw new Error(
             result.message ||
-            result.error ||
-            "Unable to save request field values."
+            "Unable to save request fields."
         );
     }
 

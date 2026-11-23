@@ -18,7 +18,8 @@ import {
     getRequestNotesByRequestId, 
     getRequestFields, 
     getTypeFields, 
-    saveRequestFields
+    saveRequestFields, 
+    saveRequestNote
 } from "../api/requestApi.js";
 import {
     renderRequestIntakeForm,
@@ -272,6 +273,7 @@ export async function loadIntakeRequestPage(
 
                 loadPage(previousPage);
             });
+
         // Submit assignment values through the existing backend.
         requestForm.addEventListener("submit", async (event) => { 
             event.preventDefault(); 

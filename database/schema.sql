@@ -468,12 +468,12 @@ ALTER TABLE employee
         ON UPDATE RESTRICT
         ON DELETE RESTRICT;
 
--- ============================================================
+-- =======================================
 -- VIEWS FOR SIMPLIFIED BACKEND PROCESSING 
--- ============================================================
+-- =======================================
 -- REQUEST VIEW 
--- ============================================================
-CREATE VIEW request_view AS
+-- =======================================
+CREATE OR REPLACE VIEW request_view AS
 SELECT
     r.request_id,
     r.submission_date,
@@ -493,7 +493,7 @@ SELECT
     ws.step_num AS current_step_num,
     CONCAT(e.first_name, ' ', e.last_name) AS submitted_by,
     CONCAT(a.first_name, ' ', a.last_name) AS assigned_to, 
-    CONCAT(a.first_name, ' ', a.last_name) AS manager_name 
+    CONCAT(m.first_name, ' ', m.last_name) AS manager_name 
 FROM request r
 JOIN request_type rt
     ON r.request_type_id = rt.request_type_id

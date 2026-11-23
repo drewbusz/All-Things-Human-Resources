@@ -113,7 +113,6 @@ export function renderProcessRequestForm(
 export function renderAuthorizedRequestProcessingForm(
     request,
     employeeOptions,
-    activeRequestTypes, 
     typeFields,
     fieldValues
 ) {
@@ -136,11 +135,12 @@ export function renderAuthorizedRequestProcessingForm(
                     <option value="">Select HR Employee</option>
                 </select>
             </div>
-
             <div class="form-field">
-                <label for="request-type">Request Type</label>
-                <select id="request-type" required>
-                    <option value="">Select a Request Type</option>
+                <label for="request-confidentiality">Confidentiality Level</label>
+                <select id="assignment-confidentiality" name="confidentiality_level" required>
+                    <option value="">Select Confidentiality</option>
+                    <option value="Nonconfidential">Nonconfidential</option>
+                    <option value="Confidential">Confidential</option>
                 </select>
             </div>
 
@@ -174,6 +174,9 @@ export function renderAuthorizedRequestProcessingForm(
             </div>
         </div>
     `;
+
+    // Confidentiality selection 
+    requestForm.querySelector("#assignment-confidentiality").value = request.confidentiality_level ?? ""; 
 
     // Populate field rows 
     const requestFieldsContainer = requestForm.querySelector("#request-fields"); 
@@ -213,42 +216,8 @@ export function renderAuthorizedRequestProcessingForm(
             String(request.assigned_emp_id ?? "");
     }
 
-    // Populate active request types
-    const requestTypeSelect =
-        requestForm.querySelector("#request-type");
-
-    if (activeRequestTypes.length === 0) {
-        const option = document.createElement("option");
-
-        option.value = "";
-        option.textContent = "No active request types available.";
-
-        requestTypeSelect.appendChild(option);
-        requestTypeSelect.disabled = true;
-    } else {
-        activeRequestTypes.forEach(type => {
-
-            const option =
-                document.createElement("option");
-
-            option.value =
-                Number(type.request_type_id);
-
-            option.textContent =
-                formatFieldName(type.name);
-
-            requestTypeSelect.appendChild(option);
-        });
-        // Select existing request type
-        requestTypeSelect.value =
-            String(Number(request.request_type_id ?? ""));
-    }
-
-    // If both are empty, allow the page to load but disable form submission
-
     if (
-        employeeOptions.length === 0 ||
-        activeRequestTypes.length === 0
+        employeeOptions.length === 0
     ) {
         requestForm.querySelector(
             'button[type="submit"]'
@@ -260,8 +229,7 @@ export function renderAuthorizedRequestProcessingForm(
         request.priority_level ?? "";
 
     // Populate existing completion date
-    requestForm.querySelector("#assignment-completion").value =
-        formatDateForInput(request.expected_completion) ?? "";
+    requestForm.querySelector("#assignment-completion").value =formatDateForInput(request.expected_completion) ?? "";
 
     return requestForm;
 }
@@ -312,9 +280,6 @@ export function renderRequestIntakeForm(
         </div>
     `;
 
-    // Populate active request types
-    const requestTypeSelect =
-        requestForm.querySelector("#request-type");
 
     // Populate request fields
     const requestFieldsContainer = requestForm.querySelector("#request-fields"); 
@@ -322,6 +287,10 @@ export function renderRequestIntakeForm(
     fieldRows.forEach(row => { 
         requestFieldsContainer.appendChild(row); 
     })
+
+    // Populate active request types
+    const requestTypeSelect =
+        requestForm.querySelector("#request-type");
 
     if (activeRequestTypes.length === 0) {
         const option = document.createElement("option");
@@ -331,33 +300,37 @@ export function renderRequestIntakeForm(
 
         requestTypeSelect.appendChild(option);
         requestTypeSelect.disabled = true;
-    } else {
-        activeRequestTypes.forEach(type => {
+        requestForm.querySelector('button[type="submit"]').disabled = true;
+    } else { 
 
-            const option =
-                document.createElement("option");
+        const fieldValsPresent = fieldValues.length > 0; 
 
-            option.value =
-                Number(type.request_type_id);
+        if (fieldValsPresent) {
+            const option = document.createElement("option");
 
-            option.textContent =
-                formatFieldName(type.name);
+            option.value = request.request_type_id;
+            option.textContent = formatFieldName(request.request_type);
 
             requestTypeSelect.appendChild(option);
-        });
-        // Select existing request type
-        requestTypeSelect.value =
-            String(Number(request.request_type_id ?? ""));
-    }
+            requestTypeSelect.value = String(request.request_type_id); 
+        } else {
 
-    // If both are empty, allow the page to load but disable form submission
+            // Populate available request types
+            activeRequestTypes.forEach(type => {
 
-    if (
-        activeRequestTypes.length === 0
-    ) {
-        requestForm.querySelector(
-            'button[type="submit"]'
-        ).disabled = true;
+                const option = document.createElement("option");
+
+                option.value = type.request_type_id;
+                option.textContent = formatFieldName(type.name);
+
+                requestTypeSelect.appendChild(option);
+            });
+
+            // Select current request type
+            requestTypeSelect.value =
+                String(request.request_type_id);
+        }
+
     }
 
     return requestForm;
@@ -871,18 +844,6 @@ export function renderReviewApprovalForm(
                 ></textarea>
             </div>
 
-            <div class="form-field">
-                <label for="manager-comments">
-                    Manager Comments
-                </label>
-
-                <textarea
-                    id="manager-comments"
-                    rows="5"
-                    readonly
-                ></textarea>
-            </div>
-
             <div class="feedback" role="status"></div>
 
             <div class="form-actions">
@@ -906,15 +867,15 @@ export function renderReviewApprovalForm(
         </div>
     `;
 
-    // ========================================================
+    // ========================================
     // POPULATE APPROVAL INFORMATION
-    // ========================================================
+    // ========================================
 
     form.querySelector("#approval-request-id")
         .textContent = requestId;
 
     form.querySelector("#approval-manager")
-        .textContent = approval.manager_name ?? "";
+        .textContent = approval.approved_by ?? "";
 
     form.querySelector("#manager-decision")
         .textContent =
@@ -922,7 +883,7 @@ export function renderReviewApprovalForm(
 
     form.querySelector("#decision-date")
         .textContent =
-        approval.decision_date ?? "";
+        formatDateForDisplay(approval.decision_date) ?? "";
 
     form.querySelector("#approval-summary")
         .value = approval.summary ?? "";

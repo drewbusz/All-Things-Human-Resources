@@ -44,6 +44,12 @@ VALUES
         TRUE,
         'Request for review of a workplace accommodation.',
         TRUE
+    ), 
+    (
+        'Email Intake', 
+        TRUE, 
+        'Structured Email Intake', 
+        FALSE
     );
 
 

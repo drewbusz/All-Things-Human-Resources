@@ -46,11 +46,10 @@ export async function loadAssignRequestPage(
     try {
         // Load the request and eligible HR employees.
        
-        const [request, employees, activeRequestTypes, requestNotes, requestHistory] =
+        const [request, employees, requestNotes, requestHistory] =
             await Promise.all([
                 getRequestById(requestId),
                 getAssignableEmployees(),
-                getActiveRequestTypes(),
                 getRequestNotesByRequestId(requestId), 
                 getRequestHistory(requestId)
             ]);
@@ -68,11 +67,6 @@ export async function loadAssignRequestPage(
         if (!Array.isArray(employees)) {
             throw new Error(
                 "Unable to retrieve assignable employees."
-            );
-        }
-        if (!Array.isArray(activeRequestTypes)) {
-            throw new Error(
-                "Unable to retrieve active request types."
             );
         }
 
@@ -157,7 +151,6 @@ export async function loadAssignRequestPage(
             renderAuthorizedRequestProcessingForm(
                 request, 
                 employees, 
-                activeRequestTypes, 
                 typeFields, 
                 fieldValues
             ); 
@@ -204,6 +197,7 @@ export async function loadAssignRequestPage(
         const originalFieldValues =
             collectRequestFieldValues(requestForm);
 
+        // Store reference to the activity content to load notes and history
         const activityContent =
             historyCard.querySelector(
                 "#activity-content"
@@ -340,10 +334,7 @@ export async function loadAssignRequestPage(
 
                 const updateData = {
                     assigned_emp_id: Number(employeeSelect.value),
-                    request_type_id:
-                        Number(
-                            requestForm.querySelector("#request-type").value
-                        ),
+                    confidentiality_level: requestForm.querySelector("#assignment-confidentiality").value,
                     priority_level:
                         requestForm.querySelector("#assignment-priority").value,
                     expected_completion:
@@ -367,24 +358,14 @@ export async function loadAssignRequestPage(
                         sessionStorage.getItem("requestReturnPage")
                         || "unassigned-requests";
 
-                    // Retrieve the request type dropdown.
-                    const requestTypeSelect =
-                        requestForm.querySelector("#request-type");
-
-                   
                     // Compare original values against submitted values.
                     const employeeChanged =
                         String(request.assigned_emp_id ?? "") !=
                         String(updateData.assigned_emp_id ?? "");
 
-                    const requestTypeChanged =
-                        String(request.request_type_id ?? "") !=
-                        String(updateData.request_type_id ?? "");
+                    // Build confirmation message
+                    let confirmationMessage;
 
-                    // Build confirmation message.
-                    let message = "";
-
-                    // Employee assignment or reassignment.
                     if (employeeChanged) {
 
                         const employeeName =
@@ -397,47 +378,44 @@ export async function loadAssignRequestPage(
                                 ? "assigned"
                                 : "reassigned";
 
-                        message +=
+                        confirmationMessage =
                             `Request #${request.request_id} was successfully ${action} to ${employeeName}.`;
-                    }
 
-                    // Request type modification.
-                    if (requestTypeChanged) {
+                    } else {
 
-                        const selectedRequestType =
-                            requestTypeSelect.options[
-                                requestTypeSelect.selectedIndex
-                            ].text;
-
-                        // Add a space if an employee confirmation already exists.
-                        if (message) {
-                            message += " ";
-                        }
-
-                        message +=
-                            `\nRequest type was successfully updated to ${selectedRequestType}.`;
+                        confirmationMessage =
+                            `Request changes saved successfully for Request #${requestId}.`;
                     }
 
                     // Save request-specific field values if changed
                     if (fieldValuesChanged) {
-                        await saveRequestFields(requestId, currentFieldValues);
+
+                        await saveRequestFields(
+                            requestId,
+                            currentFieldValues
+                        );
+
                         requestFieldsSaved = true;
                     }
 
-                    
-                    // Submit assignment and request type changes.
+                    // Save assignment information
                     await saveRequestAssignment(requestId, updateData);
 
-                    // Save confirmation for the destination page.
+                    // Build confirmation object
                     const confirmation = {
                         requestId: request.request_id,
-                        message: message
+                        message: confirmationMessage
                     };
 
+                    // Clear stored return page
                     sessionStorage.removeItem("requestReturnPage");
 
-                    // Return to the queue and display the confirmation.
-                    loadPage(previousPage, null, confirmation);
+                    // Navigate with confirmation
+                    loadPage(
+                        previousPage,
+                        null,
+                        confirmation
+                    );
 
                 } catch (error) {
 

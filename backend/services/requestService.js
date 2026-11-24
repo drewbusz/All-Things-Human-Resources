@@ -50,6 +50,7 @@ async function checkAccess(request, employeeId, operation, connection) {
 
     // Highly Confidential requests need their own request authorization.
     const isOwner = Number(request.employee_id) === Number(employeeId);
+    let extraReadAccess = false;
     if (request.confidentiality_level === "Highly Confidential" && !isOwner) {
         const permissions = await requestRepository.getRequestAuthorizations(
             request.request_id,
@@ -63,9 +64,13 @@ async function checkAccess(request, employeeId, operation, connection) {
                 "REQUEST_ACCESS_DENIED"
             );
         }
+        // A manually authorized HR processor may view but not process it.
+        extraReadAccess = operation === "read" && permissions.some(
+            permission => permission.request_auth_id != null && Boolean(permission.can_view)
+        );
     }
 
-    if (!canAccessRequest(authorizations, request, employeeId, operation)) {
+    if (!canAccessRequest(authorizations, request, employeeId, operation) && !extraReadAccess) {
         throw createServiceError(
             "You are not authorized to perform this operation.",
             "REQUEST_ACCESS_DENIED"

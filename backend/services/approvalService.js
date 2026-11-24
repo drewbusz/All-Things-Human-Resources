@@ -1,3 +1,4 @@
+
 const { pool } = require("../config/database");
 const employeeService = require("./employeeService");
 const requestRepository = require("../repositories/requestRepository");
@@ -197,6 +198,8 @@ async function getMyPendingApprovals(employeeId) {
     return rows;
 }
 
+// Managers receive read-only request details through the approval endpoint.
+// This does not grant them access to the regular HR request endpoints.
 async function getRequestApproval(requestId, employeeId) {
     if (!validId(requestId)) {
         throw serviceError("A valid request ID is required.", "INVALID_REQUEST_ID");
@@ -204,11 +207,14 @@ async function getRequestApproval(requestId, employeeId) {
     const [rows] = await pool.execute(`
         SELECT a.approval_id, a.request_id, a.approving_emp_id,
                a.summary, a.submission_date, a.decision, a.decision_date,
-               rv.request_type, rv.submitted_by, rv.status,
-               rv.confidentiality_level, rv.employee_id,
-               rv.assigned_emp_id
+               CONCAT(manager.first_name, ' ', manager.last_name) AS approved_by,
+               rv.request_type, rv.request_type_id, rv.submitted_by, rv.status,
+               rv.confidentiality_level, rv.employee_id, rv.assigned_emp_id,
+               rv.brief_summary, rv.priority_level,
+               rv.submission_date AS request_submission_date
         FROM approval a
         JOIN request_view rv ON rv.request_id = a.request_id
+        JOIN employee manager ON manager.employee_id = a.approving_emp_id
         WHERE a.request_id = ?
         ORDER BY a.approval_id DESC LIMIT 1
     `, [Number(requestId)]);
@@ -233,7 +239,38 @@ async function getRequestApproval(requestId, employeeId) {
             throw serviceError("Request authorization is required.", "REQUEST_ACCESS_DENIED");
         }
     }
-    return approval;
+
+    // Load values only after checking this employee's approval access.
+    const [fields] = await pool.execute(`
+        SELECT f.field_id, f.request_type_id, f.field_name,
+               f.field_label, f.field_type, f.is_required, f.display_order,
+               v.field_val
+        FROM request_type_field f
+        LEFT JOIN request_field_value v
+            ON v.field_id = f.field_id AND v.request_id = ?
+        WHERE f.request_type_id = ?
+        ORDER BY f.display_order, f.field_id
+    `, [Number(requestId), Number(approval.request_type_id)]);
+
+    return {
+        ...approval,
+        request: {
+            request_id: Number(approval.request_id),
+            request_type_id: Number(approval.request_type_id),
+            request_type: approval.request_type,
+            submitted_by: approval.submitted_by,
+            submission_date: approval.request_submission_date,
+            priority_level: approval.priority_level,
+            brief_summary: approval.brief_summary,
+            status: approval.status,
+            confidentiality_level: approval.confidentiality_level
+        },
+        typeFields: fields.map(({ field_val, ...definition }) => definition),
+        fieldValues: fields.map(field => ({
+            field_id: field.field_id,
+            field_val: field.field_val
+        }))
+    };
 }
 
 // Manager decision also moves the request into HR's Review Approval step.

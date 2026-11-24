@@ -114,7 +114,9 @@ export function renderAuthorizedRequestProcessingForm(
     request,
     employeeOptions,
     typeFields,
-    fieldValues
+    fieldValues,
+    canManageConfidential = false,
+    additionalEmployees = []
 ) {
     // Render request specific fields 
     const fieldRows = renderFieldRows(typeFields, fieldValues); 
@@ -141,7 +143,14 @@ export function renderAuthorizedRequestProcessingForm(
                     <option value="">Select Confidentiality</option>
                     <option value="Nonconfidential">Nonconfidential</option>
                     <option value="Confidential">Confidential</option>
+                    <option value="Highly Confidential">Highly Confidential</option>
                 </select>
+            </div>
+
+            <div class="form-field" id="additional-access-section" hidden>
+                <label>Additional Authorized HR Users (read only)</label>
+                <div id="additional-access-users"></div>
+                <small>The assigned processor gets access automatically.</small>
             </div>
 
             <div class="form-field">
@@ -176,7 +185,34 @@ export function renderAuthorizedRequestProcessingForm(
     `;
 
     // Confidentiality selection 
-    requestForm.querySelector("#assignment-confidentiality").value = request.confidentiality_level ?? ""; 
+    const confidentialitySelect = requestForm.querySelector("#assignment-confidentiality");
+    confidentialitySelect.value = request.confidentiality_level ?? "";
+
+    if (canManageConfidential) {
+        const section = requestForm.querySelector("#additional-access-section");
+        const users = requestForm.querySelector("#additional-access-users");
+        const selected = new Set((request.authorized_employee_ids ?? []).map(Number));
+
+        additionalEmployees.forEach(employee => {
+            const label = document.createElement("label");
+            label.style.display = "block";
+            const input = document.createElement("input");
+            input.type = "checkbox";
+            input.className = "additional-authorized-user";
+            input.value = employee.employee_id;
+            input.checked = selected.has(Number(employee.employee_id));
+            label.append(input, ` ${employee.first_name} ${employee.last_name}`);
+            users.appendChild(label);
+        });
+        if (!additionalEmployees.length) {
+            users.textContent = "No additional HR employees are available.";
+        }
+        const updateVisibility = () => {
+            section.hidden = confidentialitySelect.value !== "Highly Confidential";
+        };
+        confidentialitySelect.addEventListener("change", updateVisibility);
+        updateVisibility();
+    }
 
     // Populate field rows 
     const requestFieldsContainer = requestForm.querySelector("#request-fields"); 

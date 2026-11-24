@@ -21,7 +21,8 @@ import {
     saveRequestFields
 } from "../api/requestApi.js";
 
-import { getAssignableEmployees } from "../api/employeeApi.js";
+import { getAssignableEmployees, getEmployeesByAuthType } from "../api/employeeApi.js";
+import { getCurrentEmployeeState } from "../../auth/authState.js";
 
 // Rendering Imports 
 import {
@@ -46,13 +47,22 @@ export async function loadAssignRequestPage(
     try {
         // Load the request and eligible HR employees.
        
-        const [request, employees, requestNotes, requestHistory] =
+        const [request, employees, requestNotes, requestHistory, managers] =
             await Promise.all([
                 getRequestById(requestId),
                 getAssignableEmployees(),
-                getRequestNotesByRequestId(requestId), 
-                getRequestHistory(requestId)
+                getRequestNotesByRequestId(requestId),
+                getRequestHistory(requestId),
+                getEmployeesByAuthType(5)
             ]);
+
+        const managerIds = new Set(managers.map(manager => Number(manager.employee_id)));
+        const canManageConfidential = managerIds.has(
+            Number(getCurrentEmployeeState().employeeId)
+        );
+        const additionalEmployees = employees.filter(employee =>
+            !managerIds.has(Number(employee.employee_id))
+        );
 
         // Retrieve field definitions, saved values
         const [typeFields, fieldValues] =
@@ -151,8 +161,10 @@ export async function loadAssignRequestPage(
             renderAuthorizedRequestProcessingForm(
                 request, 
                 employees, 
-                typeFields, 
-                fieldValues
+                typeFields,
+                fieldValues,
+                canManageConfidential,
+                additionalEmployees
             ); 
 
         // request activity card
@@ -340,6 +352,12 @@ export async function loadAssignRequestPage(
                     expected_completion:
                         requestForm.querySelector("#assignment-completion").value
                 };
+                if (canManageConfidential &&
+                    updateData.confidentiality_level === "Highly Confidential") {
+                    updateData.authorized_employee_ids = [
+                        ...requestForm.querySelectorAll(".additional-authorized-user:checked")
+                    ].map(checkbox => Number(checkbox.value));
+                }
                 // Collect current request field values 
                 const currentFieldValues =
                     collectRequestFieldValues(requestForm); 

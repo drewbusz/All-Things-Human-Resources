@@ -34,7 +34,31 @@ async function getRequestById(requestId) {
         return null;
     }
 
-    return rows[0];
+    const request = rows[0];
+
+    // Existing request_auth records populate the manager's checkboxes.
+    // Exclude the assigned processor, who always gets access automatically.
+    request.authorized_employee_ids = [];
+    if (request.confidentiality_level === "Highly Confidential") {
+        const [authorized] = await pool.execute(`
+            SELECT DISTINCT ra.employee_id
+            FROM request_auth ra
+            JOIN authorization a ON a.auth_id = ra.auth_id
+                AND a.employee_id = ra.employee_id
+            WHERE ra.request_id = ?
+              AND ra.employee_id <> COALESCE(?, 0)
+              AND a.auth_type_id IN (3, 6)
+              AND a.is_active = TRUE
+              AND a.effective_date <= CURRENT_TIMESTAMP
+              AND (a.expiration_date IS NULL OR a.expiration_date >= CURRENT_DATE)
+              AND ra.is_active = TRUE
+              AND ra.effective_date <= CURRENT_TIMESTAMP
+              AND (ra.expiration_date IS NULL OR ra.expiration_date >= CURRENT_TIMESTAMP)
+        `, [requestId, request.assigned_emp_id]);
+        request.authorized_employee_ids = authorized.map(row => Number(row.employee_id));
+    }
+
+    return request;
 }
 
 
@@ -148,13 +172,16 @@ async function getRequestAuthorizations(
             ra.request_auth_id,
             a.auth_type_id,
             at.can_view,
-            at.can_update,
+            CASE WHEN a.auth_type_id = 5
+                     OR r.assigned_emp_id = a.employee_id
+                 THEN at.can_update ELSE FALSE END AS can_update,
             at.can_approve
         FROM authorization a
         INNER JOIN authorization_type at
             ON a.auth_type_id = at.auth_type_id
         INNER JOIN employee e
             ON a.employee_id = e.employee_id
+        INNER JOIN request r ON r.request_id = ?
         LEFT JOIN request_auth ra
             ON ra.auth_id = a.auth_id
             AND ra.employee_id = a.employee_id
@@ -167,7 +194,7 @@ async function getRequestAuthorizations(
             )
         WHERE a.employee_id = ?
           AND (
-              a.auth_type_id IN (3, 5)
+              a.auth_type_id = 5
               OR ra.request_auth_id IS NOT NULL
           )
           AND e.status = 'active'
@@ -182,7 +209,7 @@ async function getRequestAuthorizations(
 
     const [rows] = await connection.execute(
         sql,
-        [requestId, employeeId]
+        [requestId, requestId, employeeId]
     );
 
     return rows;

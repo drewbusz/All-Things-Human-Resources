@@ -116,6 +116,40 @@ async function setAssigneeAccess(connection, requestId, employeeId, actorId, gra
     }
 }
 
+// Synchronize additional read-only users chosen by the HR Manager.
+// The assigned processor is managed separately by setAssigneeAccess.
+async function syncAdditionalAccess(connection, requestId, selectedIds, assignedId, actorId) {
+    const desired = new Set(selectedIds.filter(id => id !== Number(assignedId)));
+    const [existing] = await connection.execute(`
+        SELECT DISTINCT employee_id
+        FROM request_auth
+        WHERE request_id = ? AND is_active = TRUE
+          AND effective_date <= CURRENT_TIMESTAMP
+          AND (expiration_date IS NULL OR expiration_date >= CURRENT_TIMESTAMP)
+    `, [requestId]);
+
+    for (const row of existing) {
+        const employeeId = Number(row.employee_id);
+        if (employeeId !== Number(assignedId) && !desired.has(employeeId)) {
+            await setAssigneeAccess(connection, requestId, employeeId, actorId, false);
+        }
+    }
+
+    for (const employeeId of desired) {
+        const auth = await employeeService.getEmployeeAuthorizations(employeeId, connection);
+        if (!auth.some(item =>
+            [3, 6].includes(Number(item.auth_type_id)) &&
+            Boolean(item.can_view) && Boolean(item.can_update)
+        )) {
+            throw repositoryError(
+                "Additional users must have active HR staff or processor authorization.",
+                "ASSIGNEE_NOT_ELIGIBLE"
+            );
+        }
+        await setAssigneeAccess(connection, requestId, employeeId, actorId, true);
+    }
+}
+
 // Keep new submissions in intake, but preserve the older seeded requests.
 async function needsIntakeReview(requestId, connection = pool) {
     const [rows] = await connection.execute(`
@@ -258,6 +292,30 @@ async function manageRequest(requestId, actorId, changes) {
 
         const confidentialityChanged =
             current.confidentiality_level !== next.confidentiality_level;
+
+        // Only HR Managers may classify, reassign, or choose additional
+        // users for Highly Confidential requests.
+        const isHRManager = authorizations.some(auth =>
+            Number(auth.auth_type_id) === 5 && Boolean(auth.can_update)
+        );
+        if (
+            (current.confidentiality_level === "Highly Confidential" ||
+             next.confidentiality_level === "Highly Confidential" ||
+             "authorized_employee_ids" in changes) && !isHRManager
+        ) {
+            throw repositoryError(
+                "Only an HR Manager can manage Highly Confidential access.",
+                "REQUEST_ACCESS_DENIED"
+            );
+        }
+        if ("authorized_employee_ids" in changes &&
+            next.confidentiality_level !== "Highly Confidential" &&
+            changes.authorized_employee_ids.length > 0) {
+            throw repositoryError(
+                "Additional access is only available for Highly Confidential requests.",
+                "INVALID_REQUEST_DATA"
+            );
+        }
 
         // Only an HR Manager (authorization type 5) can set or remove
         // the Highly Confidential classification.
@@ -457,6 +515,19 @@ async function manageRequest(requestId, actorId, changes) {
                 actorId,
                 true
             );
+        }
+
+        // An HR Manager may grant or revoke additional read-only access.
+        if (next.confidentiality_level === "Highly Confidential" &&
+            "authorized_employee_ids" in changes) {
+            await syncAdditionalAccess(
+                connection, requestId, changes.authorized_employee_ids,
+                next.assigned_emp_id, actorId
+            );
+        } else if (current.confidentiality_level === "Highly Confidential" &&
+                   next.confidentiality_level !== "Highly Confidential") {
+            // No request-specific grants remain after removing the classification.
+            await syncAdditionalAccess(connection, requestId, [], null, actorId);
         }
 
         await connection.commit();

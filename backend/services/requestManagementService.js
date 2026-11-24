@@ -126,7 +126,8 @@ async function manageRequest(requestId, employeeId, data) {
         "request_type_id",
         "priority_level",
         "expected_completion",
-        "confidentiality_level"
+        "confidentiality_level",
+        "authorized_employee_ids"
     ]);
 
     const fields = Object.keys(data);
@@ -214,6 +215,20 @@ async function manageRequest(requestId, employeeId, data) {
             "Select Nonconfidential, Confidential, or Highly Confidential.",
             "INVALID_CONFIDENTIALITY"
         );
+    }
+
+    // Optional list of additional read-only users, managed by an HR Manager.
+    if ("authorized_employee_ids" in updates) {
+        const ids = updates.authorized_employee_ids;
+        if (!Array.isArray(ids) || ids.length > 25 ||
+            ids.some(item => !positiveId(item)) ||
+            new Set(ids.map(Number)).size !== ids.length) {
+            throw serviceError(
+                "Select valid, unique authorized employees.",
+                "INVALID_REQUEST_DATA"
+            );
+        }
+        updates.authorized_employee_ids = ids.map(Number);
     }
 
     return managementRepository.manageRequest(

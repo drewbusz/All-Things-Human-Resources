@@ -1,3 +1,4 @@
+
 // My Assigned Requests
 // Request API used
 import {
@@ -39,34 +40,74 @@ export async function loadMyAssignedRequests() {
         pipeline.innerHTML = `
             <h3>My Assigned Requests</h3>
             <hr><br>
+            <div class="request-filters">
+                <div class="form-group">
+                    <label for="assigned-request-search">Search Requests</label>
+                    <input type="search" id="assigned-request-search"
+                        placeholder="Search by ID, type, or employee">
+                </div>
+                <div class="form-group">
+                    <label for="assigned-status-filter">Filter by Status</label>
+                    <select id="assigned-status-filter">
+                        <option value="all">All Statuses</option>
+                    </select>
+                </div>
+            </div>
             <div id="request-rows"></div>
         `; 
         contentArea.replaceChildren(pipeline);
 
-        const assignedRequestRows = await renderRequestRows(assignedRequests);
+        const requestList = pipeline.querySelector("#request-rows");
+        const searchInput = pipeline.querySelector("#assigned-request-search");
+        const statusFilter = pipeline.querySelector("#assigned-status-filter");
 
-        const requestRows = pipeline.querySelector("#request-rows"); 
-        requestRows.innerHTML = assignedRequestRows; 
-
-        const workItemCards = contentArea.querySelectorAll(".item-card");
-
-        workItemCards.forEach(card => {
-
-            card.addEventListener("click", () => {
-
-                const requestId = card.dataset.requestId;
-
-                sessionStorage.setItem(
-                    "requestReturnPage",
-                    "assigned-requests"
-                );
-
-                loadPage(
-                    "process-request",
-                    requestId
-                );
-            });
+        // Populate statuses from the requests already returned by the API.
+        const statuses = [...new Set(assignedRequests.map(request => request.status).filter(Boolean))].sort();
+        statuses.forEach(status => {
+            const option = document.createElement("option");
+            option.value = status;
+            option.textContent = status;
+            statusFilter.appendChild(option);
         });
+
+        function renderFilteredRequests() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            const selectedStatus = statusFilter.value;
+            const filtered = assignedRequests.filter(request => {
+                const searchableText = [
+                    request.request_id,
+                    request.request_type,
+                    request.brief_summary,
+                    request.submitted_by,
+                    request.assigned_to
+                ].join(" ").toLowerCase();
+
+                return searchableText.includes(searchTerm) &&
+                    (selectedStatus === "all" || request.status === selectedStatus);
+            });
+
+            requestList.innerHTML = filtered.length ? renderRequestRows(filtered) : "";
+            if (!filtered.length) {
+                requestList.textContent = assignedRequests.length
+                    ? "No matching requests found."
+                    : "No assigned requests are available.";
+            }
+        }
+
+        searchInput.addEventListener("input", renderFilteredRequests);
+        statusFilter.addEventListener("change", renderFilteredRequests);
+
+        // Handle card navigation once, including after the list is filtered.
+        requestList.addEventListener("click", event => {
+            const card = event.target.closest(".item-card");
+            if (!card) return;
+            const requestId = card.dataset.requestId;
+
+            sessionStorage.setItem("requestReturnPage", "assigned-requests");
+            loadPage("process-request", requestId);
+        });
+
+        renderFilteredRequests();
 
     } catch (error) { 
         contentArea.textContent =

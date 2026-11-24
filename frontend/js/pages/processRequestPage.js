@@ -694,13 +694,14 @@ function handleApprovalSubmission(form, requestId) {
             // Submit approval request to backend
             await prepareApproval(requestId, summary);
 
-            const confirmation =
-                `Approval request prepared successfully for request ID: ${requestId}.`;
+            const confirmation = {
+                requestId,
+                message: `Approval request prepared successfully for request ID: ${requestId}.`
+            };
 
             loadPage(
                 "process-request",
                 requestId,
-                null,
                 confirmation
             ); 
 
@@ -759,7 +760,6 @@ function handleReviewApprovalSubmission(form, requestId) {
             loadPage(
                 "process-request",
                 requestId,
-                null,
                 confirmation
             );
 

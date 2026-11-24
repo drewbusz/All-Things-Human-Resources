@@ -159,7 +159,8 @@ export function loadPage(
 
         case "process-request":
             loadProcessRequestPage(
-                requestId
+                requestId,
+                confirmation
             );
             break;
 
@@ -247,7 +248,7 @@ export function loadPage(
             break;
 
         case "pending-approvals":
-            loadMyAssignedApprovals(); 
+            loadMyAssignedApprovals(confirmation); 
             break;
 
         case "approval-request":

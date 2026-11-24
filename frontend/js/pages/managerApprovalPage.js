@@ -1,11 +1,8 @@
 // Manager Approval processing page
 
 import {
-    getRequestById,
     getRequestApproval,
-    decideApproval, 
-    getTypeFields,
-    getRequestFields
+    decideApproval
 } from "../api/requestApi.js";
 
 // Navigation
@@ -42,18 +39,11 @@ export async function loadManagerApprovalPage(
 
     try {
 
-        // Retrieve request and approval information
-        const [request, approval] = await Promise.all([
-            getRequestById(requestId),
-            getRequestApproval(requestId)
-        ]);
-
-        // Retrieve field definitions, saved values
-        const [typeFields, fieldValues] =
-            await Promise.all([
-                getTypeFields(request.request_type_id),
-                getRequestFields(requestId),
-            ]);
+        // The approval endpoint returns the authorized request information and fields.
+        const approval = await getRequestApproval(requestId);
+        const request = approval.request;
+        const typeFields = approval.typeFields ?? [];
+        const fieldValues = approval.fieldValues ?? [];
 
         
 
@@ -200,12 +190,12 @@ export async function loadManagerApprovalPage(
                 await decideApproval(requestId, decision);
 
                 // Retrieve the previous page
-                const previousPage = sessionStorage.getItem("requestReturnPage") || "manager-approvals"; 
+                const previousPage = sessionStorage.getItem("requestReturnPage") || "pending-approvals"; 
 
                 // Prepare confrimation message
                 const confirmation = {
                     requestId: requestId,
-                    message: `Manager decision submitted successfuly forr request ID: ${requestId}`
+                    message: `Manager decision submitted successfully for request ID: ${requestId}`
                 }; 
 
                 sessionStorage.removeItem("requestReturnPage"); 

@@ -1,8 +1,11 @@
+
 /**
  * UC-1: Employee — Submit HR Request
  *
  * Allows an employee to submit a new HR request.
  */
+
+import { getTypeFields } from "../api/requestApi.js";
 
 export async function loadSubmitRequestPage(actingEmployeeId) {
     const contentArea = document.getElementById("contentArea");
@@ -20,6 +23,8 @@ export async function loadSubmitRequestPage(actingEmployeeId) {
                         <option value="">Select Request Type</option>
                     </select>
                 </div>
+
+                <div id="request-type-fields"></div>
 
                 <div class="form-field">
                     <label for="request-description">Request Description</label>
@@ -46,11 +51,14 @@ export async function loadSubmitRequestPage(actingEmployeeId) {
 
     const form = contentArea.querySelector("#submit-request-form");
     const requestType = contentArea.querySelector("#request-type");
+    const fieldContainer = contentArea.querySelector("#request-type-fields");
     const description = contentArea.querySelector("#request-description");
     const submitButton = contentArea.querySelector("#submit-request-button");
     const message = contentArea.querySelector("#submission-message");
+    let fieldLoadId = 0;
 
     // Retrieve available request types.
+    submitButton.disabled = true;
     try {
         const response = await fetch("/api/requests/activeRequestTypes");
         const result = await response.json();
@@ -75,7 +83,63 @@ export async function loadSubmitRequestPage(actingEmployeeId) {
         submitButton.disabled = true;
     }
 
-    // Submit the new request.
+    // Show the fields configured for the selected request type.
+    requestType.addEventListener("change", async () => {
+        const thisLoadId = ++fieldLoadId;
+        fieldContainer.replaceChildren();
+        message.textContent = "";
+        submitButton.disabled = true;
+
+        if (!requestType.value) return;
+
+        try {
+            const fields = await getTypeFields(requestType.value);
+            if (thisLoadId !== fieldLoadId) return;
+
+            fields.forEach(field => {
+                const fieldId = `field-${field.field_id}`;
+                const row = document.createElement("div");
+                row.className = "field-item";
+
+                const label = document.createElement("label");
+                label.className = "field-label";
+                label.htmlFor = fieldId;
+                label.textContent = field.field_label;
+
+                const valueContainer = document.createElement("div");
+                valueContainer.className = "field-value";
+
+                let input;
+                if (field.field_type === "textarea") {
+                    input = document.createElement("textarea");
+                    input.maxLength = 255;
+                } else {
+                    input = document.createElement("input");
+                    input.type = ["date", "number"].includes(field.field_type)
+                        ? field.field_type
+                        : "text";
+                    if (input.type === "number") input.step = "any";
+                    if (input.type === "text") input.maxLength = 255;
+                }
+
+                input.id = fieldId;
+                input.dataset.fieldId = field.field_id;
+                input.required = Boolean(field.is_required);
+
+                valueContainer.appendChild(input);
+                row.append(label, valueContainer);
+                fieldContainer.appendChild(row);
+            });
+
+            submitButton.disabled = false;
+        } catch (error) {
+            if (thisLoadId !== fieldLoadId) return;
+            message.textContent =
+                error.message || "Unable to load request fields.";
+        }
+    });
+
+    // Submit the new request and its dynamic field values together.
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
         message.textContent = "";
@@ -88,6 +152,12 @@ export async function loadSubmitRequestPage(actingEmployeeId) {
             return;
         }
 
+        const fieldValues = [...fieldContainer.querySelectorAll("[data-field-id]")]
+            .map(field => ({
+                field_id: Number(field.dataset.fieldId),
+                field_val: field.value.trim()
+            }));
+
         submitButton.disabled = true;
 
         try {
@@ -99,7 +169,8 @@ export async function loadSubmitRequestPage(actingEmployeeId) {
                 body: JSON.stringify({
                     actingEmployeeId,
                     request_type_id: Number(requestType.value),
-                    brief_summary: description.value.trim()
+                    brief_summary: description.value.trim(),
+                    fieldValues
                 })
             });
 
@@ -117,12 +188,14 @@ export async function loadSubmitRequestPage(actingEmployeeId) {
 
         } catch (error) {
             message.textContent = error.message;
-        } finally {
             submitButton.disabled = false;
         }
     });
 
     form.addEventListener("reset", () => {
+        ++fieldLoadId;
+        fieldContainer.replaceChildren();
+        submitButton.disabled = true;
         message.textContent = "";
     });
 }

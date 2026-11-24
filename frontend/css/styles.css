@@ -340,6 +340,10 @@ form>div {
     min-width: 0;
 }
 
+.form-field[hidden] {
+    display: none;
+}
+
     .form-field label,
     .field-label {
         margin-bottom: 8px;

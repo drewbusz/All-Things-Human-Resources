@@ -924,9 +924,6 @@ export function renderReviewApprovalForm(
     form.querySelector("#approval-summary")
         .value = approval.summary ?? "";
 
-    form.querySelector("#manager-comments")
-        .value = approval.comments ?? "";
-
     return form;
 }
 

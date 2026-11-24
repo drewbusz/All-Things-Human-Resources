@@ -1,3 +1,4 @@
+
 // ============================================================
 // Authorized Workspace: Active Requests
 // ============================================================
@@ -44,6 +45,19 @@ export async function loadActiveRequests(
                 and current assignment.
             </p>
 
+            <div class="request-filters">
+                <div class="form-group">
+                    <label for="active-request-search">Search Requests</label>
+                    <input type="search" id="active-request-search"
+                        placeholder="Search by ID, type, or employee">
+                </div>
+                <div class="form-group">
+                    <label for="active-status-filter">Filter by Status</label>
+                    <select id="active-status-filter">
+                        <option value="all">All Statuses</option>
+                    </select>
+                </div>
+            </div>
             <div id="active-request-list"></div>
         `;
 
@@ -65,50 +79,56 @@ export async function loadActiveRequests(
         const requestList =
             pipeline.querySelector("#active-request-list");
 
-        // Display a message if no active requests exist.
-        if (requests.length === 0) {
+        const searchInput = pipeline.querySelector("#active-request-search");
+        const statusFilter = pipeline.querySelector("#active-status-filter");
 
-            requestList.textContent =
-                "No active requests are available.";
+        // Populate statuses from the requests already returned by the API.
+        const statuses = [...new Set(requests.map(request => request.status).filter(Boolean))].sort();
+        statuses.forEach(status => {
+            const option = document.createElement("option");
+            option.value = status;
+            option.textContent = status;
+            statusFilter.appendChild(option);
+        });
 
-            return;
-        }
+        function renderFilteredRequests() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            const selectedStatus = statusFilter.value;
+            const filtered = requests.filter(request => {
+                const searchableText = [
+                    request.request_id,
+                    request.request_type,
+                    request.brief_summary,
+                    request.submitted_by,
+                    request.assigned_to
+                ].join(" ").toLowerCase();
 
-        // Render request cards using the shared rendering helper.
-        const requestRows =
-            renderRequestRows(requests);
-
-        requestList.innerHTML = requestRows;
-
-        // Retrieve the rendered request cards.
-        const workItemCards =
-            requestList.querySelectorAll(".item-card");
-
-        // Attach click events to each request card.
-        workItemCards.forEach(card => {
-
-            card.addEventListener("click", () => {
-
-                const requestId =
-                    card.dataset.requestId;
-
-                console.log("Selected request: ", requestId);
-
-                // Store this page for the Back button.
-                sessionStorage.setItem(
-                    "requestReturnPage",
-                    "active-requests"
-                );
-
-                // Navigate to the assignment page.
-                loadPage(
-                    "assign-request",
-                    requestId
-                );
-
+                return searchableText.includes(searchTerm) &&
+                    (selectedStatus === "all" || request.status === selectedStatus);
             });
 
+            requestList.innerHTML = filtered.length ? renderRequestRows(filtered) : "";
+            if (!filtered.length) {
+                requestList.textContent = requests.length
+                    ? "No matching requests found."
+                    : "No active requests are available.";
+            }
+        }
+
+        searchInput.addEventListener("input", renderFilteredRequests);
+        statusFilter.addEventListener("change", renderFilteredRequests);
+
+        // Handle card navigation once, including after the list is filtered.
+        requestList.addEventListener("click", event => {
+            const card = event.target.closest(".item-card");
+            if (!card) return;
+            const requestId = card.dataset.requestId;
+
+            sessionStorage.setItem("requestReturnPage", "active-requests");
+            loadPage("assign-request", requestId);
         });
+
+        renderFilteredRequests();
 
     } catch (error) {
 

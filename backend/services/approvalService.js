@@ -187,7 +187,7 @@ async function getMyPendingApprovals(employeeId) {
     const [rows] = await pool.execute(`
         SELECT a.approval_id, a.request_id, a.summary,
                a.submission_date, rv.request_type, rv.submitted_by,
-               rv.priority_level
+               rv.priority_level, rv.status, rv.assigned_to
         FROM approval a
         JOIN request_view rv ON rv.request_id = a.request_id
         WHERE a.approving_emp_id = ? AND a.decision IS NULL

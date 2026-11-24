@@ -1,3 +1,4 @@
+
 // ============================================================
 // UC-3: Unassigned Requests
 // Authorized HR Staff Workspace
@@ -38,6 +39,19 @@ export async function loadUnassignedRequests(
             <h3>Unassigned Requests</h3>
             <hr>
             <p>Select a request to assign it to an HR staff member.</p>
+            <div class="request-filters">
+                <div class="form-group">
+                    <label for="unassigned-request-search">Search Requests</label>
+                    <input type="search" id="unassigned-request-search"
+                        placeholder="Search by ID, type, or employee">
+                </div>
+                <div class="form-group">
+                    <label for="unassigned-status-filter">Filter by Status</label>
+                    <select id="unassigned-status-filter">
+                        <option value="all">All Statuses</option>
+                    </select>
+                </div>
+            </div>
             <div id="unassigned-request-list"></div>
         `;
 
@@ -59,43 +73,56 @@ export async function loadUnassignedRequests(
         const requestList =
             pipeline.querySelector("#unassigned-request-list");
 
-        // Display a message if no unassigned requests exist.
-        if (requests.length === 0) {
-            requestList.textContent = "No unassigned requests.";
-            return;
-        }
+        const searchInput = pipeline.querySelector("#unassigned-request-search");
+        const statusFilter = pipeline.querySelector("#unassigned-status-filter");
 
-        // Render request cards using the shared rendering helper.
-        const requestRows = renderRequestRows(requests);
+        // Populate statuses from the requests already returned by the API.
+        const statuses = [...new Set(requests.map(request => request.status).filter(Boolean))].sort();
+        statuses.forEach(status => {
+            const option = document.createElement("option");
+            option.value = status;
+            option.textContent = status;
+            statusFilter.appendChild(option);
+        });
 
-        requestList.innerHTML = requestRows;
+        function renderFilteredRequests() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            const selectedStatus = statusFilter.value;
+            const filtered = requests.filter(request => {
+                const searchableText = [
+                    request.request_id,
+                    request.request_type,
+                    request.brief_summary,
+                    request.submitted_by,
+                    request.assigned_to
+                ].join(" ").toLowerCase();
 
-        // Retrieve the rendered request cards.
-        const workItemCards =
-            requestList.querySelectorAll(".item-card");
-
-        // Attach click events to each request card.
-        workItemCards.forEach(card => {
-
-            card.addEventListener("click", () => {
-
-                const requestId = card.dataset.requestId;
-
-                console.log("Selected request: ", requestId);
-
-                // Store this page for the Back button.
-                sessionStorage.setItem(
-                    "requestReturnPage",
-                    "unassigned-requests"
-                );
-
-                // Navigate to the assignment page.
-                loadPage(
-                    "assign-request",
-                    requestId                );
+                return searchableText.includes(searchTerm) &&
+                    (selectedStatus === "all" || request.status === selectedStatus);
             });
 
+            requestList.innerHTML = filtered.length ? renderRequestRows(filtered) : "";
+            if (!filtered.length) {
+                requestList.textContent = requests.length
+                    ? "No matching requests found."
+                    : "No unassigned requests.";
+            }
+        }
+
+        searchInput.addEventListener("input", renderFilteredRequests);
+        statusFilter.addEventListener("change", renderFilteredRequests);
+
+        // Handle card navigation once, including after the list is filtered.
+        requestList.addEventListener("click", event => {
+            const card = event.target.closest(".item-card");
+            if (!card) return;
+            const requestId = card.dataset.requestId;
+
+            sessionStorage.setItem("requestReturnPage", "unassigned-requests");
+            loadPage("assign-request", requestId);
         });
+
+        renderFilteredRequests();
 
     } catch (error) {
 

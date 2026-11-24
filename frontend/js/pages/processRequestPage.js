@@ -308,6 +308,12 @@ export async function loadProcessRequestPage(requestId, confirmation = null) {
 
                         handleApprovalSubmission(approvalForm, requestId);
 
+                        // Return to the processing form without submitting.
+                        approvalForm.querySelector("#back-button")
+                            .addEventListener("click", () => {
+                                approvalForm.replaceWith(requestForm);
+                            });
+
                         requestForm.replaceWith(approvalForm);
                     });
                     break;

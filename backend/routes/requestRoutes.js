@@ -100,7 +100,8 @@ router.patch("/:id", (req, res, next) => {
     const managementFields = [
         "request_type_id",
         "assigned_emp_id",
-        "confidentiality_level"
+        "confidentiality_level",
+        "authorized_employee_ids"
     ];
 
     const isManagementUpdate = managementFields.some(field =>

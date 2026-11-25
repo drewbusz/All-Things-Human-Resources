@@ -1,3 +1,4 @@
+
 // request API for front end
 
 // ============================================================
@@ -20,7 +21,7 @@ export async function getMyRequests() {
     return result.data;
 }
 
-// Get request details 
+// Get request details
 export async function getRequestById(
     requestId
 ) {
@@ -41,7 +42,7 @@ export async function getRequestById(
     return result.data;
 }
 
-// Get workflow steps by request type 
+// Get workflow steps by request type
 export async function getWorkflowStepsByRequestType(
     request_type_id
 ) {
@@ -56,7 +57,7 @@ export async function getWorkflowStepsByRequestType(
 
 }
 
-// get Request History 
+// get Request History
 export async function getRequestHistory(
     request_id
 ) {
@@ -104,7 +105,7 @@ export async function getTypeFields(requestTypeId) {
     return result.data;
 }
 
-// Get request field values 
+// Get request field values
 export async function getRequestFields(requestId) {
 
     const response = await fetch(
@@ -122,7 +123,7 @@ export async function getRequestFields(requestId) {
 
     return result.data;
 }
-// Get request notes with the request id 
+// Get request notes with the request id
 export async function getRequestNotesByRequestId(
     request_id
 ) {
@@ -140,7 +141,7 @@ export async function getRequestNotesByRequestId(
     return requestNoteResult.data;
 }
 
-// Get all active request types 
+// Get all active request types
 export async function getActiveRequestTypes() {
 
     const requestTypeResponse = await fetch(
@@ -157,6 +158,29 @@ export async function getActiveRequestTypes() {
         );
     }
     return requestTypeResult.data;
+}
+
+// Create a request from a simulated employee email (Authorized HR Staff only).
+export async function createEmailIntakeRequest(requestData) {
+    const response = await fetch("/api/requests/intake/email", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestData)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+        throw new Error(
+            result.message ||
+            result.error ||
+            "Unable to create the email request."
+        );
+    }
+
+    return result.data;
 }
 
 // Work Item list APIs
@@ -238,7 +262,7 @@ export async function getPendingRequests() {
     return result.data;
 }
 
-// Get an intake request for review 
+// Get an intake request for review
 export async function getIntakeRequest(
     requestId
 ) {
@@ -277,7 +301,7 @@ export async function getMyApprovals() {
     return result.data;
 }
 
-// Get Request Approval 
+// Get Request Approval
 export async function getRequestApproval(
     requestId
 ) {
@@ -325,7 +349,7 @@ export async function reviewApproval(requestId) {
 // PATCH API CALLS
 // ===================================
 
-// Save Request Intake 
+// Save Request Intake
 export async function reviewIntakeRequest(
     requestId,
     requestData
@@ -354,7 +378,7 @@ export async function reviewIntakeRequest(
     }
     return result.data;
 }
-// Save updates to the request details 
+// Save updates to the request details
 export async function updateRequest(
     requestId,
     requestData,
@@ -414,7 +438,7 @@ export async function saveRequestAssignment(
     return result.data;
 }
 
-// Save request notes 
+// Save request notes
 export async function saveRequestNote(
     note,
     requestId
@@ -473,7 +497,7 @@ export async function saveRequestFields(requestId, fieldValues) {
     return result.data;
 }
 
-// UC-5 Approvals 
+// UC-5 Approvals
 export async function prepareApproval(requestId, summary) {
     const response = await fetch(`api/requests/${requestId}/approval`,
         {

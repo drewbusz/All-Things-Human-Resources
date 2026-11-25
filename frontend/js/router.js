@@ -1,3 +1,4 @@
+
 // ==================================================
 // router.js
 // Controls front end page routing and page specializations
@@ -7,11 +8,11 @@
 import { loadNavigation } from "./navigation.js";
 
 // Authentication State
-import { getCurrentEmployeeState, getAvailableWorkspaces, isAuthenticated } from "../auth/authState.js"; 
+import { getCurrentEmployeeState, getAvailableWorkspaces, isAuthenticated } from "../auth/authState.js";
 
-// importing specific pages 
+// importing specific pages
 import {
-    loadProcessingHomePage, 
+    loadProcessingHomePage,
     loadAuthorizedHomePage,
     loadEmployeeHomePage,
     loadManagerHomePage
@@ -19,13 +20,14 @@ import {
 
 import { loadProcessRequestPage } from "./pages/processRequestPage.js";
 import { loadIntakeRequestPage } from "./pages/intakeRequestPage.js";
+import { loadEmailIntakePage } from "./pages/emailIntakePage.js";
 import { loadMyAssignedRequests } from "./pages/myAssignedRequestsPage.js";
 import { loadUnassignedRequests } from "./pages/unassignedRequestsPage.js";
 import { loadAssignRequestPage } from "./pages/assignRequestPage.js";
 import { loadSubmitRequestPage } from "./pages/submitRequestPage.js";
-import { loadActiveRequests } from "./pages/activeRequestsPage.js"; 
-import { loadPendingRequests } from "./pages/pendingRequestPage.js"; 
-import { loadMyAssignedApprovals } from "./pages/myAssignedApprovalsPage.js"; 
+import { loadActiveRequests } from "./pages/activeRequestsPage.js";
+import { loadPendingRequests } from "./pages/pendingRequestPage.js";
+import { loadMyAssignedApprovals } from "./pages/myAssignedApprovalsPage.js";
 import { loadManagerApprovalPage } from "./pages/managerApprovalPage.js";
 import { loadMyRequestsPage } from "./pages/myRequestsPage.js";
 import { loadViewRequestPage } from "./pages/viewRequestPage.js";
@@ -44,20 +46,20 @@ function showPagePlaceholder(title, description) {
     `;
 }
 
-// Access Denied 
-function showAccessDenied() { 
+// Access Denied
+function showAccessDenied() {
     const contentArea =
-        document.getElementById("contentArea"); 
+        document.getElementById("contentArea");
 
     contentArea.innerHTML = `
-        <div class="card"> 
+        <div class="card">
             <h2>Access Denied</h2>
             <hr>
             <p>
-                You do not have access to this workspace or its requested page. 
+                You do not have access to this workspace or its requested page.
             </p>
-            </div>    
-        `; 
+            </div>
+        `;
 }
 
 // ============================================================
@@ -68,7 +70,7 @@ function showAccessDenied() {
 // and retrieved through authState.js
 // ============================================================
 const pageWorkspaces = {
-    //  HR Processing 
+    // HR Processing
     "processing-home": "processing",
     "assigned-requests": "processing",
     "process-request": "processing",
@@ -81,6 +83,7 @@ const pageWorkspaces = {
     "active-requests": "authorized_staff",
     "confidential": "authorized_staff",
     "request-intake": "authorized_staff",
+    "email-intake": "authorized_staff",
 
     // Employee
     "employee-home": "employee",
@@ -94,15 +97,15 @@ const pageWorkspaces = {
     "pending-approvals": "manager",
     "approval-request": "manager",
     "my-team": "manager"
-}; 
+};
 
-// WORKSPACE NAVIGATION 
+// WORKSPACE NAVIGATION
 const workspaceHomePages = {
     processing: "processing-home",
     authorized_staff: "authorized-home",
     employee: "employee-home",
     manager: "manager-home"
-}; 
+};
 
 
 export function loadPage(
@@ -111,39 +114,39 @@ export function loadPage(
     confirmation = null
 ) {
     const contentArea = document.getElementById("contentArea");
-    
+
     // ------------------------------
     // Check authentication
     // ------------------------------------
-    if (!isAuthenticated()) { 
-        contentArea.innerHTML = ""; 
-        showAccessDenied(); 
-        return; 
+    if (!isAuthenticated()) {
+        contentArea.innerHTML = "";
+        showAccessDenied();
+        return;
     }
 
-    // Retrieve the authenticated employee 
+    // Retrieve the authenticated employee
     const employee =
-        getCurrentEmployeeState(); 
+        getCurrentEmployeeState();
 
-    // Retrieve available workspaces 
+    // Retrieve available workspaces
     const availableWorkspaces =
-        getAvailableWorkspaces(); 
+        getAvailableWorkspaces();
 
     // Verify workspace access
     const requiredWorkspace =
-        pageWorkspaces[page]; 
+        pageWorkspaces[page];
 
     if (
         !requiredWorkspace || !availableWorkspaces.includes(requiredWorkspace)
-    ) { 
-        showAccessDenied(); 
-        return; 
+    ) {
+        showAccessDenied();
+        return;
     }
     // Prepare page content
-    contentArea.innerHTML = ""; 
+    contentArea.innerHTML = "";
 
-    // Load navigation for the selected workspace 
-    loadNavigation(requiredWorkspace); 
+    // Load navigation for the selected workspace
+    loadNavigation(requiredWorkspace);
 
     switch (page) {
         // ==================================
@@ -176,6 +179,10 @@ export function loadPage(
             loadPendingRequests(
                 confirmation
             );
+            break;
+
+        case "email-intake":
+            loadEmailIntakePage();
             break;
 
         case "unassigned-requests":
@@ -248,11 +255,11 @@ export function loadPage(
             break;
 
         case "pending-approvals":
-            loadMyAssignedApprovals(confirmation); 
+            loadMyAssignedApprovals(confirmation);
             break;
 
         case "approval-request":
-            loadManagerApprovalPage(requestId, confirmation); 
+            loadManagerApprovalPage(requestId, confirmation);
             break;
 
         case "my-team":
@@ -276,4 +283,3 @@ export function loadPage(
     } // End of switch statement
 
 } // End of loadPage function
-

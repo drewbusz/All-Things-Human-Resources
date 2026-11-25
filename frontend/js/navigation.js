@@ -62,6 +62,10 @@ const navigation = {
                 label: "New Requests"
             },
             {
+                page: "email-intake",
+                label: "Simulated Email Intake"
+            },
+            {
                 page: "unassigned-requests",
                 label: "Unassigned Requests"
             },
@@ -94,7 +98,7 @@ const navigation = {
         ]
     },
 };
-// Function for dynamically loading page title and navigation links based on user type 
+// Function for dynamically loading page title and navigation links based on user type
 export async function loadNavigation(section) {
     const config = navigation[section];
 
